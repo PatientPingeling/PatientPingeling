@@ -1,7 +1,7 @@
 ---
 status: [Proposed]
 date: 24/04/2026
-deciders: [Name(s) / Team(s)]
+deciders: [PatientPingeling]
 ---
 
 # AD: Architectuurkeuze: zelfstandige module vs. ingebouwde module
