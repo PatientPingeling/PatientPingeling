@@ -1,7 +1,7 @@
 ---
-status: [Proposed | Accepted | Deprecated | Superseded]
-date: DD-MM-YYYY
-deciders: [Name(s) / Team(s)]
+status: [Proposed]
+date: 05/05/26
+deciders: [PatientPingeling]
 ---
 
 # AD: Integratiemethode: hoe koppelt de module aan OpenMRS?
