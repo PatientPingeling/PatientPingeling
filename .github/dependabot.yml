@@ -5,10 +5,17 @@ updates:
     schedule:
       interval: weekly
       day: monday
-    open-pull-requests-limit: 10
+    groups:
+      nuget-dependencies:
+        patterns:
+          - "*"
 
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
       day: monday
+    groups:
+      github-actions-dependencies:
+        patterns:
+          - "*"
