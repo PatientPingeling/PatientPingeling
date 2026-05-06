@@ -1,6 +1,6 @@
 ---
 status: [Proposed]
-date: 05/05/26
+date: 05/05/2026
 deciders: [PatientPingeling]
 ---
 
@@ -12,7 +12,7 @@ Onze module moet afspraakdata uit OpenMRS ontvagen om notificaties te sturen. De
 
 ## Beslissingsfactoren
 
-* Driver 1: Betrouwbaarheid & Downtime bestendigheid
+* Driver 1: Betrouwbaarheid & Downtime bestendigheid (Wat gebeurt er als onze module offline gaat en tijdelijk geen gegevens kan vervangen en verwerken?)
 * Driver 2: Schaalbaarheid naar meerdere OpenMRS instanties
 * Driver 3: FHIR-aansluiting
 * Driver 4: Complexiteit van implementatie
