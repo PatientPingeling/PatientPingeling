@@ -15,12 +15,13 @@ De vraag is hoe de queuing-infrastructuur ingericht moet worden om aan deze eise
 ## Beslissingsfactoren
 
 * Driver 1: Betrouwbaarheid & Downtime bestendigheid (Opdracht vereist een fallback- en retrymechanische bij downtime providers of OpenMRS)
-* Driver 2: Schaalbaarheid naar meerdere OpenMRS instanties
+* Driver 2: Schaalbaarheid naar meerdere OpenMRS instanties (wordt expliciet genoemd door opdrachtbeschrijving)
 * Driver 3: HL7/FHIR-compliance (queueing en retry mechanische zijn onderdeel van de HL7-standaard)
 * Driver 4: Beveiliging (Berichteninhoud moet versleuteld worden, zeker gevoelige patiëntdata)
 
 ## Overwogen Opties
 
+**Message Brokers**
 1. [Option 1]
 2. [Option 2]
 3. [Option 3]
