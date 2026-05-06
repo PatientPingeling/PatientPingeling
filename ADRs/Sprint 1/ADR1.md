@@ -1,5 +1,5 @@
 ---
-status: [accepted]
+status: Accepted
 date: 24/04/2026
 deciders: [PatientPingeling]
 ---
