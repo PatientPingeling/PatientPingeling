@@ -1,14 +1,16 @@
 ---
-status: [Proposed]
-date: 05/05/2026
-deciders: [PatientPingeling]
+status: Accepted
+date: 05-05-2026
+deciders: PatientPingeling
 ---
 
 # AD: Integratiemethode: hoe koppelt de module aan OpenMRS?
 
 ## Context en Probleembeschrijving
 
-Onze module moet afspraakdata uit OpenMRS ontvagen om notificaties te sturen. De vraag is hoe onze module aan deze data gaat komen. 
+De communicatiemodule is een zelfstandig systeem dat afspraakgegevens uit OpenMRS nodig heeft om notificaties te kunnen versturen. Omdat de module bewust losstaat van OpenMRS, moet er een integratiemethode gekozen worden waarmee afspraakdata betrouwbaar en schaalbaar uitgewisseld kan worden.
+
+Hoe ontvangt de communicatiemodule afspraakdata vanuit OpenMRS?
 
 ## Beslissingsfactoren
 
@@ -19,25 +21,26 @@ Onze module moet afspraakdata uit OpenMRS ontvagen om notificaties te sturen. De
 
 ## Overwogen Opties
 
-1. FHIR API Polling: Onze applicatie roept periodiek de OpenMRS FHIR REST API aan om te kijken of er nieuwe gewijzigde afspraken / gegevens zijn. Dit is een simpele mogelijke oplossing, alleen is het wel minder 'real-time' (altijd vertraging d.m.v.) polling interval. Ook kan het erg inefficiënt en kostelijk zijn als we blijven pollen terwijl er niets nieuws is.
+1. **FHIR API Polling**: De communicatiemodule roept periodiek de OpenMRS FHIR REST API aan om te controleren of er nieuwe of gewijzigde afspraken zijn. Dit is een eenvoudige aanpak, maar introduceert altijd een vertraging gelijk aan het polling-interval. Bovendien is het inefficiënt wanneer er geen nieuwe data is, omdat er dan toch netwerk- en verwerkingslast ontstaat.
 
-2. Event-driven via message-broker (rabbitMQ): OpenMRS heeft al een ingebouwde event module die nieuwe wijzigingen binnen het systeem publiceert. Hier kunnen we dan een message-broker aan koppelen om deze nieuwe data te queuen. Voordelen hiervan zijn dat we alleen de API gebruiken als er ook écht nieuwe data is. Het is ook zeer schaalbaar omdat meerdere OpenMRS instanties naar dezelfde queue kunnen publishen. Wel is het een complexere aanpak vergeleken met pollen en moeten we de event naar het FHIR-formaat mappen. 
+2. **Event-driven via berichtenwachtrij (RabbitMQ)**: OpenMRS beschikt over een ingebouwde event-module die wijzigingen binnen het systeem publiceert. Door hierop een berichtenwachtrij te koppelen, ontvangt de communicatiemodule alleen berichten wanneer er daadwerkelijk nieuwe of gewijzigde data is. Meerdere OpenMRS-instanties kunnen naar dezelfde wachtrij publiceren, wat horizontale schaalbaarheid biedt. De aanpak is complexer dan polling en vereist een mapping van OpenMRS-events naar het FHIR-formaat.
 
-3. Database polling: We pollen rechtstreek de OpenMRS database(s) om nieuwe data te vinden. We querying naar specifieke tabellen waar we filteren op gewijzigde of nieuwe rijen. Het voordeel hiervan is dat er geen API-configuratie nodig is. Ook hebben we precieze controle over de data die we ophalen, hoeft niet als FHIR-standaard binnen te komen. Nadelen hierbij is dat bij database-migraties van een in-use OpenMRS systeem onze module kan breken. Geen abstractielaag, geen FHIR-compliance. Het is slecht schaalbaar (slechter dan event driven approach). Het is ook een security-risico om een directe link met een database te hebben, zeker de gevoelige informatie die OpenMRS systemen bevatten. 
+3. **Database polling**: De communicatiemodule leest rechtstreeks uit de OpenMRS-database om nieuwe of gewijzigde rijen op te sporen. Dit vereist geen API-configuratie en geeft directe controle over de opgehaalde data. Nadelen zijn echter aanzienlijk: directe databasekoppelingen zijn een beveiligingsrisico gezien de gevoelige medische gegevens in OpenMRS, bieden geen FHIR-compliance, en breken bij database-migraties van een actief OpenMRS-systeem.
 
 ## Resultaten
 
-We hebben gekozen voor de **Event-driven via message-broker** aanpak. 
+We hebben gekozen voor de **event-driven aanpak via een berichtenwachtrij (RabbitMQ)**.
 
-Deze optie kwam met de meeste voordelen, zeker qua schaalbaarheid. Het zou wel wat ingewikkelder kunnen zijn om voor elkaar te krijgen maar de voordelen die het brengt wegen daar zeker tegen op. 
+Deze optie sluit het best aan bij de eisen rondom betrouwbaarheid, schaalbaarheid en FHIR-compliance. De hogere implementatiecomplexiteit weegt op tegen de structurele voordelen, met name de mogelijkheid om berichten te bewaren tijdens downtime en om meerdere OpenMRS-instanties te ondersteunen zonder aanpassingen aan de module zelf.
 
 ### Gevolgen
 
-* Goed, rabbbit-MQ kan berichten bewaren tijdens een downtime van onze module, zodat er geen informatie verloren gaat. 
-* Goed, meerdere instanties van OpenMRS kunnen naar dezelfde queue publishen. --> Horizontale schaalbaarheid
-* Goed, aansluiting op onze gekozen technologiestack in ADR2
-* Slecht, meeste complexe optie van de drie
-* Slecht, De event-module moet nog geconfigureerd worden om te praten met onze message-broker. Ook moeten de events nog gemapped worden naar FHIR
+* Goed, omdat RabbitMQ berichten bewaart tijdens een tijdelijke downtime van de communicatiemodule, zodat er geen afspraakgegevens verloren gaan.
+* Goed, omdat meerdere OpenMRS-instanties naar dezelfde wachtrij kunnen publiceren, wat horizontale schaalbaarheid ondersteunt.
+* Goed, omdat de gekozen aanpak aansluit op de technologiestack uit ADR2 (RabbitMQ als berichtenwachtrij).
+* Goed, omdat de module niet rechtstreeks de OpenMRS-database benadert, wat het beveiligingsrisico beperkt.
+* Slecht, omdat de event-driven aanpak de meest complexe optie is van de drie en meer initiële configuratie vereist.
+* Slecht, omdat de integratie een mapping vereist van OpenMRS-events naar het FHIR-formaat, wat extra implementatiewerk betekent.
 
 ## Meer Informatie
 
