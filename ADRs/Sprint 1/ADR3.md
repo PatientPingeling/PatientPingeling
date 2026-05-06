@@ -15,9 +15,9 @@ Hoe ontvangt de communicatiemodule afspraakdata vanuit OpenMRS?
 ## Beslissingsfactoren
 
 * Driver 1: Betrouwbaarheid & Downtime bestendigheid (Wat gebeurt er als onze module offline gaat en tijdelijk geen gegevens kan vervangen en verwerken?)
-* Driver 2: Schaalbaarheid naar meerdere OpenMRS instanties
-* Driver 3: FHIR-aansluiting
-* Driver 4: Complexiteit van implementatie
+* Driver 2: Schaalbaarheid naar meerdere OpenMRS instanties (wordt expliciet genoemd door opdrachtbeschrijving)
+* Driver 3: FHIR-aansluiting (wordt expliciet genoemd door opdrachtbeschrijving)
+* Driver 4: Complexiteit van implementatie (Past de oplossing bij de capaciteiten en deadlines van het team)
 
 ## Overwogen Opties
 
