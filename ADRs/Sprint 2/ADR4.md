@@ -21,16 +21,25 @@ De vraag is hoe de queuing-infrastructuur ingericht moet worden om aan deze eise
 
 ## Overwogen Opties
 
-**Message Brokers**
-1. [Option 1]
-2. [Option 2]
-3. [Option 3]
+*Queuing Structuur*
+1. **RabbitMQ**: Een message queuer die bericht asynchroonb verwerkt via exchanges en queues. Ondersteunt ook retry-mechanismen. Lichtgewicht, goed gedocumenteerd en breed ondersteund in het .NET ecosysteem.
+2. **Apache Kafka**: Een gedistribueerd event-streaming platform dat berichten opslaat als een log. Zeer schaalbaar bij hoge volumes (miljoenen berichten per seconde) en geschikt voor meerdere consumers die dezelfde data opnieuw kunnen inlezen.
+3. **Geen queue, maar directe REST-calls tussen OpenMRS en de communicatiemodule**: De meest eenvoudige optie
+
+*Inrichting Gekozen Structuur (Spoiler: RabbitMQ)*
+1. 
+2.
+3.
 
 ## Resultaten
 
-We decided to use **[chosen option]**.
+*Queuing Structuur*
+We hebben gekozen voor **RabbitMQ**. Dit hebben we gedaan omdat het niet gebruik maken van een queue bepaalde eisen van de opdrachtgeveer al faalt. Zo is het slecht schaalbaar en zijn er ook grote kansen op data verliest wat slecht scoort op belissingsfactor 1. De opdracht eist een fallback- en retrymechanischme wat we hiermee niet kunnen bereiken. 
+Apache is bij onze use-case overkill. We werken niet met extreme volumes van data en hebben ook geen behoefte aan even-replay. Ook brengt deze oplossing meer complexiteit met zich mee t.o.v. RabbitMQ.
+Verder zoals benoemd bij de overwogen opties is RabbitMQ lichtgewicht, goed gedocumenteerd en breed ondersteund in het .NET ecosysteem.
 
-This option was chosen because [main reason]. Other options such as [rejected options] were not selected because [reason they do not fit the context].
+*Inrichting Gekozen Structuur (Spoiler: RabbitMQ)*
+...
 
 ### Gevolgen
 
@@ -44,3 +53,5 @@ This option was chosen because [main reason]. Other options such as [rejected op
 - [Relevant documentation, article, diagram, standard, or source]
 - [Related architectural decision]
 - [Follow-up decision that still needs to be made]
+
+<!-- NOTES - RABBITMQ QUORUM LIJKT BETROUWBAAR EN GOED VOOR ONS -->
