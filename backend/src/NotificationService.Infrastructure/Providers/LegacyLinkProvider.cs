@@ -1,4 +1,4 @@
-using NotificationService.Core.Interfaces;
+using NotificationService.Application.Interfaces;
 
 namespace NotificationService.Infrastructure.Providers
 {
