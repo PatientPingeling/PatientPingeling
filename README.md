@@ -32,9 +32,10 @@ openmrs-notification-service/
     ├── Dockerfile               # Multi-stage production build
     ├── NotificationService.slnx # .NET solution file
     ├── src/
-    │   ├── NotificationService.Api/            # ASP.NET Core Web API
-    │   ├── NotificationService.Core/           # Domain models & interfaces
-    │   └── NotificationService.Infrastructure/ # EF Core, RabbitMQ, message providers
+    │   ├── NotificationService.Domain/         # Entities, value objects — no dependencies
+    │   ├── NotificationService.Application/    # Use cases, interfaces, DTOs
+    │   ├── NotificationService.Infrastructure/ # EF Core, RabbitMQ, message providers
+    │   └── NotificationService.Api/            # ASP.NET Core Web API, composition root
     └── tests/
         ├── NotificationService.Api.Tests/
         ├── NotificationService.Core.Tests/
@@ -121,11 +122,31 @@ dotnet test tests/NotificationService.Core.Tests
 
 ## Architecture
 
-The service follows **Clean Architecture** with three projects:
+The service follows **Clean Architecture (Onion)**, with dependencies always pointing inward — outer layers know about inner layers, never the reverse.
 
-- **Core** — domain models, interfaces, and business rules. No dependencies on infrastructure.
-- **Infrastructure** — Entity Framework Core (PostgreSQL), RabbitMQ consumer, and pluggable `IMessageProvider` implementations for dispatching notifications.
-- **Api** — minimal ASP.NET Core endpoints; thin layer that wires Core + Infrastructure together.
+```
+┌─────────────────────────────────────────┐
+│              Api (Presentation)         │
+│  ┌───────────────────────────────────┐  │
+│  │           Infrastructure          │  │
+│  │  ┌─────────────────────────────┐  │  │
+│  │  │        Application          │  │  │
+│  │  │  ┌───────────────────────┐  │  │  │
+│  │  │  │        Domain         │  │  │  │
+│  │  │  └───────────────────────┘  │  │  │
+│  │  └─────────────────────────────┘  │  │
+│  └───────────────────────────────────┘  │
+└─────────────────────────────────────────┘
+```
+
+| Layer | Project | Responsibility |
+| --- | --- | --- |
+| Domain | `NotificationService.Domain` | Entities and value objects. Zero external dependencies. |
+| Application | `NotificationService.Application` | Use cases, service interfaces (`IMessageProvider`), and DTOs. Depends only on Domain. |
+| Infrastructure | `NotificationService.Infrastructure` | EF Core (PostgreSQL), RabbitMQ consumer, and pluggable `IMessageProvider` implementations. Depends on Application. |
+| Presentation | `NotificationService.Api` | Minimal ASP.NET Core endpoints and composition root. Wires Application + Infrastructure via DI. |
+
+**Dependency flow:** `Api` → `Application` → `Domain` ← `Infrastructure`
 
 For full architectural context, including Architecture Decision Records and C4 diagrams, see the [Docs repository](https://github.com/PatientPingeling/Docs).
 
