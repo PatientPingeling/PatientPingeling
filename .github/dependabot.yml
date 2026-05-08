@@ -1,7 +1,17 @@
 version: 2
 updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    groups:
+      github-actions-dependencies:
+        patterns:
+          - "*"
+
   - package-ecosystem: nuget
-    directory: /backend
+    directory: /src
     schedule:
       interval: weekly
       day: monday
@@ -10,12 +20,12 @@ updates:
         patterns:
           - "*"
 
-  - package-ecosystem: github-actions
-    directory: /
+  - package-ecosystem: nuget
+    directory: /tests
     schedule:
       interval: weekly
       day: monday
     groups:
-      github-actions-dependencies:
+      nuget-dependencies:
         patterns:
           - "*"
