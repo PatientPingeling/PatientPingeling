@@ -13,25 +13,25 @@ services:
   # ==========================================
   # .NET NOTIFICATION SERVICE STACK
   # ==========================================
-  api:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    environment:
-      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
-      - ASPNETCORE_URLS=http://+:8000
-      - ConnectionStrings__Postgres=Host=${POSTGRES_HOST};Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
-      - RabbitMQ__Host=${RABBITMQ_HOST}
-      - RabbitMQ__Username=${RABBITMQ_USERNAME}
-      - RabbitMQ__Password=${RABBITMQ_PASSWORD}
-    depends_on:
-      postgres:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-    ports:
-      - "8000:8000"
-    restart: unless-stopped
+  # api:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: Dockerfile
+  #   environment:
+  #     - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
+  #     - ASPNETCORE_URLS=http://+:8000
+  #     - ConnectionStrings__Postgres=Host=${POSTGRES_HOST};Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+  #     - RabbitMQ__Host=${RABBITMQ_HOST}
+  #     - RabbitMQ__Username=${RABBITMQ_USERNAME}
+  #     - RabbitMQ__Password=${RABBITMQ_PASSWORD}
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     rabbitmq:
+  #       condition: service_healthy
+  #   ports:
+  #     - "8000:8000"
+  #   restart: unless-stopped
 
   messageproviders:
     image: ghcr.io/avansict/in2.4-fakecomworld:main
