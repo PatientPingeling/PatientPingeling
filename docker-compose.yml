@@ -19,6 +19,13 @@ services:
       - "8080:8080"
     restart: unless-stopped
 
+  # --- EXTERNAL SERVICES ---
+  messageproviders:
+    image: ghcr.io/avansict/in2.4-fakecomworld:main
+    ports:
+      - "1337:8080"
+    restart: unless-stopped
+
   # --- INFRASTRUCTUUR ---
   postgres:
     image: postgres:18-alpine
