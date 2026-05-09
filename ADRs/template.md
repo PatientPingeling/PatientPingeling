@@ -1,5 +1,5 @@
 ---
-status: [Proposed | Accepted | Deprecated | Superseded]
+status: [Proposed | Accepted | Deprecated | Superseded | Rejected | Withdrawn]
 date: DD-MM-YYYY
 deciders: [Name(s) / Team(s)]
 ---
@@ -14,10 +14,10 @@ deciders: [Name(s) / Team(s)]
 
 ## Beslissingsfactoren
 
-* [Driver 1: e.g. reduce complexity]
-* [Driver 2: e.g. improve maintainability]
-* [Driver 3: e.g. support scalability]
-* [Driver 4: e.g. fit team knowledge / project constraints]
+- [Driver 1: e.g. reduce complexity]
+- [Driver 2: e.g. improve maintainability]
+- [Driver 3: e.g. support scalability]
+- [Driver 4: e.g. fit team knowledge / project constraints]
 
 ## Overwogen Opties
 
@@ -33,13 +33,13 @@ This option was chosen because [main reason]. Other options such as [rejected op
 
 ### Gevolgen
 
-* Good, because [positive consequence].
-* Good, because [positive consequence].
-* Bad, because [negative consequence / trade-off].
-* Bad, because [negative consequence / risk].
+- Good, because [positive consequence].
+- Good, because [positive consequence].
+- Bad, because [negative consequence / trade-off].
+- Bad, because [negative consequence / risk].
 
 ## Meer Informatie
 
-* [Relevant documentation, article, diagram, standard, or source]
-* [Related architectural decision]
-* [Follow-up decision that still needs to be made]
+- [Relevant documentation, article, diagram, standard, or source]
+- [Related architectural decision]
+- [Follow-up decision that still needs to be made]
