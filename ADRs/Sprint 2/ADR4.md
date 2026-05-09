@@ -20,26 +20,31 @@ De vraag is hoe de queuing-infrastructuur ingericht moet worden om aan deze eise
 * Driver 4: Beveiliging (Berichteninhoud moet versleuteld worden, zeker gevoelige patiëntdata)
 
 ## Overwogen Opties
+(Opties die per broker specifiek kunnen zijn, volgen al onze gekozen broker van optie 1).
 
-*Queuing Structuur*
-1. **RabbitMQ**: Een message queuer die bericht asynchroonb verwerkt via exchanges en queues. Ondersteunt ook retry-mechanismen. Lichtgewicht, goed gedocumenteerd en breed ondersteund in het .NET ecosysteem.
-2. **Apache Kafka**: Een gedistribueerd event-streaming platform dat berichten opslaat als een log. Zeer schaalbaar bij hoge volumes (miljoenen berichten per seconde) en geschikt voor meerdere consumers die dezelfde data opnieuw kunnen inlezen.
-3. **Geen queue, maar directe REST-calls tussen OpenMRS en de communicatiemodule**: De meest eenvoudige optie
-
-*Inrichting Gekozen Structuur (Spoiler: RabbitMQ)*
-1. 
-2.
-3.
+1. *Welke Broker?*
+    a. **RabbitMQ**: Een message queuer die bericht asynchroonb verwerkt via exchanges en queues. Ondersteunt ook retry-mechanismen. Lichtgewicht, goed gedocumenteerd en breed ondersteund in het .NET ecosysteem.
+    b. **Apache Kafka**: Een gedistribueerd event-streaming platform dat berichten opslaat als een log. Zeer schaalbaar bij hoge volumes (miljoenen berichten per seconde) en geschikt voor meerdere consumers die dezelfde data opnieuw kunnen inlezen.
+    c. **Geen broker, maar directe REST-calls tussen OpenMRS en de communicatiemodule**: De meest eenvoudige optie
+2. *Welke queue-toplogie*
+    a. **One-way messaging**: 
+    b. **Competing Consumers (Worker Queues)**: 
+    c. **Publish/Subscribe**: 
+3. *Welk retry mechanischme?*
+    a.
+    b.
+    c.
+4. *Welk fallback mechanischme?*
+5. *Welk beveiliging mechanischme?*
 
 ## Resultaten
 
-*Queuing Structuur*
+*Gekozen broker*
 We hebben gekozen voor **RabbitMQ**. Dit hebben we gedaan omdat het niet gebruik maken van een queue bepaalde eisen van de opdrachtgeveer al faalt. Zo is het slecht schaalbaar en zijn er ook grote kansen op data verliest wat slecht scoort op belissingsfactor 1. De opdracht eist een fallback- en retrymechanischme wat we hiermee niet kunnen bereiken. 
 Apache is bij onze use-case overkill. We werken niet met extreme volumes van data en hebben ook geen behoefte aan even-replay. Ook brengt deze oplossing meer complexiteit met zich mee t.o.v. RabbitMQ.
 Verder zoals benoemd bij de overwogen opties is RabbitMQ lichtgewicht, goed gedocumenteerd en breed ondersteund in het .NET ecosysteem.
 
-*Inrichting Gekozen Structuur (Spoiler: RabbitMQ)*
-...
+*Gekozen queue topologie*
 
 ### Gevolgen
 
