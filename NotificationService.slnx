@@ -9,8 +9,5 @@
     <Project Path="src/NotificationService.Api/NotificationService.Api.csproj" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="tests/NotificationService.Api.Tests/NotificationService.Api.Tests.csproj" />
-    <Project Path="tests/NotificationService.Core.Tests/NotificationService.Core.Tests.csproj" />
-    <Project Path="tests/NotificationService.Integration.Tests/NotificationService.Integration.Tests.csproj" />
   </Folder>
 </Solution>

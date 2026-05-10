@@ -1,4 +1,7 @@
-var builder = WebApplication.CreateBuilder(args);
+using NotificationService.Infrastructure.Extensions;
+using NotificationService.Infrastructure.Options;
+
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 
@@ -8,20 +11,6 @@ builder.Services.AddOpenApi();
 //     options.UseNpgsql(configuration.GetConnectionString("Postgres"));
 // });
 
-// // RabbitMQ
-// builder.Services.AddSingleton<IConnectionFactory>(sp =>
-// {
-//     var options = sp.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
-//     return new ConnectionFactory
-//     {
-//         HostName = options.Host,
-//         UserName = options.Username,
-//         Password = options.Password,
-//         Port = options.Port,
-//         VirtualHost = options.VirtualHost
-//     };
-// });
-
 // HTTP Resilience
 // builder.Services.ConfigureHttpClientDefaults(http =>
 // {
@@ -29,7 +18,7 @@ builder.Services.AddOpenApi();
 // });
 
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
