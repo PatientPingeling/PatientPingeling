@@ -102,5 +102,7 @@
 
     <properties>
         <openmrsPlatformVersion>1.11.6</openmrsPlatformVersion>
+		<!-- Event Module version to compile against (see OpenMRS wiki 'Event Module' page) -->
+		<openmrsEventModuleVersion>2.2.1</openmrsEventModuleVersion>
     </properties>
 </project>

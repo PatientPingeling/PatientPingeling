@@ -23,7 +23,8 @@
   		    http://www.springframework.org/schema/util
   		    http://www.springframework.org/schema/util/spring-util-3.0.xsd">
 
-    <context:component-scan base-package="org.openmrs.module.patientpingeling.enricher" />
+    <!-- Only scan API components (e.g. DAO). This module should be non-web and only log Event Module events. -->
+    <context:component-scan base-package="org.openmrs.module.patientpingeling.enricher.api" />
 
     <!-- Wraps PatientpingelingenricherService methods in DB transactions and OpenMRS interceptors,
     which set audit info like dateCreated, changedBy, etc.-->

@@ -20,10 +20,13 @@
 	<require_version>1.11.6</require_version>
 	
 	<!-- Extensions -->
+	<!-- Disabled for now: module should only listen to Event Module events and log them. -->
+	<!--
 	<extension>
 		<point>org.openmrs.admin.list</point>
 		<class>org.openmrs.module.patientpingeling.enricher.extension.html.AdminList</class>
 	</extension>
+	-->
 
 	<aware_of_modules>
 		<aware_of_module>org.openmrs.module.legacyui</aware_of_module>
