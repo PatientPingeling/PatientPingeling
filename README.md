@@ -1,63 +1,48 @@
-# OpenMRS Notification Service
+# PatientPingeling
 
-A standalone service that sends automated appointment reminders to patients by integrating with [OpenMRS](https://openmrs.org/) through an event-driven message queue.
-
----
-
-## Overview
-
-This service listens for appointment events published by OpenMRS via **RabbitMQ**, processes them, and dispatches notifications to patients through one or more configurable message providers. It is designed to run independently of OpenMRS — no embedded module, no direct database access — keeping a clean separation of concerns.
-
-**Tech stack**
-
-| Layer            | Technology              |
-| ---------------- | ----------------------- |
-| Backend          | C# / .NET 10            |
-| Database         | PostgreSQL 18           |
-| Message broker   | RabbitMQ 4.3            |
-| API docs         | OpenAPI (built-in .NET) |
-| Observability    | Grafana + OpenTelemetry |
-| Containerization | Docker / Docker Compose |
+An event-driven system that sends automated appointment reminders to patients via [OpenMRS](https://openmrs.org/). This is a monorepo containing both the standalone notification service and the OpenMRS plugin that feeds it.
 
 ---
 
-## Repository structure
+## How it works
 
 ```
-openmrs-notification-service/
-├── docker-compose.yml           # Full local stack (API + PostgreSQL + RabbitMQ)
-├── .env.example                 # Environment variable template
-├── frontend/                    # Frontend placeholder (not yet implemented)
-└── backend/
-    ├── Dockerfile               # Multi-stage production build
-    ├── NotificationService.slnx # .NET solution file
-    ├── src/
-    │   ├── NotificationService.Domain/         # Entities, value objects — no dependencies
-    │   ├── NotificationService.Application/    # Use cases, interfaces, DTOs
-    │   ├── NotificationService.Infrastructure/ # EF Core, RabbitMQ, message providers
-    │   └── NotificationService.Api/            # ASP.NET Core Web API, composition root
-    └── tests/
-        ├── NotificationService.Api.Tests/
-        ├── NotificationService.Core.Tests/
-        └── NotificationService.Integration.Tests/
+OpenMRS ──(event)──► [OpenMRS.PatientPingeling plugin] ──(enriched msg)──► RabbitMQ ──► [Notification Service] ──► Patient
 ```
+
+1. OpenMRS fires an appointment event
+2. The **OpenMRS plugin** (Java) catches it, enriches it with full patient and appointment data via the OpenMRS Service Layer, and publishes a rich message to RabbitMQ
+3. The **Notification Service** (.NET) consumes that message and dispatches the reminder through one or more configurable message providers
+
+The two components are deliberately decoupled — the notification service has no direct access to OpenMRS or its database.
+
+---
+
+## Tech stack
+
+| Component            | Technology              |
+| -------------------- | ----------------------- |
+| Notification Service | C# / .NET 10            |
+| Database             | PostgreSQL 18           |
+| Message broker       | RabbitMQ 4              |
+| OpenMRS plugin       | Java 8 / Maven          |
+| API docs             | OpenAPI (built-in .NET) |
+| Observability        | Grafana + OpenTelemetry |
+| Containerization     | Docker / Docker Compose |
 
 ---
 
 ## Getting started
 
-### Prerequisites
+### Notification Service (.NET)
 
-- [Docker](https://docs.docker.com/get-docker/) and Docker Compose
-- [.NET 10 SDK](https://dotnet.microsoft.com/download) (for local development without Docker)
-
-### Run with Docker Compose
+**Prerequisites:** [Docker](https://docs.docker.com/get-docker/) and Docker Compose, or [.NET 10 SDK](https://dotnet.microsoft.com/download)
 
 ```bash
 # 1. Copy and fill in environment variables
 cp .env.example .env
 
-# 2. Start the full stack
+# 2. Start the full stack (API + PostgreSQL + RabbitMQ)
 docker compose up --build
 ```
 
@@ -68,19 +53,24 @@ docker compose up --build
 | RabbitMQ management | http://localhost:15672        |
 | PostgreSQL          | localhost:5432                |
 
-### Run locally (without Docker)
-
 ```bash
-cd backend
-
-# Restore dependencies
+# Or run locally without Docker
 dotnet restore
-
-# Run the API
 dotnet run --project src/NotificationService.Api
 ```
 
-Make sure a PostgreSQL instance and RabbitMQ broker are reachable and the environment variables below are configured.
+### OpenMRS Plugin (Java)
+
+**Prerequisites:** Java 1.8, Maven 2.x+, a running OpenMRS instance
+
+```bash
+cd plugins/OpenMRS.PatientPingeling/patientpingeling.enricher
+
+# Build the .omod file
+mvn clean package
+```
+
+Install via **OpenMRS Administration → Manage Modules**, or drop the `.omod` into `~/.OpenMRS/modules/` and restart OpenMRS. Configure the RabbitMQ connection via OpenMRS Global Properties in the admin UI.
 
 ---
 
@@ -104,29 +94,30 @@ RABBITMQ_PASSWORD=guest
 RABBITMQ_PORT=5672
 ```
 
+RabbitMQ credentials for the OpenMRS plugin are configured through OpenMRS Global Properties — never hardcoded.
+
 ---
 
 ## Running tests
 
 ```bash
-cd backend
-
-# All tests
+# .NET tests
 dotnet test
 
-# Specific project
-dotnet test tests/NotificationService.Core.Tests
+# Java plugin tests
+cd plugins/OpenMRS.PatientPingeling/patientpingeling.enricher
+mvn test
 ```
 
 ---
 
 ## Architecture
 
-The service follows **Clean Architecture (Onion)**, with dependencies always pointing inward — outer layers know about inner layers, never the reverse.
+The notification service follows **Clean Architecture (Onion)** — dependencies always point inward.
 
 ```
 ┌─────────────────────────────────────────┐
-│              Api (Presentation)         │
+│              Presentation               │
 │  ┌───────────────────────────────────┐  │
 │  │           Infrastructure          │  │
 │  │  ┌─────────────────────────────┐  │  │
@@ -139,16 +130,11 @@ The service follows **Clean Architecture (Onion)**, with dependencies always poi
 └─────────────────────────────────────────┘
 ```
 
-| Layer | Project | Responsibility |
-| --- | --- | --- |
-| Domain | `NotificationService.Domain` | Entities and value objects. Zero external dependencies. |
-| Application | `NotificationService.Application` | Use cases, service interfaces (`IMessageProvider`), and DTOs. Depends only on Domain. |
-| Infrastructure | `NotificationService.Infrastructure` | EF Core (PostgreSQL), RabbitMQ consumer, and pluggable `IMessageProvider` implementations. Depends on Application. |
-| Presentation | `NotificationService.Api` | Minimal ASP.NET Core endpoints and composition root. Wires Application + Infrastructure via DI. |
+**Dependency flow:** `Api`/`Listener`/`Worker` → `Application` → `Domain` ← `Infrastructure`
 
-**Dependency flow:** `Api` → `Application` → `Domain` ← `Infrastructure`
+The OpenMRS plugin follows a two-layer structure: `api/` holds all business logic and RabbitMQ publishing; `omod/` handles module bootstrapping and the admin UI. RabbitMQ logic never leaks into `omod/`.
 
-For full architectural context, including Architecture Decision Records and C4 diagrams, see the [Docs repository](https://github.com/PatientPingeling/Docs).
+For full architectural context, ADRs, and C4 diagrams, see the [Docs repository](https://github.com/PatientPingeling/Docs).
 
 ---
 

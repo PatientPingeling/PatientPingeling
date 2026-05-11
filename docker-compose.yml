@@ -3,76 +3,75 @@
 # |----------------|-----------|
 # | .NET API       | 8000      |
 # | FakeComWorld   | 1337      |
-# | OpenMRS        | 8080      |
+# | OpenMRS        | 80        |
 # | RabbitMQ       | 5672      |
 # | RabbitMQ UI    | 15672     |
 # | Postgres       | 5432      |
-# | OpenMRS DB     | 3306      |
 
 services:
-  # ==========================================
-  # .NET NOTIFICATION SERVICE STACK
-  # ==========================================
-  api:
-    build:
-      context: ./src
-      dockerfile: ./src/NotificationService.Api/Dockerfile
-    environment:
-      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
-      - ASPNETCORE_URLS=http://+:8000
-      - RabbitMQ__Host=${RABBITMQ_HOST}
-      - RabbitMQ__Username=${RABBITMQ_USERNAME}
-      - RabbitMQ__Password=${RABBITMQ_PASSWORD}
-    depends_on:
-      postgres:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-    ports:
-      - "8000:8000"
-    restart: unless-stopped
+# ==========================================
+# .NET NOTIFICATION SERVICE STACK
+# ==========================================
+  # api:
+  #   build:
+  #     context: ./src
+  #     dockerfile: ./src/NotificationService.Api/Dockerfile
+  #   environment:
+  #     - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
+  #     - ASPNETCORE_URLS=http://+:8000
+  #     - RabbitMQ__Host=${RABBITMQ_HOST}
+  #     - RabbitMQ__Username=${RABBITMQ_USERNAME}
+  #     - RabbitMQ__Password=${RABBITMQ_PASSWORD}
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     rabbitmq:
+  #       condition: service_healthy
+  #   ports:
+  #     - "8000:8000"
+  #   restart: unless-stopped
 
-  listener:
-    build:
-      context: ./src
-      dockerfile: ./src/NotificationService.Listener/Dockerfile
-    environment:
-      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
-      - ConnectionStrings__Postgres=Host=${POSTGRES_HOST};Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
-      - RabbitMQ__Host=${RABBITMQ_HOST}
-      - RabbitMQ__Username=${RABBITMQ_USERNAME}
-      - RabbitMQ__Password=${RABBITMQ_PASSWORD}
-    depends_on:
-      postgres:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-    restart: unless-stopped
+  # listener:
+  #   build:
+  #     context: ./src
+  #     dockerfile: ./src/NotificationService.Listener/Dockerfile
+  #   environment:
+  #     - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
+  #     - ConnectionStrings__Postgres=Host=${POSTGRES_HOST};Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+  #     - RabbitMQ__Host=${RABBITMQ_HOST}
+  #     - RabbitMQ__Username=${RABBITMQ_USERNAME}
+  #     - RabbitMQ__Password=${RABBITMQ_PASSWORD}
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     rabbitmq:
+  #       condition: service_healthy
+  #   restart: unless-stopped
 
-  worker:
-    build:
-      context: ./src
-      dockerfile: ./src/NotificationService.Worker/Dockerfile
-    environment:
-      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
-      - ConnectionStrings__Postgres=Host=${POSTGRES_HOST};Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
-    depends_on:
-      postgres:
-        condition: service_healthy
-    restart: unless-stopped
+  # worker:
+  #   build:
+  #     context: ./src
+  #     dockerfile: ./src/NotificationService.Worker/Dockerfile
+  #   environment:
+  #     - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
+  #     - ConnectionStrings__Postgres=Host=${POSTGRES_HOST};Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #   restart: unless-stopped
 
-  # ==========================================
-  # External Services
-  # ==========================================
+# ==========================================
+# External Services
+# ==========================================
   messageproviders:
     image: ghcr.io/avansict/in2.4-fakecomworld:main
     ports:
       - "1337:8080"
     restart: unless-stopped
 
-  # ==========================================
-  # INFRASTRUCTURE
-  # ==========================================
+# ==========================================
+# INFRASTRUCTURE
+# ==========================================
   postgres:
     image: postgres:18-alpine
     environment:
@@ -104,45 +103,73 @@ services:
       retries: 5
     restart: unless-stopped
 
-  # ==========================================
-  # OPENMRS STACK (The Source of Truth)
-  # ==========================================
-  openmrs:
-    image: openmrs/openmrs-reference-application-3-backend:latest
+# ==========================================
+# OPENMRS STACK (The Source of Truth)
+# ==========================================
+  openmrs-gateway:
+    image: openmrs/openmrs-reference-application-3-gateway:${OPENMRS_TAG:-qa}
     ports:
-      - "8080:8080"
+      - "80:80"
+    depends_on:
+      - openmrs-frontend
+      - openmrs-backend
+    restart: unless-stopped
+
+  openmrs-frontend:
+    image: openmrs/openmrs-reference-application-3-frontend:${OPENMRS_TAG:-qa}
+    environment:
+      SPA_PATH: /openmrs/spa
+      API_URL: /openmrs
+      SPA_CONFIG_URLS: /openmrs/spa/config-core_demo.json
+      SPA_DEFAULT_LOCALE:
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      timeout: 5s
+    depends_on:
+      - openmrs-backend
+    restart: unless-stopped
+
+  openmrs-backend:
+    image: openmrs/openmrs-reference-application-3-backend:${OPENMRS_TAG:-qa}
     depends_on:
       openmrs-db:
         condition: service_healthy
-    volumes:
-      # Mounts your custom plugin into OpenMRS
-      - ../openmrs-notification-plugin/omod/target/event-enricher-1.0.0.omod:/openmrs/distribution/openmrs_modules/event-enricher.omod
     environment:
-      - DB_DATABASE=${OMRS_DB_NAME}
-      - DB_HOST=openmrs-db
-      - DB_USERNAME=${OMRS_DB_USER}
-      - DB_PASSWORD=${OMRS_DB_PASS}
+      OMRS_CONFIG_MODULE_WEB_ADMIN: "true"
+      OMRS_CONFIG_AUTO_UPDATE_DATABASE: "true"
+      OMRS_CONFIG_CREATE_TABLES: "true"
+      OMRS_CONFIG_CONNECTION_SERVER: openmrs-db
+      OMRS_CONFIG_CONNECTION_DATABASE: openmrs
+      OMRS_CONFIG_CONNECTION_USERNAME: ${OMRS_DB_USER:-openmrs}
+      OMRS_CONFIG_CONNECTION_PASSWORD: ${OMRS_DB_PASSWORD:-openmrs}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/openmrs"]
+      timeout: 5s
+    volumes:
+      - openmrs-data:/openmrs/data
+      # Mount the built plugin into OpenMRS modules folder
+      - ./plugins/OpenMRS.PatientPingeling/omod/target/patientpingeling.enricher-1.0.0-SNAPSHOT.omod:/openmrs/data/modules/patientpingeling.enricher.omod
     restart: unless-stopped
 
   openmrs-db:
-    image: mariadb:10.6
+    image: mariadb:10.11.7
+    command: "mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci"
     environment:
-      MYSQL_DATABASE: ${OMRS_DB_NAME}
-      MYSQL_USER: ${OMRS_DB_USER}
-      MYSQL_PASSWORD: ${OMRS_DB_PASS}
-      MYSQL_ROOT_PASSWORD: ${OMRS_ROOT_PASS}
-    ports:
-      - "3306:3306"
+      MYSQL_DATABASE: openmrs
+      MYSQL_USER: ${OMRS_DB_USER:-openmrs}
+      MYSQL_PASSWORD: ${OMRS_DB_PASSWORD:-openmrs}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-openmrs}
     healthcheck:
-      test: ["CMD", "healthcheck.sh", "--su-mysql", "--connect", "--innodb_initialized"]
-      interval: 10s
-      timeout: 5s
+      test: "mysql --user=${OMRS_DB_USER:-openmrs} --password=${OMRS_DB_PASSWORD:-openmrs} --execute \"SHOW DATABASES;\""
+      interval: 3s
+      timeout: 1s
       retries: 5
     volumes:
-      - openmrs_data:/var/lib/mysql
+      - db-data:/var/lib/mysql
     restart: unless-stopped
 
 volumes:
   postgres_data:
   rabbitmq_data:
-  openmrs_data:
+  openmrs-data:
+  db-data:

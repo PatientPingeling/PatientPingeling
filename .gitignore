@@ -44,6 +44,9 @@ wwwroot/lib/
 !.env*.example
 secrets.json
 
+# Maven
+**/target/
+
 # Docker
 docker/postgres_data/
 docker/grafana_data/
