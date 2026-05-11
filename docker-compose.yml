@@ -86,7 +86,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
     restart: unless-stopped
 
   rabbitmq:
@@ -127,10 +127,18 @@ services:
       timeout: 5s
     depends_on:
       - openmrs-backend
+    networks:
+      default:
+        aliases:
+          - frontend
     restart: unless-stopped
 
   openmrs-backend:
     image: openmrs/openmrs-reference-application-3-backend:${OPENMRS_TAG:-qa}
+    networks:
+      default:
+        aliases:
+          - backend
     depends_on:
       openmrs-db:
         condition: service_healthy
