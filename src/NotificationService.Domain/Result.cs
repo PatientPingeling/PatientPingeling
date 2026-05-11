@@ -15,7 +15,7 @@ namespace NotificationService.Domain
         {
             if (isSuccess && error != Error.None)
                 throw new InvalidOperationException("Success result cannot have an error.");
-            if (!isSuccess && error == Error.None)
+            if (isSuccess is false && error == Error.None)
                 throw new InvalidOperationException("Failure result must have an error.");
 
             IsSuccess = isSuccess;

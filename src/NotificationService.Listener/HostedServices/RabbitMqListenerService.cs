@@ -22,11 +22,11 @@ namespace NotificationService.Listener.HostedServices
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-      while (!stoppingToken.IsCancellationRequested)
+      while (stoppingToken.IsCancellationRequested is false)
       {
         try
         {
-          if (!_connection.IsOpen)
+          if (_connection.IsOpen is false)
           {
             _logger.LogWarning("RabbitMQ connection is down. Retrying in 5s...");
             await Task.Delay(5000, stoppingToken);
@@ -85,7 +85,7 @@ namespace NotificationService.Listener.HostedServices
         }
       }
 
-      if (!_pendingMessages.IsEmpty)
+      if (_pendingMessages.IsEmpty is false)
       {
         _logger.LogInformation("Waiting for {Count} messages to drain...", _pendingMessages.Count);
         await Task.WhenAny(Task.WhenAll(_pendingMessages.Values), Task.Delay(10000));
@@ -122,7 +122,7 @@ namespace NotificationService.Listener.HostedServices
       catch (Exception ex)
       {
         _logger.LogError(ex, "System Exception for {Tag}. Requeueing.", ea.DeliveryTag);
-        if (!ct.IsCancellationRequested)
+        if (ct.IsCancellationRequested is false)
         {
           await channel.BasicNackAsync(ea.DeliveryTag, false, requeue: true, ct);
         }
