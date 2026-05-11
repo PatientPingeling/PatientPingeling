@@ -6,7 +6,9 @@ This repository contains all architectural and design documentation for the **Op
 
 ## What is this project?
 
-The OpenMRS Notification Service is a standalone module that integrates with [OpenMRS](https://openmrs.org/) to send automated appointment reminders to patients. It is designed as a separate, independently deployable service — connected to OpenMRS via an event-driven message queue — rather than an embedded module.
+The OpenMRS Notification Service is a standalone service that integrates with [OpenMRS](https://openmrs.org/) to send automated appointment reminders to patients. It is designed as a separate, independently deployable service that receives appointment events via RabbitMQ.
+
+On the OpenMRS side, we can optionally add a small OpenMRS module (plugin) to enrich and publish events to RabbitMQ (e.g. `patientpingeling-enricher_module`).
 
 ---
 
@@ -21,7 +23,11 @@ Docs/
 │   │   ├── ADR2.md              # Technology stack: .NET, PostgreSQL, RabbitMQ
 │   │   └── ADR3.md              # Integration method: event-driven via RabbitMQ
 │   └── Sprint 2/
-│       └── ADR4.md              # Queue infrastructure: RabbitMQ chosen over alternatives
+│       ├── ADR4.md              # Queue infrastructure: RabbitMQ chosen over alternatives
+│       └── ADR5.md              # Database: PostgreSQL for the notification service
+│   └── Sprint 3/
+│       ├── ADR6.md              # Monitoring: Grafana dashboards
+│       └── ADR7.md              # OpenMRS enricher module publishes to RabbitMQ
 ├── C4/                          # C4 model diagrams (DrawIO format)
 │   ├── C4_Context.drawio        # System context diagram
 │   └── C4_Container.drawio      # Container/component diagram
@@ -41,6 +47,9 @@ ADRs document every significant architectural choice made during the project, in
 | [ADR2](ADRs/Sprint%201/ADR2.md) | Technology stack (.NET 10, PostgreSQL, RabbitMQ) | Sprint 1 |
 | [ADR3](ADRs/Sprint%201/ADR3.md) | Event-driven integration via RabbitMQ            | Sprint 1 |
 | [ADR4](ADRs/Sprint%202/ADR4.md) | RabbitMQ as queue infrastructure                 | Sprint 2 |
+| [ADR5](ADRs/Sprint%202/ADR5.md) | PostgreSQL database for the notification service | Sprint 2 |
+| [ADR6](ADRs/Sprint%203/ADR6.md) | Monitoring and dashboarding via Grafana          | Sprint 3 |
+| [ADR7](ADRs/Sprint%203/ADR7.md) | OpenMRS enricher module publishes to RabbitMQ    | Sprint 3 |
 
 To add a new ADR, copy [the template](ADRs/template.md) and place it in the relevant sprint folder.
 
