@@ -1,8 +1,8 @@
-# .NET Notification Service
+# PatientPingeling
 
 ## Who we are
 
-We are a team of four software development students building this project to **learn**, not just to ship. We want to understand every decision in this codebase. The team works with C#/.NET, RabbitMQ, EF Core, PostgreSQL, and Docker. AI is a learning tool here — not a code generator.
+We are a team of four software development students building this project to **learn**, not just to ship. We want to understand every decision in this codebase. The team works across C#/.NET, Java, RabbitMQ, PostgreSQL, and Docker. AI is a learning tool here — not a code generator.
 
 ---
 
@@ -52,48 +52,11 @@ Always explain:
 
 ---
 
-## Architecture Rules — Do Not Violate These
-
-This project follows Clean Architecture. Enforce these dependency rules strictly:
-
-```
-Domain         ← no dependencies
-Application    ← depends on Domain only
-Infrastructure ← depends on Application
-Providers      ← depends on Application
-Listener       ← depends on Infrastructure
-Worker         ← depends on Infrastructure
-Api            ← depends on Application + Infrastructure
-```
-
-- **Never** add a reference that goes against this flow
-- **Never** put business logic in Infrastructure
-- **Never** put RabbitMQ/EF Core code in Application or Domain
-- **Always** explain why a class belongs in a specific project before creating it
-
----
-
-## Project Structure
-
-```
-src/
-  NotificationService.Domain/         # Entities, enums — no dependencies
-  NotificationService.Application/    # Interfaces, DTOs, orchestration
-  NotificationService.Infrastructure/ # EF Core, RabbitMQ, config, encryption
-  NotificationService.Providers/      # 4 messaging provider implementations
-  NotificationService.Listener/       # RabbitMQ consumer (BackgroundService)
-  NotificationService.Scheduler/      # Timing logic (TBD)
-  NotificationService.Worker/         # Sends notifications via providers
-  NotificationService.Api/            # REST API, test trigger endpoint
-```
-
----
-
 ## Things we care about
 
 - **Idempotency** — messages must never be dropped or double-sent
-- **Security** — credentials encrypted at rest (AES-256), never in plain config
-- **Observability** — OpenTelemetry, structured logging, no sensitive data in logs
+- **Security** — credentials never in plain config, sensitive data never in logs
+- **Observability** — structured logging, no sensitive data leaking out
 - **Defensibility** — every architectural decision must be explainable to our teacher
 - **ADRs** — major decisions go in the ADR log with: problem, options considered, chosen solution, reasoning
 
