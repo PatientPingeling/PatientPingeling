@@ -3,7 +3,6 @@
     <Project Path="src/NotificationService.Domain/NotificationService.Domain.csproj" />
     <Project Path="src/NotificationService.Application/NotificationService.Application.csproj" />
     <Project Path="src/NotificationService.Infrastructure/NotificationService.Infrastructure.csproj" />
-    <Project Path="src/NotificationService.Providers/NotificationService.Providers.csproj" />
     <Project Path="src/NotificationService.Listener/NotificationService.Listener.csproj" />
     <Project Path="src/NotificationService.Worker/NotificationService.Worker.csproj" />
     <Project Path="src/NotificationService.Api/NotificationService.Api.csproj" />
