@@ -12,53 +12,59 @@ services:
 # ==========================================
 # .NET NOTIFICATION SERVICE STACK
 # ==========================================
-  # api:
-  #   build:
-  #     context: ./src
-  #     dockerfile: ./src/NotificationService.Api/Dockerfile
-  #   environment:
-  #     - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
-  #     - ASPNETCORE_URLS=http://+:8000
-  #     - RabbitMQ__Host=${RABBITMQ_HOST}
-  #     - RabbitMQ__Username=${RABBITMQ_USERNAME}
-  #     - RabbitMQ__Password=${RABBITMQ_PASSWORD}
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #     rabbitmq:
-  #       condition: service_healthy
-  #   ports:
-  #     - "8000:8000"
-  #   restart: unless-stopped
+  api:
+    build:
+      context: ./src
+      dockerfile: ./src/NotificationService.Api/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
+      - ASPNETCORE_URLS=http://+:8000
+      - ConnectionStrings__Postgres=Host=${POSTGRES_HOST};Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      - RabbitMQ__Host=${RABBITMQ_HOST}
+      - RabbitMQ__Username=${RABBITMQ_USERNAME}
+      - RabbitMQ__Password=${RABBITMQ_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
 
-  # listener:
-  #   build:
-  #     context: ./src
-  #     dockerfile: ./src/NotificationService.Listener/Dockerfile
-  #   environment:
-  #     - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
-  #     - ConnectionStrings__Postgres=Host=${POSTGRES_HOST};Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
-  #     - RabbitMQ__Host=${RABBITMQ_HOST}
-  #     - RabbitMQ__Username=${RABBITMQ_USERNAME}
-  #     - RabbitMQ__Password=${RABBITMQ_PASSWORD}
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #     rabbitmq:
-  #       condition: service_healthy
-  #   restart: unless-stopped
+  scheduler:
+    build:
+      context: ./src
+      dockerfile: ./src/NotificationService.Scheduler/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
+      - ConnectionStrings__Postgres=Host=${POSTGRES_HOST};Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      - RabbitMQ__Host=${RABBITMQ_HOST}
+      - RabbitMQ__Username=${RABBITMQ_USERNAME}
+      - RabbitMQ__Password=${RABBITMQ_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
 
-  # worker:
-  #   build:
-  #     context: ./src
-  #     dockerfile: ./src/NotificationService.Worker/Dockerfile
-  #   environment:
-  #     - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
-  #     - ConnectionStrings__Postgres=Host=${POSTGRES_HOST};Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #   restart: unless-stopped
+  worker:
+    build:
+      context: ./src
+      dockerfile: ./src/NotificationService.Worker/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
+      - ConnectionStrings__Postgres=Host=${POSTGRES_HOST};Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      - RabbitMQ__Host=${RABBITMQ_HOST}
+      - RabbitMQ__Username=${RABBITMQ_USERNAME}
+      - RabbitMQ__Password=${RABBITMQ_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
 
 # ==========================================
 # External Services
@@ -91,6 +97,9 @@ services:
 
   rabbitmq:
     image: rabbitmq:4-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
     ports:
       - "5672:5672"
       - "15672:15672"
