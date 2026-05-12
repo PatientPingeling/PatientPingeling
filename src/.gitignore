@@ -1,38 +1,36 @@
 # ==========================================
-# OS
+# .NET Build Output
 # ==========================================
-.DS_Store
-Thumbs.db
-desktop.ini
-ehthumbs.db
+bin/
+obj/
+out/
 
 # ==========================================
-# IDE
+# NuGet
 # ==========================================
-.vs/
-.idea/
-*.suo
-*.user
-*.userprefs
-*.DotSettings.user
-.vscode/settings.json
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+!**/packages/build/
+project.lock.json
+project.fragment.lock.json
+artifacts/
 
 # ==========================================
-# Secrets & Environment
+# ASP.NET
 # ==========================================
-.env
-.env.local
-.env.*.local
-!.env.example
+wwwroot/lib/
 
 # ==========================================
-# Logs
+# Test Results
 # ==========================================
-*.log
-logs/
+TestResults/
+coverage/
+*.trx
+*.coveragexml
 
 # ==========================================
-# Temporary Files
+# Publish
 # ==========================================
-tmp/
-temp/
+publish/

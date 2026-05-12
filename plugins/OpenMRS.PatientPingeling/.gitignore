@@ -1,38 +1,34 @@
 # ==========================================
-# OS
+# Maven Build Output
 # ==========================================
-.DS_Store
-Thumbs.db
-desktop.ini
-ehthumbs.db
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.omod
 
 # ==========================================
-# IDE
+# Maven Wrapper
 # ==========================================
-.vs/
+.mvn/wrapper/maven-wrapper.jar
+
+# ==========================================
+# IntelliJ IDEA
+# ==========================================
 .idea/
-*.suo
-*.user
-*.userprefs
-*.DotSettings.user
-.vscode/settings.json
+*.iml
+*.iws
+*.ipr
 
 # ==========================================
-# Secrets & Environment
+# Eclipse
 # ==========================================
-.env
-.env.local
-.env.*.local
-!.env.example
+.classpath
+.project
+.settings/
 
 # ==========================================
-# Logs
+# Test Output
 # ==========================================
-*.log
-logs/
-
-# ==========================================
-# Temporary Files
-# ==========================================
-tmp/
-temp/
+surefire-reports/
