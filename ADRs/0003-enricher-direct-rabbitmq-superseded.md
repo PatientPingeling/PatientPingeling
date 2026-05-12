@@ -1,11 +1,14 @@
----
-status: Superseded
-superseded-by: ADR-0006
-date: 11-05-2026
-deciders: PatientPingeling
----
-
 # AD: OpenMRS data-enrichment module publiceert naar RabbitMQ
+
+| Eigenschap       | Waarde                                                           |
+|------------------|------------------------------------------------------------------|
+| **Status**       | ⚠️ Superseded door [ADR-0006](0006-enricher-http-webhook.md)   |
+| **Datum**        | 11-05-2026                                                       |
+| **Beslissers**   | PatientPingeling                                                 |
+| **Geraadpleegd** | -                                                                |
+
+> [!WARNING]
+> Deze beslissing is herzien. De directe RabbitMQ-verbinding van OpenMRS naar de interne broker is afgewezen omdat het interne infrastructuur blootstelt aan een extern systeem. Zie [ADR-0006](0006-enricher-http-webhook.md) voor de vervangende beslissing (HTTP webhook via Enricher Module).
 
 ## Context en Probleembeschrijving
 
@@ -46,9 +49,6 @@ Optie 3 is minder geschikt omdat dit extra afhankelijkheid en latency introducee
 - Slecht, omdat foutdiagnose deels in OpenMRS-land terechtkomt (logging/monitoring voor de module).
 
 ## Meer Informatie
-
-> [!WARNING]
-> Deze beslissing is herzien. De directe RabbitMQ-verbinding van OpenMRS naar de interne broker is afgewezen omdat het interne infrastructuur blootstelt aan een extern systeem. Zie [ADR-0006](0006-enricher-http-webhook.md) voor de vervangende beslissing (HTTP webhook via Enricher Module).
 
 - Gerelateerde ADRs:
   - [ADR-0004: RabbitMQ als queue infrastructure](0004-message-broker-rabbitmq.md)

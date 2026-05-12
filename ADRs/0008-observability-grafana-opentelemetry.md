@@ -1,10 +1,11 @@
----
-status: Accepted
-date: 12-05-2026
-deciders: PatientPingeling
----
-
 # AD: Observability-stack: Grafana + OpenTelemetry
+
+| Eigenschap       | Waarde             |
+|------------------|--------------------|
+| **Status**       | ✅ Accepted        |
+| **Datum**        | 12-05-2026         |
+| **Beslissers**   | PatientPingeling   |
+| **Geraadpleegd** | -                  |
 
 ## Context en Probleembeschrijving
 

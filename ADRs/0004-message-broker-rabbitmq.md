@@ -1,10 +1,11 @@
----
-status: Accepted
-date: 06-05-2026
-deciders: PatientPingeling
----
-
 # AD: Queues
+
+| Eigenschap       | Waarde             |
+|------------------|--------------------|
+| **Status**       | ✅ Accepted        |
+| **Datum**        | 06-05-2026         |
+| **Beslissers**   | PatientPingeling   |
+| **Geraadpleegd** | -                  |
 
 ## Context en Probleembeschrijving
 

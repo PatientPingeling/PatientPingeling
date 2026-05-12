@@ -1,10 +1,11 @@
----
-status: Accepted
-date: 24-04-2026
-deciders: PatientPingeling
----
-
 # AD: Database voor de communicatiemodule
+
+| Eigenschap       | Waarde             |
+|------------------|--------------------|
+| **Status**       | ✅ Accepted        |
+| **Datum**        | 24-04-2026         |
+| **Beslissers**   | PatientPingeling   |
+| **Geraadpleegd** | -                  |
 
 ## Context en Probleembeschrijving
 

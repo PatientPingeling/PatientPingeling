@@ -1,10 +1,11 @@
----
-status: Accepted
-date: 11-05-2026
-deciders: PatientPingeling
----
-
 # AD: OpenMRS Enricher Module verstuurt HTTP webhook naar Notification API
+
+| Eigenschap       | Waarde             |
+|------------------|--------------------|
+| **Status**       | ✅ Accepted        |
+| **Datum**        | 11-05-2026         |
+| **Beslissers**   | PatientPingeling   |
+| **Geraadpleegd** | -                  |
 
 ## Context en Probleembeschrijving
 

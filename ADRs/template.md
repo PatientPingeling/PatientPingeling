@@ -2,44 +2,76 @@
 status: [Proposed | Accepted | Deprecated | Superseded | Rejected | Withdrawn]
 date: DD-MM-YYYY
 deciders: [Name(s) / Team(s)]
+consulted: [Name(s) / Team(s) — two-way input]
 ---
 
 # AD: [Korte titel]
 
+| Eigenschap       | Waarde                                                        |
+|------------------|---------------------------------------------------------------|
+| **Status**       | [✅ Accepted \| 🔵 Proposed \| ⚠️ Superseded \| ❌ Rejected] |
+| **Datum**        | DD-MM-YYYY                                                    |
+| **Beslissers**   | [Name(s)]                                                     |
+| **Geraadpleegd** | [Name(s)]                                                     |
+
 ## Context en Probleembeschrijving
 
-[Describe the situation, background, and problem that needs an architectural decision.]
+[Beschrijf de situatie, achtergrond en het probleem dat een architectuurbeslissing vereist.]
 
-[Optional guiding question: What needs to be decided?]
+[Optionele sturing: Wat moet er besloten worden?]
 
 ## Beslissingsfactoren
 
-- [Driver 1: e.g. reduce complexity]
-- [Driver 2: e.g. improve maintainability]
-- [Driver 3: e.g. support scalability]
-- [Driver 4: e.g. fit team knowledge / project constraints]
+- [Driver 1: bijv. verminder complexiteit]
+- [Driver 2: bijv. verbeter onderhoudbaarheid]
+- [Driver 3: bijv. ondersteun schaalbaarheid]
+- [Driver 4: bijv. teamkennis / projectbeperkingen]
 
 ## Overwogen Opties
 
-1. [Option 1]
-2. [Option 2]
-3. [Option 3]
+1. [Optie 1]
+2. [Optie 2]
+3. [Optie 3]
 
 ## Resultaten
 
-We decided to use **[chosen option]**.
+We hebben gekozen voor **[gekozen optie]**.
 
-This option was chosen because [main reason]. Other options such as [rejected options] were not selected because [reason they do not fit the context].
+[Hoofdreden voor de keuze. Leg uit waarom de andere opties zijn afgewezen.]
 
 ### Gevolgen
 
-- Good, because [positive consequence].
-- Good, because [positive consequence].
-- Bad, because [negative consequence / trade-off].
-- Bad, because [negative consequence / risk].
+- Goed, omdat [positief gevolg].
+- Goed, omdat [positief gevolg].
+- Neutraal, omdat [neutraal gevolg / trade-off zonder duidelijke voor- of nadelen].
+- Slecht, omdat [negatief gevolg / risico].
+
+### Confirmatie
+
+[Beschrijf hoe de implementatie van deze beslissing geverifieerd kan worden. Denk aan een code review, architectuurtest (bijv. ArchUnit), of een fitness function. Is de gekozen aanpak aantoonbaar terug te zien in de codebase?]
+
+## Afweging per Optie
+
+### [Optie 1]
+
+- Goed, omdat [argument].
+- Goed, omdat [argument].
+- Neutraal, omdat [argument].
+- Slecht, omdat [argument].
+
+### [Optie 2]
+
+- Goed, omdat [argument].
+- Neutraal, omdat [argument].
+- Slecht, omdat [argument].
+
+### [Optie 3]
+
+- Goed, omdat [argument].
+- Slecht, omdat [argument].
 
 ## Meer Informatie
 
-- [Relevant documentation, article, diagram, standard, or source]
-- [Related architectural decision]
-- [Follow-up decision that still needs to be made]
+- [Relevante documentatie, artikel, diagram, standaard of bron]
+- [Gerelateerde architectuurbeslissing]
+- [Vervolgbeslissing die nog genomen moet worden]
