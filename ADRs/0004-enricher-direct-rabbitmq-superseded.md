@@ -51,7 +51,7 @@ Optie 3 is minder geschikt omdat dit extra afhankelijkheid en latency introducee
 ## Meer Informatie
 
 - Gerelateerde ADRs:
-  - [ADR-0004: RabbitMQ als queue infrastructure](0004-message-broker-rabbitmq.md)
+  - [ADR-0003: RabbitMQ als queue infrastructure](0003-message-broker-rabbitmq.md)
   - [ADR-0006: Vervangende beslissing — Enricher Module via HTTP webhook](0006-enricher-http-webhook.md)
 - Gerelateerde diagrammen:
   - [C4 Context](../C4/C4_Context.drawio)

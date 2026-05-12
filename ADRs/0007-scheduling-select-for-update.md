@@ -50,13 +50,13 @@ De raw polling aanpak werkt als volgt:
 - Goed, omdat het mechanisme volledig transparant en begrijpelijk is voor het team.
 - Goed, omdat er geen extra dependencies worden geïntroduceerd.
 - Slecht, omdat polling altijd een kleine vertraging introduceert gelijk aan het polling-interval.
-- Slecht, omdat er geen ingebouwd dashboard is voor job-monitoring (wordt opgevangen door Grafana + OpenTelemetry, zie ADR-0008).
+- Slecht, omdat er geen ingebouwd dashboard is voor job-monitoring (wordt opgevangen door Grafana + OpenTelemetry, zie [ADR-0008](0008-observability-grafana-opentelemetry.md)).
 - Toekomstige overweging: Hangfire of Quartz.NET als het aantal verschillende job-types toeneemt of als een dedicated scheduler-dashboard gewenst is.
 
 ## Meer Informatie
 
 - PostgreSQL SELECT FOR UPDATE SKIP LOCKED: https://www.postgresql.org/docs/current/sql-select.html#SQL-FOR-UPDATE-SHARE
 - Gerelateerde ADRs:
-  - [ADR-0004: RabbitMQ als interne queue-infrastructuur](0004-message-broker-rabbitmq.md)
+  - [ADR-0003: RabbitMQ als interne queue-infrastructuur](0003-message-broker-rabbitmq.md)
   - [ADR-0005: PostgreSQL als database](0005-database-postgresql.md)
   - [ADR-0008: Observability-stack Grafana + OpenTelemetry](0008-observability-grafana-opentelemetry.md)

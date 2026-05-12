@@ -31,7 +31,7 @@ Daarnaast speelt de systeemgrens een belangrijke rol: hoe verloopt de overdracht
 
 We kiezen voor **Optie 2: patientpingeling-enricher_module die verrijkt en via HTTP webhook verstuurt naar de Notification API**.
 
-Optie 3 (directe RabbitMQ-verbinding) is expliciet afgewezen omdat het de interne message broker blootstelt aan een extern systeem. Een message broker is interne infrastructuur — vergelijkbaar met een database — en mag niet bereikbaar zijn voor externe partijen. Er is geen validatie op berichtinhoud of verzender mogelijk op AMQP-niveau, wat het risico op misbruik of corruptie van de interne queue vergroot. Dit is de reden waarom ADR-0003 is vervangen door deze beslissing.
+Optie 3 (directe RabbitMQ-verbinding) is expliciet afgewezen omdat het de interne message broker blootstelt aan een extern systeem. Een message broker is interne infrastructuur — vergelijkbaar met een database — en mag niet bereikbaar zijn voor externe partijen. Er is geen validatie op berichtinhoud of verzender mogelijk op AMQP-niveau, wat het risico op misbruik of corruptie van de interne queue vergroot. Dit is de reden waarom ADR-0004 is vervangen door deze beslissing.
 
 Optie 2 is gekozen omdat:
 - Verrijking dicht bij de bron plaatsvindt, waardoor de payload richting de Notification API consistent en volledig is.
@@ -53,8 +53,8 @@ Optie 1 is minder geschikt omdat de notificatieservice dan OpenMRS-specifieke ve
 ## Meer Informatie
 
 - Gerelateerde ADRs:
-  - [ADR-0004: RabbitMQ als interne queue infrastructure](0004-message-broker-rabbitmq.md)
-  - [ADR-0003: Vorige beslissing (superseded)](0003-enricher-direct-rabbitmq-superseded.md)
+  - [ADR-0003: RabbitMQ als interne queue infrastructure](0003-message-broker-rabbitmq.md)
+  - [ADR-0004: Vorige beslissing (superseded)](0004-enricher-direct-rabbitmq-superseded.md)
 - Gerelateerde diagrammen:
   - [C4 Context](../C4/C4_Context.drawio)
   - [C4 Container](../C4/C4_Container.drawio)

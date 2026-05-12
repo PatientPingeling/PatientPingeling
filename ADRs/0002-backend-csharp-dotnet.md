@@ -17,7 +17,7 @@ Welke programmeertaal en welk framework worden gebruikt voor de communicatiemodu
 
 - Aansluiten bij teamkennis
 - Ondersteuning voor Web API's en background workers
-- Ecosysteem voor integraties (RabbitMQ, PostgreSQL, observability tooling)
+- Ecosysteem voor integraties (message broker, relationele database, observability tooling)
 - Onderhoudbaarheid en moderne taalfeatures
 
 ## Overwogen Opties
@@ -30,13 +30,13 @@ Welke programmeertaal en welk framework worden gebruikt voor de communicatiemodu
 
 We hebben gekozen voor **C# / .NET**.
 
-C# sluit sterk aan bij de kennis van het team en heeft veel overeenkomsten met Java. .NET biedt goede ondersteuning voor Web API's, background workers, dependency injection, async/await en integraties met RabbitMQ, PostgreSQL en observability tooling.
+C# sluit sterk aan bij de kennis van het team en heeft veel overeenkomsten met Java. .NET biedt goede ondersteuning voor Web API's, background workers, dependency injection, async/await en integraties met message brokers, relationele databases en observability tooling.
 
 **Node.js / JavaScript** is niet gekozen omdat het team voor deze module sterker is in C# en omdat de worker/scheduler-structuur van .NET beter past bij langdurige background processing.
 
 **Java / Spring Boot** is niet gekozen omdat OpenMRS al Java gebruikt, maar de communicatiemodule bewust losstaat van OpenMRS en het team meer snelheid verwacht met C# / .NET.
 
-De module draait als een combinatie van een **.NET Web API** en een **.NET background service**. De Web API ondersteunt voorbeeldrequests en beheer-/dashboardscenario's. De background service verwerkt berichten uit RabbitMQ en voert periodiek geplande taken uit, zoals het controleren van afspraken waarvoor 24 uur of 1 uur van tevoren een notificatie nodig is.
+De module draait als een combinatie van een **.NET Web API** en een **.NET background service**. De Web API ondersteunt voorbeeldrequests en beheer-/dashboardscenario's. De background service verwerkt berichten uit een message broker en voert periodiek geplande taken uit, zoals het controleren van afspraken waarvoor 24 uur of 1 uur van tevoren een notificatie nodig is.
 
 ### Gevolgen
 
