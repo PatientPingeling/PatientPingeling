@@ -1,6 +1,6 @@
 namespace NotificationService.Domain.Entities
 {
-    public class Notification
+    public sealed class Notification
     {
 
     }
