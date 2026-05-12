@@ -1,5 +1,6 @@
 ---
-status: Proposed
+status: Superseded
+superseded-by: ADR-0006
 date: 11-05-2026
 deciders: PatientPingeling
 ---
@@ -20,13 +21,13 @@ Onze notificatieservice is een zelfstandige service (los van OpenMRS) en ontvang
 
 ## Overwogen Opties
 
-1. **Geen extra OpenMRS-module**: OpenMRS publiceert “ruwe” events (event-module), verrijking gebeurt downstream in de notificatieservice.
+1. **Geen extra OpenMRS-module**: OpenMRS publiceert "ruwe" events (event-module), verrijking gebeurt downstream in de notificatieservice.
 2. **OpenMRS-module patientpingeling-enricher_module**: een plugin in OpenMRS die events consumeert/observeert, verrijkt, en vervolgens publiceert naar RabbitMQ.
 3. **Verrijking via API-calls vanuit de notificatieservice**: de service consumeert minimale events en haalt ontbrekende context op via OpenMRS (FHIR) REST calls.
 
 ## Resultaten
 
-We kiezen voor **Optie 2: een OpenMRS-module patientpingeling-enricher_module die verrijkt en publiceert naar RabbitMQ**.
+We kozen voor **Optie 2: een OpenMRS-module patientpingeling-enricher_module die verrijkt en publiceert naar RabbitMQ**.
 
 Deze optie is gekozen omdat:
 - Verrijking dicht bij de bron plaatsvindt, waardoor de event-payload richting RabbitMQ consistenter en vollediger is.
@@ -46,12 +47,15 @@ Optie 3 is minder geschikt omdat dit extra afhankelijkheid en latency introducee
 
 ## Meer Informatie
 
+> [!WARNING]
+> Deze beslissing is herzien. De directe RabbitMQ-verbinding van OpenMRS naar de interne broker is afgewezen omdat het interne infrastructuur blootstelt aan een extern systeem. Zie [ADR-0006](0006-enricher-http-webhook.md) voor de vervangende beslissing (HTTP webhook via Enricher Module).
+
 - Gerelateerde ADRs:
-  - [ADR3 (event-driven integratie via RabbitMQ)](../Sprint%201/ADR3.md)
-  - [ADR4 (RabbitMQ als queue infrastructure)](../Sprint%202/ADR4.md)
+  - [ADR-0004: RabbitMQ als queue infrastructure](0004-message-broker-rabbitmq.md)
+  - [ADR-0006: Vervangende beslissing — Enricher Module via HTTP webhook](0006-enricher-http-webhook.md)
 - Gerelateerde diagrammen:
-  - [C4 Context](../../C4/C4_Context.drawio)
-  - [C4 Container](../../C4/C4_Container.drawio)
+  - [C4 Context](../C4/C4_Context.drawio)
+  - [C4 Container](../C4/C4_Container.drawio)
 - OpenMRS module developer docs:
   - https://openmrs.atlassian.net/wiki/spaces/docs/pages/25462172/For+Module+Developers
 - HL7 FHIR R4 Appointment resource:
