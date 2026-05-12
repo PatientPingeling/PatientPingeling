@@ -13,7 +13,6 @@
 	<description>API project for Patientpingeling enricher</description>
 
 	<dependencies>
-		<!-- OpenMRS Event Module API (JMS/ActiveMQ based). This is installed as a separate module in OpenMRS. -->
 		<dependency>
 			<groupId>org.openmrs</groupId>
 			<artifactId>event-api</artifactId>
