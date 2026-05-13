@@ -7,6 +7,7 @@
 # | RabbitMQ       | 5672      |
 # | RabbitMQ UI    | 15672     |
 # | Postgres       | 5432      |
+# | Grafana UI     | 3000      |
 
 services:
 # ==========================================
@@ -23,11 +24,15 @@ services:
       - RabbitMQ__Host=${RABBITMQ_HOST}
       - RabbitMQ__Username=${RABBITMQ_USERNAME}
       - RabbitMQ__Password=${RABBITMQ_PASSWORD}
+      - OpenTelemetry__Endpoint=http://otel-lgtm:4317
+      - OpenTelemetry__Environment=${ASPNETCORE_ENVIRONMENT:-Production}
     depends_on:
       postgres:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      otel-lgtm:
+        condition: service_started
     ports:
       - "8000:8000"
     restart: unless-stopped
@@ -42,11 +47,15 @@ services:
       - RabbitMQ__Host=${RABBITMQ_HOST}
       - RabbitMQ__Username=${RABBITMQ_USERNAME}
       - RabbitMQ__Password=${RABBITMQ_PASSWORD}
+      - OpenTelemetry__Endpoint=http://otel-lgtm:4317
+      - OpenTelemetry__Environment=${ASPNETCORE_ENVIRONMENT:-Production}
     depends_on:
       postgres:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      otel-lgtm:
+        condition: service_started
     restart: unless-stopped
 
   worker:
@@ -59,11 +68,15 @@ services:
       - RabbitMQ__Host=${RABBITMQ_HOST}
       - RabbitMQ__Username=${RABBITMQ_USERNAME}
       - RabbitMQ__Password=${RABBITMQ_PASSWORD}
+      - OpenTelemetry__Endpoint=http://otel-lgtm:4317
+      - OpenTelemetry__Environment=${ASPNETCORE_ENVIRONMENT:-Production}
     depends_on:
       postgres:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      otel-lgtm:
+        condition: service_started
     restart: unless-stopped
 
 # ==========================================
@@ -78,6 +91,14 @@ services:
 # ==========================================
 # INFRASTRUCTURE
 # ==========================================
+  otel-lgtm:
+    image: grafana/otel-lgtm:latest
+    ports:
+      - "3000:3000"     # Grafana UI
+      - "4317:4317"     # OTLP gRPC receiver
+      - "4318:4318"     # OTLP HTTP receiver
+    restart: unless-stopped
+
   postgres:
     image: postgres:18-alpine
     environment:

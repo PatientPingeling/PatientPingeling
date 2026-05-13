@@ -1,14 +1,19 @@
-using Microsoft.EntityFrameworkCore;
 using NotificationService.Api.Endpoints;
 using NotificationService.Infrastructure.Extensions;
-using NotificationService.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 
 // Database
-builder.Services.AddDatabase(builder.Configuration);
+builder.Services
+    .AddDatabase(builder.Configuration)
+    .AddOpenTelemetry(
+        builder.Configuration,
+        serviceName: "NotificationService.Api",
+        enableAspNetCore: true,
+        enableHttpClient: true,
+        enableEntityFrameworkCore: true);
 
 var app = builder.Build();
 
