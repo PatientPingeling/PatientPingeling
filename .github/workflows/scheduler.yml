@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - "src/NotificationService.Worker/**"
+      - "src/NotificationService.Scheduler/**"
       - "src/NotificationService.Application/**"
       - "src/NotificationService.Domain/**"
       - "src/NotificationService.Infrastructure/**"
@@ -12,7 +12,7 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - "src/NotificationService.Worker/**"
+      - "src/NotificationService.Scheduler/**"
       - "src/NotificationService.Application/**"
       - "src/NotificationService.Domain/**"
       - "src/NotificationService.Infrastructure/**"
