@@ -172,6 +172,8 @@ services:
     depends_on:
       openmrs-db:
         condition: service_healthy
+      omod-installer:
+        condition: service_completed_successfully
     environment:
       OMRS_CONFIG_MODULE_WEB_ADMIN: "true"
       OMRS_CONFIG_AUTO_UPDATE_DATABASE: "true"
@@ -185,9 +187,14 @@ services:
       timeout: 5s
     volumes:
       - openmrs-data:/openmrs/data
-      # Mount the built plugin into OpenMRS modules folder
-      - ./plugins/OpenMRS.PatientPingeling/omod/target/patientpingeling.enricher-1.0.0-SNAPSHOT.omod:/openmrs/data/modules/patientpingeling.enricher.omod
     restart: unless-stopped
+
+  omod-installer:
+    image: alpine
+    volumes:
+      - ./plugins/OpenMRS.PatientPingeling/omod/target/patientpingeling.enricher-1.0.0-SNAPSHOT.omod:/input/patientpingeling.enricher.omod:ro
+      - openmrs-data:/openmrs/data
+    command: sh -c "cp /input/patientpingeling.enricher.omod /openmrs/data/modules/patientpingeling.enricher.omod && chmod 644 /openmrs/data/modules/patientpingeling.enricher.omod"
 
   openmrs-db:
     image: mariadb:10.11.7

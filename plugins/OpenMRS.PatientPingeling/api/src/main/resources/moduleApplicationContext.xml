@@ -23,37 +23,6 @@
   		    http://www.springframework.org/schema/util
   		    http://www.springframework.org/schema/util/spring-util-3.0.xsd">
 
-    <!-- Only scan API components (e.g. DAO). This module should be non-web and only log Event Module events. -->
-    <context:component-scan base-package="org.openmrs.module.patientpingeling.enricher.api" />
-
-    <!-- Wraps PatientpingelingenricherService methods in DB transactions and OpenMRS interceptors,
-    which set audit info like dateCreated, changedBy, etc.-->
-    <bean id="patientpingeling.enricher.PatientpingelingenricherService"
-            class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
-        <property name="transactionManager">
-            <ref bean="transactionManager" />
-        </property>
-        <property name="target">
-            <bean class="org.openmrs.module.patientpingeling.enricher.api.impl.PatientpingelingenricherServiceImpl">
-                <property name="dao" ref="patientpingeling.enricher.PatientpingelingenricherDao" />
-            </bean>
-        </property>
-        <property name="preInterceptors">
-            <ref bean="serviceInterceptors" />
-        </property>
-        <property name="transactionAttributeSource">
-            <ref bean="transactionAttributeSource" />
-        </property>
-    </bean>
-
-    <!-- Adds PatientpingelingenricherService to OpenMRS context so it can be accessed
-    calling Context.getService(PatientpingelingenricherService.class) -->
-    <bean parent="serviceContext">
-        <property name="moduleService">
-            <list>
-                <value>org.openmrs.module.patientpingeling.enricher.api.PatientpingelingenricherService</value>
-                <ref bean="patientpingeling.enricher.PatientpingelingenricherService" />
-            </list>
-        </property>
-    </bean>
+    <!-- Intentionally empty: this module currently only subscribes to Event Module events and logs them.
+         All runtime behavior is in the module activator. -->
 </beans>
