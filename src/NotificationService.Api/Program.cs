@@ -1,24 +1,21 @@
+using NotificationService.Api.Endpoints;
 using NotificationService.Infrastructure.Extensions;
-using NotificationService.Infrastructure.Options;
 
-WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 
-// // Database
-// builder.Services.AddDbContext<NotificationDbContext>(options =>
-// {
-//     options.UseNpgsql(configuration.GetConnectionString("Postgres"));
-// });
+// Database
+builder.Services
+    .AddDatabase(builder.Configuration)
+    .AddOpenTelemetry(
+        builder.Configuration,
+        serviceName: "NotificationService.Api",
+        enableAspNetCore: true,
+        enableHttpClient: true,
+        enableEntityFrameworkCore: true);
 
-// HTTP Resilience
-// builder.Services.ConfigureHttpClientDefaults(http =>
-// {
-//     http.AddStandardResilienceHandler();
-// });
-
-
-WebApplication app = builder.Build();
+var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
@@ -27,5 +24,8 @@ if (app.Environment.IsDevelopment())
 
 // Middleware
 app.UseHttpsRedirection();
+
+// Endpoints
+app.MapWebhookEndpoints();
 
 app.Run();

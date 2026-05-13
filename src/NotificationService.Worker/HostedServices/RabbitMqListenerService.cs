@@ -1,13 +1,12 @@
 using System.Collections.Concurrent;
 using System.Text;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using NotificationService.Application.Interfaces;
+using NotificationService.Application.Services;
 using NotificationService.Infrastructure.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
+
+// TODO REPLACE FILE WITH INHERITED ONE FROM INFRA!
 namespace NotificationService.Listener.HostedServices
 {
   public sealed class RabbitMqListenerService(
@@ -103,21 +102,21 @@ namespace NotificationService.Listener.HostedServices
     private async Task ProcessMessageAsync(IChannel channel, BasicDeliverEventArgs ea, CancellationToken ct)
     {
       using var scope = _serviceProvider.CreateScope();
-      var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
+      var notificationService = scope.ServiceProvider.GetRequiredService<IAppointmentIngestionService>();
 
       try
       {
         var message = Encoding.UTF8.GetString(ea.Body.ToArray());
-        var result = await notificationService.ProcessNotificationAsync(message);
+        // var result = await notificationService.Equals(message);
 
-        if (result.IsFailure)
-        {
-          await channel.BasicNackAsync(ea.DeliveryTag, false, requeue: false, ct);
-        }
-        else
-        {
-          await channel.BasicAckAsync(ea.DeliveryTag, false, ct);
-        }
+        // if (result.IsFailure)
+        // {
+        //   await channel.BasicNackAsync(ea.DeliveryTag, false, requeue: false, ct);
+        // }
+        // else
+        // {
+        //   await channel.BasicAckAsync(ea.DeliveryTag, false, ct);
+        // }
       }
       catch (Exception ex)
       {
