@@ -16,7 +16,7 @@ namespace NotificationService.Infrastructure.Extensions
     {
         public static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration)
         {
-            var connectionString = configuration.GetConnectionString("Postgres") ?? throw new Exception("bro! where are my environment variables?");
+            var connectionString = configuration.GetConnectionString("Postgres") ?? throw new InvalidOperationException("bro! where are my environment variables?");
             services.AddDbContext<NotificationDbContext>(options =>
             {
                 options.UseNpgsql(connectionString, npgsqlOptions =>
