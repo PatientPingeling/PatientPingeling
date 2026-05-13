@@ -6,8 +6,20 @@
     <name>Patientpingeling Enricher</name>
     <version>1.0.0-SNAPSHOT</version>
     <package>org.openmrs.module.patientpingeling.enricher</package>
-    <author>woute</author>
+    <author>PatiengPingelingsker</author>
     <description>Logs appointment events</description>
 
     <activator>org.openmrs.module.patientpingeling.enricher.PatientpingelingenricherActivator</activator>
+
+    <globalProperty>
+        <property>patientpingeling.serviceuser</property>
+        <value>admin</value>
+        <description>OpenMRS service account username for the patient pingeling enricher</description>
+    </globalProperty>
+
+    <globalProperty>
+        <property>patientpingeling.servicepassword</property>
+        <value>Admin123</value>
+        <description>OpenMRS service account password for the patient pingeling enricher</description>
+    </globalProperty>
 </module>

@@ -5,7 +5,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.context.Context;
 
-
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -37,8 +36,28 @@ public class SimpleAppointmentListener {
 							    String action = (String) getString.invoke(message, "action");
 							    String uuid = (String) getString.invoke(message, "uuid");
 							    log.error("PP_EVENT_LOG: " + action + " on " + uuid);
-
-								// TODO: Perform enriching
+							    
+							    // TODO: Perform enriching
+							    Context.openSession();
+							    try {
+								    Context.authenticate("admin", "Admin123");
+								    EventEnricher enricher = new EventEnricher();
+								    Object appointment = enricher.enrichAppointment(uuid);
+								    if (appointment != null) {
+									    for (java.lang.reflect.Method m : appointment.getClass().getMethods()) {
+										    if (m.getName().startsWith("get") && m.getParameterCount() == 0) {
+											    try {
+												    Object value = m.invoke(appointment);
+												    log.error("PP_ENRICHER: " + m.getName() + " = " + value);
+											    }
+											    catch (Exception ignored) {}
+										    }
+									    }
+								    }
+							    }
+							    finally {
+								    Context.closeSession();
+							    }
 						    }
 					    }
 					    catch (Exception e) {
