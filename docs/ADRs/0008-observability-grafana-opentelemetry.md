@@ -1,11 +1,11 @@
 # AD: Observability-stack: Grafana + OpenTelemetry
 
-| Eigenschap       | Waarde             |
-|------------------|--------------------|
-| **Status**       | ✅ Accepted        |
-| **Datum**        | 12-05-2026         |
-| **Beslissers**   | PatientPingeling   |
-| **Geraadpleegd** | -                  |
+| Eigenschap       | Waarde           |
+| ---------------- | ---------------- |
+| **Status**       | ✅ Accepted      |
+| **Datum**        | 12-05-2026       |
+| **Beslissers**   | PatientPingeling |
+| **Geraadpleegd** | Robin Schellius  |
 
 ## Context en Probleembeschrijving
 
@@ -41,6 +41,7 @@ We hebben gekozen voor **Grafana + OpenTelemetry** (optie 1).
 **Geen observability (optie 4) is afgewezen** omdat het team bij problemen (gemiste notificaties, queue-storingen) blind is en foutdiagnose onmogelijk wordt — zeker gegeven de asynchrone, multi-component architectuur.
 
 De gekozen stack werkt als volgt:
+
 - De .NET-services zijn geïnstrumenteerd met de **OpenTelemetry SDK** (logs, metrics, traces).
 - **Prometheus** scrapt metrics-endpoints van de .NET-services en RabbitMQ.
 - **Loki** verzamelt gestructureerde logs via een log-shipper.

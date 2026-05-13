@@ -1,11 +1,11 @@
 # AD: OpenMRS Enricher Module verstuurt HTTP webhook naar Notification API
 
-| Eigenschap       | Waarde             |
-|------------------|--------------------|
-| **Status**       | ✅ Accepted        |
-| **Datum**        | 11-05-2026         |
-| **Beslissers**   | PatientPingeling   |
-| **Geraadpleegd** | -                  |
+| Eigenschap       | Waarde           |
+| ---------------- | ---------------- |
+| **Status**       | ✅ Accepted      |
+| **Datum**        | 11-05-2026       |
+| **Beslissers**   | PatientPingeling |
+| **Geraadpleegd** | Marc Mathijssen  |
 
 ## Context en Probleembeschrijving
 
@@ -34,6 +34,7 @@ We kiezen voor **Optie 2: patientpingeling-enricher_module die verrijkt en via H
 Optie 3 (directe RabbitMQ-verbinding) is expliciet afgewezen omdat het de interne message broker blootstelt aan een extern systeem. Een message broker is interne infrastructuur — vergelijkbaar met een database — en mag niet bereikbaar zijn voor externe partijen. Er is geen validatie op berichtinhoud of verzender mogelijk op AMQP-niveau, wat het risico op misbruik of corruptie van de interne queue vergroot. Dit is de reden waarom ADR-0004 is vervangen door deze beslissing.
 
 Optie 2 is gekozen omdat:
+
 - Verrijking dicht bij de bron plaatsvindt, waardoor de payload richting de Notification API consistent en volledig is.
 - De Notification API het binnenkomende verzoek kan authenticeren (bijv. via een API-key header) voordat data wordt opgeslagen.
 - De systeemgrens expliciet is: OpenMRS communiceert via een publiek HTTP-endpoint, niet via directe toegang tot interne infrastructuur.

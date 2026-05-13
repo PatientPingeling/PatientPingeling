@@ -1,11 +1,11 @@
 # AD: Queues
 
-| Eigenschap       | Waarde             |
-|------------------|--------------------|
-| **Status**       | ✅ Accepted        |
-| **Datum**        | 06-05-2026         |
-| **Beslissers**   | PatientPingeling   |
-| **Geraadpleegd** | -                  |
+| Eigenschap       | Waarde           |
+| ---------------- | ---------------- |
+| **Status**       | ✅ Accepted      |
+| **Datum**        | 06-05-2026       |
+| **Beslissers**   | PatientPingeling |
+| **Geraadpleegd** | -                |
 
 ## Context en Probleembeschrijving
 
@@ -15,31 +15,32 @@ De vraag is welke message-broker we gebruiken en hoe deze is ingericht.
 
 ## Beslissingsfactoren
 
-* Driver 1: Betrouwbaarheid & Downtime bestendigheid (Opdracht vereist een fallback- en retrymechanisme bij downtime providers of OpenMRS)
-* Driver 2: Schaalbaarheid naar meerdere OpenMRS instanties (wordt expliciet genoemd door opdrachtbeschrijving)
-* Driver 3: HL7/FHIR-compliance (queueing en retry-mechanismen zijn onderdeel van de HL7-standaard)
-* Driver 4: Beveiliging (Berichteninhoud moet versleuteld worden, zeker gevoelige patiëntdata)
+- Driver 1: Betrouwbaarheid & Downtime bestendigheid (Opdracht vereist een fallback- en retrymechanisme bij downtime providers of OpenMRS)
+- Driver 2: Schaalbaarheid naar meerdere OpenMRS instanties (wordt expliciet genoemd door opdrachtbeschrijving)
+- Driver 3: HL7/FHIR-compliance (queueing en retry-mechanismen zijn onderdeel van de HL7-standaard)
+- Driver 4: Beveiliging (Berichteninhoud moet versleuteld worden, zeker gevoelige patiëntdata)
 
 ## Overwogen Opties
+
 (Opties die per broker specifiek kunnen zijn, volgen al onze gekozen broker van optie 1).
 
-1. *Welke Broker / integratiestijl?*
-    a. **RabbitMQ (direct)**: Een message broker die berichten asynchroon verwerkt via exchanges en queues. Lichtgewicht, goed gedocumenteerd en breed ondersteund in het .NET ecosysteem. Volledige controle over exchanges, queues, bindings en DLX-configuratie.
-    b. **MassTransit op RabbitMQ**: Een .NET abstractielaag over message brokers (RabbitMQ, Azure Service Bus, etc.) die een hogere-level API biedt voor consumers, sagas en retry-policies. Verbergt de onderliggende broker-details achter conventies.
-    c. **Apache Kafka**: Een gedistribueerd event-streaming platform dat berichten opslaat als een log. Zeer schaalbaar bij hoge volumes en geschikt voor event-replay.
-    d. **Geen broker, maar directe REST-calls**: De meest eenvoudige optie, geen retry of buffering.
+1. _Welke Broker / integratiestijl?_
+   a. **RabbitMQ (direct)**: Een message broker die berichten asynchroon verwerkt via exchanges en queues. Lichtgewicht, goed gedocumenteerd en breed ondersteund in het .NET ecosysteem. Volledige controle over exchanges, queues, bindings en DLX-configuratie.
+   b. **MassTransit op RabbitMQ**: Een .NET abstractielaag over message brokers (RabbitMQ, Azure Service Bus, etc.) die een hogere-level API biedt voor consumers, sagas en retry-policies. Verbergt de onderliggende broker-details achter conventies.
+   c. **Apache Kafka**: Een gedistribueerd event-streaming platform dat berichten opslaat als een log. Zeer schaalbaar bij hoge volumes en geschikt voor event-replay.
+   d. **Geen broker, maar directe REST-calls**: De meest eenvoudige optie, geen retry of buffering.
 
-2. *Welke queue-topologie?*
-    a. **One-way messaging**: Een enkele queue en consumer. De meest simpele vorm van een messaging pattern.
-    b. **Competing Consumers (Worker Queues)**: Een enkele queue en één of meerdere consumers. Verhoogt de schaalbaarheid.
-    c. **Publish/Subscribe**: Een producer publiceert een bericht dat verspreid wordt naar alle consumers.
+2. _Welke queue-topologie?_
+   a. **One-way messaging**: Een enkele queue en consumer. De meest simpele vorm van een messaging pattern.
+   b. **Competing Consumers (Worker Queues)**: Een enkele queue en één of meerdere consumers. Verhoogt de schaalbaarheid.
+   c. **Publish/Subscribe**: Een producer publiceert een bericht dat verspreid wordt naar alle consumers.
 
-3. *Welk retry mechanisme?*
-    a. **Dead Letter Exchange (DLX)**: NACK-berichten worden na X pogingen doorgestuurd naar een aparte dead letter queue voor handmatige inspectie.
+3. _Welk retry mechanisme?_
+   a. **Dead Letter Exchange (DLX)**: NACK-berichten worden na X pogingen doorgestuurd naar een aparte dead letter queue voor handmatige inspectie.
 
 ## Resultaten
 
-*Gekozen broker*
+_Gekozen broker_
 We hebben gekozen voor **RabbitMQ direct** (optie 1a).
 
 **MassTransit (optie 1b) is afgewezen.** MassTransit is een krachtige abstractie die veel boilerplate wegneemt, maar voor ons project introduceert het onnodige complexiteit. We willen volledige controle over onze RabbitMQ-configuratie (exchanges, DLX-bindings, TTL's) en we willen elke architectuurkeuze kunnen uitleggen. MassTransit verbergt juist die details. Daarnaast is het team nog aan het leren — een extra abstractielaag op een al complexe broker maakt debugging moeilijker. MassTransit blijft een **toekomstige overweging** als het project groeit en de boilerplate zwaarder wordt.
@@ -48,10 +49,10 @@ We hebben gekozen voor **RabbitMQ direct** (optie 1a).
 
 **Directe REST-calls (optie 1d) zijn afgewezen.** Geen retry, geen buffering, geen downtime-bestendigheid. Voldoet niet aan de eisen van de opdrachtgever.
 
-*Gekozen queue topologie*
+_Gekozen queue topologie_
 We hebben gekozen voor **Competing Consumers**. Meerdere Worker-instanties kunnen berichten van dezelfde queue consumeren, wat horizontaal schalen mogelijk maakt. Publish/Subscribe is afgewezen omdat het duplicate notificaties zou introduceren.
 
-*Gekozen retry mechanisme*
+_Gekozen retry mechanisme_
 We gebruiken **DLX** met een `x-death` header om NACK-berichten te retryen en poison-messages uiteindelijk te isoleren in een dead letter queue.
 
 ### Gevolgen
@@ -72,11 +73,11 @@ We gebruiken **DLX** met een `x-death` header om NACK-berichten te retryen en po
 - HL7 FHIR R4 Appointment resource (afspraakdata): https://hl7.org/fhir/R4/appointment.html
 
 - Gerelateerde ADRs:
-    - [ADR-0002: Backend C# / .NET](0002-backend-csharp-dotnet.md)
-    - [ADR-0006: Integratiemethode HTTP webhook](0006-enricher-http-webhook.md)
+  - [ADR-0002: Backend C# / .NET](0002-backend-csharp-dotnet.md)
+  - [ADR-0006: Integratiemethode HTTP webhook](0006-enricher-http-webhook.md)
 - Gerelateerde diagrammen:
-    - [C4 Context](../C4/C4_Context.drawio)
-    - [C4 Container](../C4/C4_Container.drawio)
+  - [C4 Context](../C4/C4_Context.drawio)
+  - [C4 Container](../C4/C4_Container.drawio)
 
 - Follow up vragen:
-    - Gaan we wel of niet gebruik maken van quorum queues?
+  - Gaan we wel of niet gebruik maken van quorum queues?

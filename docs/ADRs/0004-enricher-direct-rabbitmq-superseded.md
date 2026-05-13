@@ -1,11 +1,11 @@
 # AD: OpenMRS data-enrichment module publiceert naar RabbitMQ
 
-| Eigenschap       | Waarde                                                           |
-|------------------|------------------------------------------------------------------|
-| **Status**       | ⚠️ Superseded door [ADR-0006](0006-enricher-http-webhook.md)   |
-| **Datum**        | 11-05-2026                                                       |
-| **Beslissers**   | PatientPingeling                                                 |
-| **Geraadpleegd** | -                                                                |
+| Eigenschap       | Waarde                                                       |
+| ---------------- | ------------------------------------------------------------ |
+| **Status**       | ⚠️ Superseded door [ADR-0006](0006-enricher-http-webhook.md) |
+| **Datum**        | 11-05-2026                                                   |
+| **Beslissers**   | PatientPingeling                                             |
+| **Geraadpleegd** | -                                                            |
 
 > [!WARNING]
 > Deze beslissing is herzien. De directe RabbitMQ-verbinding van OpenMRS naar de interne broker is afgewezen omdat het interne infrastructuur blootstelt aan een extern systeem. Zie [ADR-0006](0006-enricher-http-webhook.md) voor de vervangende beslissing (HTTP webhook via Enricher Module).
@@ -33,6 +33,7 @@ Onze notificatieservice is een zelfstandige service (los van OpenMRS) en ontvang
 We kozen voor **Optie 2: een OpenMRS-module patientpingeling-enricher_module die verrijkt en publiceert naar RabbitMQ**.
 
 Deze optie is gekozen omdat:
+
 - Verrijking dicht bij de bron plaatsvindt, waardoor de event-payload richting RabbitMQ consistenter en vollediger is.
 - De notificatieservice hierdoor eenvoudiger blijft (minder OpenMRS-specifieke kennis en minder extra API-calls).
 - We de integratie naar RabbitMQ expliciet kunnen beheren (routing keys, exchange/queue afspraken) vanuit één duidelijke producer.

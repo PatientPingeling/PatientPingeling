@@ -1,11 +1,11 @@
 # AD: Schedulingmechanisme voor tijdgebonden notificaties
 
-| Eigenschap       | Waarde             |
-|------------------|--------------------|
-| **Status**       | ✅ Accepted        |
-| **Datum**        | 12-05-2026         |
-| **Beslissers**   | PatientPingeling   |
-| **Geraadpleegd** | -                  |
+| Eigenschap       | Waarde           |
+| ---------------- | ---------------- |
+| **Status**       | ✅ Accepted      |
+| **Datum**        | 12-05-2026       |
+| **Beslissers**   | PatientPingeling |
+| **Geraadpleegd** | -                |
 
 ## Context en Probleembeschrijving
 

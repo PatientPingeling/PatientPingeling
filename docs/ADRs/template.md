@@ -7,12 +7,12 @@ consulted: [Name(s) / Team(s) — two-way input]
 
 # AD: [Korte titel]
 
-| Eigenschap       | Waarde                                                        |
-|------------------|---------------------------------------------------------------|
+| Eigenschap       | Waarde                                                       |
+| ---------------- | ------------------------------------------------------------ |
 | **Status**       | [✅ Accepted \| 🔵 Proposed \| ⚠️ Superseded \| ❌ Rejected] |
-| **Datum**        | DD-MM-YYYY                                                    |
-| **Beslissers**   | [Name(s)]                                                     |
-| **Geraadpleegd** | [Name(s)]                                                     |
+| **Datum**        | DD-MM-YYYY                                                   |
+| **Beslissers**   | [Name(s)]                                                    |
+| **Geraadpleegd** | [Name(s)]                                                    |
 
 ## Context en Probleembeschrijving
 
