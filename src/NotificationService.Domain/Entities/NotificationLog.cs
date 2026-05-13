@@ -5,6 +5,7 @@ namespace NotificationService.Domain.Entities
         public Guid Id { get; set; }
         public DateTimeOffset SentAt { get; set; }
         public string Provider { get; set; } = string.Empty;
+        public string? ExternalMessageId { get; set; }
         public bool Succeeded { get; set; }
 
         public Guid TenantId { get; set; }

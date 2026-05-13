@@ -8,5 +8,8 @@ namespace NotificationService.Domain.Entities
         public string PhoneNumber { get; set; } = string.Empty;
 
         public ICollection<Appointment> Appointments { get; set; } = [];
+
+        // TODO: Fix this!
+        public DateTimeOffset LastCommunicationAt { get; set; }
     }
 }
