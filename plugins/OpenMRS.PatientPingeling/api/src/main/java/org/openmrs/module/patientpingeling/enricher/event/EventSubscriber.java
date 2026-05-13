@@ -11,28 +11,28 @@ public class EventSubscriber {
 	private static Object listenerInstance = null;
 	
 	public static void subscribe() {
-		log.info("PP_ENRICHER: EventSubscriber.subscribe() called");
+		log.error("PP_ENRICHER: EventSubscriber.subscribe() called");
 		try {
-			log.info("PP_ENRICHER: Loading Appointment class...");
+			log.error("PP_ENRICHER: Loading Appointment class...");
 			Class<?> appointmentClass = Context.loadClass("org.openmrs.module.appointments.model.Appointment");
-			log.info("PP_ENRICHER: Appointment class loaded: " + appointmentClass);
+			log.error("PP_ENRICHER: Appointment class loaded: " + appointmentClass);
 			
-			log.info("PP_ENRICHER: Creating proxy listener...");
+			log.error("PP_ENRICHER: Creating proxy listener...");
 			listenerInstance = SimpleAppointmentListener.createProxy();
-			log.info("PP_ENRICHER: Proxy created: " + listenerInstance);
+			log.error("PP_ENRICHER: Proxy created: " + listenerInstance);
 			
-			log.info("PP_ENRICHER: Loading Event class...");
+			log.error("PP_ENRICHER: Loading Event class...");
 			Class<?> eventClass = Context.loadClass("org.openmrs.event.Event");
-			log.info("PP_ENRICHER: Event class loaded: " + eventClass);
+			log.error("PP_ENRICHER: Event class loaded: " + eventClass);
 			
-			log.info("PP_ENRICHER: Loading EventListener class...");
+			log.error("PP_ENRICHER: Loading EventListener class...");
 			Class<?> eventListenerClass = Context.loadClass("org.openmrs.event.EventListener");
-			log.info("PP_ENRICHER: EventListener class loaded: " + eventListenerClass);
+			log.error("PP_ENRICHER: EventListener class loaded: " + eventListenerClass);
 			
-			log.info("PP_ENRICHER: Calling Event.subscribe()...");
+			log.error("PP_ENRICHER: Calling Event.subscribe()...");
 			eventClass.getMethod("subscribe", Class.class, String.class, eventListenerClass).invoke(null, appointmentClass,
 			    null, listenerInstance);
-			log.info("PP_ENRICHER: Event.subscribe() completed successfully.");
+			log.error("PP_ENRICHER: Event.subscribe() completed successfully.");
 			
 		}
 		catch (Exception e) {
@@ -41,7 +41,7 @@ public class EventSubscriber {
 	}
 	
 	public static void unsubscribe() {
-		log.info("PP_ENRICHER: EventSubscriber.unsubscribe() called");
+		log.error("PP_ENRICHER: EventSubscriber.unsubscribe() called");
 		try {
 			if (listenerInstance == null) {
 				log.warn("PP_ENRICHER: listenerInstance is null, nothing to unsubscribe.");
@@ -54,7 +54,7 @@ public class EventSubscriber {
 			
 			eventClass.getMethod("unsubscribe", Class.class, String.class, eventListenerClass).invoke(null,
 			    appointmentClass, null, listenerInstance);
-			log.info("PP_ENRICHER: Unsubscribe completed.");
+			log.error("PP_ENRICHER: Unsubscribe completed.");
 			
 		}
 		catch (Exception e) {
