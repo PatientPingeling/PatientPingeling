@@ -1,9 +1,6 @@
 using System.Collections.Concurrent;
 using System.Text;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using NotificationService.Application.Abstractions;
+using NotificationService.Application.Services;
 using NotificationService.Infrastructure.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
