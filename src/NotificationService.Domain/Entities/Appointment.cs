@@ -6,7 +6,7 @@ namespace NotificationService.Domain.Entities
         public string Reason { get; set; } = string.Empty;
         public string Location { get; set; } = string.Empty;
         public string? Instructions { get; set; }
-        public DateTimeOffset DateTime { get; set; }
+        public DateTimeOffset ScheduledAt { get; set; }
 
         public int PatientId { get; set; }
         public Patient Patient { get; set; } = null!;
