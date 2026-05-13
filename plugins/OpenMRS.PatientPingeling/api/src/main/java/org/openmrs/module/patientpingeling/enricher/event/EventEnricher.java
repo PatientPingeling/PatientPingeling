@@ -19,7 +19,7 @@ public class EventEnricher {
 	// Nu met eventType als parameter!
 	public EnrichedEvent enrichAppointment(String appointmentUuid, String eventType) {
 		if (appointmentUuid == null || appointmentUuid.isEmpty()) {
-			log.error("PP_ENRICHER: Appointment UUID must not be null or empty");
+			log.info("PP_ENRICHER: Appointment UUID must not be null or empty");
 			return null;
 		}
 		
@@ -31,7 +31,7 @@ public class EventEnricher {
 			Object appointment = getAppointmentByUuid.invoke(appointmentService, appointmentUuid);
 			
 			if (appointment == null) {
-				log.error("PP_ENRICHER: No appointment found for UUID: " + appointmentUuid);
+				log.info("PP_ENRICHER: No appointment found for UUID: " + appointmentUuid);
 				return null;
 			}
 			
@@ -83,7 +83,7 @@ public class EventEnricher {
 				}
 			}
 			catch (Exception e) {
-				log.warn("PP_ENRICHER: Could not extract service name");
+				log.debug("PP_ENRICHER: Could not extract service name");
 			}
 			enriched.setAppointmentService(serviceName);
 			
@@ -110,7 +110,7 @@ public class EventEnricher {
 			
 		}
 		catch (Exception e) {
-			log.error("PP_ENRICHER: Error enriching appointment " + appointmentUuid, e);
+			log.debug("PP_ENRICHER: Error enriching appointment " + appointmentUuid, e);
 			return null;
 		}
 	}
