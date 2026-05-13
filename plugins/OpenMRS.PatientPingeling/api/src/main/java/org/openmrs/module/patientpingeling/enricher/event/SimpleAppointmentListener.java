@@ -1,8 +1,10 @@
 package org.openmrs.module.patientpingeling.enricher.event;
 
+import org.openmrs.module.patientpingeling.enricher.event.EventEnricher;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.context.Context;
+
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -35,6 +37,8 @@ public class SimpleAppointmentListener {
 							    String action = (String) getString.invoke(message, "action");
 							    String uuid = (String) getString.invoke(message, "uuid");
 							    log.error("PP_EVENT_LOG: " + action + " on " + uuid);
+
+								// TODO: Perform enriching
 						    }
 					    }
 					    catch (Exception e) {
