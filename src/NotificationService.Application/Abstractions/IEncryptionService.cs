@@ -1,4 +1,4 @@
-namespace NotificationService.Application.Interfaces
+namespace NotificationService.Application.Abstractions
 {
   public interface IEncryptionService
   {

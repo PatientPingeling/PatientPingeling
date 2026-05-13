@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using NotificationService.Application.Interfaces;
+using NotificationService.Application.Services;
 
 namespace NotificationService.Api.Endpoints
 {

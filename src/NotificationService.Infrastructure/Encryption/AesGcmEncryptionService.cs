@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
-using NotificationService.Application.Interfaces;
+using NotificationService.Application.Abstractions;
 
 namespace NotificationService.Infrastructure.Encryption
 {

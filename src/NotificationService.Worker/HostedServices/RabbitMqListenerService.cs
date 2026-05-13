@@ -3,11 +3,13 @@ using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using NotificationService.Application.Interfaces;
+using NotificationService.Application.Abstractions;
 using NotificationService.Infrastructure.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
+
+// TODO REPLACE FILE WITH INHERITED ONE FROM INFRA!
 namespace NotificationService.Listener.HostedServices
 {
   public sealed class RabbitMqListenerService(
