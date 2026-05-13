@@ -16,7 +16,7 @@ services:
   api:
     build:
       context: ./src
-      dockerfile: ./src/NotificationService.Api/Dockerfile
+      dockerfile: NotificationService.Api/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
       - ASPNETCORE_URLS=http://+:8000
@@ -40,7 +40,7 @@ services:
   scheduler:
     build:
       context: ./src
-      dockerfile: ./src/NotificationService.Scheduler/Dockerfile
+      dockerfile: NotificationService.Scheduler/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
       - ConnectionStrings__Postgres=Host=${POSTGRES_HOST};Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
@@ -61,7 +61,7 @@ services:
   worker:
     build:
       context: ./src
-      dockerfile: ./src/NotificationService.Worker/Dockerfile
+      dockerfile: NotificationService.Worker/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
       - ConnectionStrings__Postgres=Host=${POSTGRES_HOST};Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
