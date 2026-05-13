@@ -1,6 +1,6 @@
 package org.openmrs.module.patientpingeling.enricher.event;
 
-import org.openmrs.module.patientpingeling.enricher.event.EventEnricher;
+import org.openmrs.module.patientpingeling.enricher.Model.EnrichedEvent;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.context.Context;
@@ -8,14 +8,11 @@ import org.openmrs.api.context.Context;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import javax.jms.MapMessage;
-import javax.jms.Message;
 
 public class SimpleAppointmentListener {
 	
 	private static final Log log = LogFactory.getLog(SimpleAppointmentListener.class);
 	
-	// Returns a dynamic proxy that implements EventListener at runtime
 	public static Object createProxy() throws Exception {
 		Class<?> eventListenerClass = Context.loadClass("org.openmrs.event.EventListener");
 		final Class<?> mapMessageClass = eventListenerClass.getClassLoader().loadClass("javax.jms.MapMessage");
@@ -25,35 +22,31 @@ public class SimpleAppointmentListener {
 			    
 			    @Override
 			    public Object invoke(Object proxy, Method method, Object[] args) {
-				    log.error("PP_ENRICHER: invoke called, method=" + method.getName());
 				    if ("onMessage".equals(method.getName()) && args != null && args.length == 1) {
 					    try {
 						    Object message = args[0];
-						    log.error("PP_ENRICHER: message class=" + message.getClass().getName());
-						    log.error("PP_ENRICHER: isInstance=" + mapMessageClass.isInstance(message));
 						    if (mapMessageClass.isInstance(message)) {
 							    Method getString = mapMessageClass.getMethod("getString", String.class);
+							    
+							    // 'action' bevat CREATED, UPDATED, etc.
 							    String action = (String) getString.invoke(message, "action");
 							    String uuid = (String) getString.invoke(message, "uuid");
-							    log.error("PP_EVENT_LOG: " + action + " on " + uuid);
 							    
-							    // TODO: Perform enriching
+							    log.error("PP_EVENT_LOG: Received " + action + " for UUID: " + uuid);
+							    
 							    Context.openSession();
 							    try {
 								    Context.authenticate("admin", "Admin123");
 								    EventEnricher enricher = new EventEnricher();
-								    Object appointment = enricher.enrichAppointment(uuid);
-								    if (appointment != null) {
-									    for (java.lang.reflect.Method m : appointment.getClass().getMethods()) {
-										    if (m.getName().startsWith("get") && m.getParameterCount() == 0) {
-											    try {
-												    Object value = m.invoke(appointment);
-												    log.error("PP_ENRICHER: " + m.getName() + " = " + value);
-											    }
-											    catch (Exception ignored) {}
-										    }
-									    }
+								    
+								    // Geef nu zowel UUID als ACTION mee aan de enricher
+								    EnrichedEvent enriched = (EnrichedEvent) enricher.enrichAppointment(uuid, action);
+								    
+								    if (enriched == null) {
+									    log.error("PP_ENRICHER: Enrichment returned null for UUID: " + uuid);
 								    }
+								    // De succesvolle log wordt nu in EventEnricher gedaan, 
+								    // dus die hoeft hier niet dubbel te staan.
 							    }
 							    finally {
 								    Context.closeSession();
@@ -61,7 +54,7 @@ public class SimpleAppointmentListener {
 						    }
 					    }
 					    catch (Exception e) {
-						    log.error("PP_ENRICHER: Error reading message", e);
+						    log.error("PP_ENRICHER: Error during message processing", e);
 					    }
 				    }
 				    return null;
