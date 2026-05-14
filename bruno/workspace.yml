@@ -1,0 +1,14 @@
+opencollection: 1.0.0
+info:
+  name: "PatientPingeling"
+  type: workspace
+
+collections:
+  - name: "API"
+    path: "collections/API"
+  - name: "Integration Tests"
+    path: "collections/Integration Tests"
+
+specs:
+
+docs: ''

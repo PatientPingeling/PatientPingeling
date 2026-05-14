@@ -1,0 +1,9 @@
+name: docker
+variables:
+  - name: baseUrl
+    value: http://localhost:8000
+  - name: tenantId
+    value: 00000000-0000-0000-0000-000000000001
+  - name: webhookSecret
+    value: your-secret-here
+    secret: true

@@ -1,0 +1,45 @@
+info:
+  name: webhook validation failure
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{baseUrl}}/webhooks/appointments"
+  headers:
+    - name: X-Tenant-Id
+      value: "{{tenantId}}"
+    - name: X-Webhook-Secret
+      value: "{{webhookSecret}}"
+  body:
+    type: json
+    data: |-
+      {
+        "action": "UNKNOWN",
+        "patient": {
+          "externalId": "",
+          "givenName": "",
+          "email": null,
+          "phoneNumber": null
+        },
+        "appointment": {
+          "externalId": "",
+          "scheduledAt": "1970-01-01T00:00:00+00:00",
+          "location": ""
+        }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+tests:
+  - name: returns 400 Bad Request
+    script: |
+      expect(res.status).to.equal(400);
+  - name: response has title Validation Failed
+    script: |
+      expect(res.body.title).to.equal('Validation Failed');
