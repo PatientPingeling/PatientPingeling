@@ -1,5 +1,6 @@
 using FluentValidation;
 using NotificationService.Api.Contracts;
+using NotificationService.Application.Commands;
 
 namespace NotificationService.Api.Validators
 {
