@@ -3,8 +3,10 @@ using NotificationService.Domain.Entities;
 
 namespace NotificationService.Infrastructure.Persistence.Repositories
 {
-  public class NotificationLogRepository : INotificationLogRepository
+  public class NotificationLogRepository(NotificationDbContext dbContext) : INotificationLogRepository
   {
+    private readonly NotificationDbContext _dbContext = dbContext;
+
     public Task AddAsync(NotificationLog log, CancellationToken ct = default)
     {
       throw new NotImplementedException();
