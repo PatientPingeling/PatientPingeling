@@ -3,22 +3,22 @@ using System.Text.Json.Serialization;
 namespace NotificationService.Api.Contracts
 {
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    internal enum AppointmentAction { CREATED, UPDATED, CANCELLED, UNKNOWN }
+    public enum AppointmentAction { CREATED, UPDATED, CANCELLED, UNKNOWN }
 
-    internal sealed record AppointmentWebhookRequest(
+    public sealed record AppointmentWebhookRequest(
         AppointmentAction Action,
         AppointmentPatientDto Patient,
         AppointmentDetailsDto Appointment
     );
 
-    internal sealed record AppointmentPatientDto(
+    public sealed record AppointmentPatientDto(
         string ExternalId,
         string GivenName,
         string? Email,        // nullable — provider determines which contact method is required
         string? PhoneNumber   // nullable — provider determines which contact method is required
     );
 
-    internal sealed record AppointmentDetailsDto(
+    public sealed record AppointmentDetailsDto(
         string ExternalId,
         DateTimeOffset ScheduledAt,
         string? Service,
