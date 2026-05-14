@@ -2,8 +2,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using NotificationService.Application.Abstractions;
 using NotificationService.Infrastructure.Options;
 using NotificationService.Infrastructure.Persistence;
+using NotificationService.Infrastructure.Providers;
+using OpenTelemetry.Exporter;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -12,11 +15,55 @@ using RabbitMQ.Client;
 
 namespace NotificationService.Infrastructure.Extensions
 {
-    public static class MessagingExtensions
+    public static class InfrastructureExtensions
     {
+        public static IServiceCollection AddMessageProviders(this IServiceCollection services, IConfiguration configuration)
+        {
+            var baseUrl = configuration["Providers:BaseUrl"] ?? throw new InvalidOperationException("Missing required configuration: Providers:BaseUrl. Set it via environment variable Providers__BaseUrl or appsettings.json.");
+            var studentGroup = configuration["Providers:StudentGroup"] ?? throw new InvalidOperationException("Missing required configuration: Providers:StudentGroup. Set it via environment variable Providers__StudentGroup or appsettings.json.");
+
+            services.AddScoped<IMessageProviderFactory, MessageProviderFactory>();
+
+            // SwiftSend
+            services.AddKeyedScoped<IMessageProvider, SwiftSendProvider>("SwiftSend");
+            services.AddHttpClient("SwiftSend", client =>
+            {
+                client.BaseAddress = new Uri(baseUrl);
+                client.DefaultRequestHeaders.Add("X-STUDENT-GROUP", studentGroup);
+            });
+
+            // SecurePost
+            services.AddKeyedScoped<IMessageProvider, SecurePostProvider>("SecurePost");
+            services.AddHttpClient("SecurePost", client =>
+            {
+                client.BaseAddress = new Uri(baseUrl);
+                client.DefaultRequestHeaders.Add("X-STUDENT-GROUP", studentGroup);
+            });
+
+            // AsyncFlow
+            services.AddKeyedScoped<IMessageProvider, AsyncFlowProvider>("AsyncFlow");
+            services.AddHttpClient("AsyncFlow", client =>
+            {
+                client.BaseAddress = new Uri(baseUrl);
+                client.DefaultRequestHeaders.Add("X-STUDENT-GROUP", studentGroup);
+            });
+
+            // LegacyLink
+            services.AddKeyedScoped<IMessageProvider, LegacyLinkProvider>("LegacyLink");
+            services.AddHttpClient("LegacyLink", client =>
+            {
+                client.BaseAddress = new Uri(baseUrl);
+                client.DefaultRequestHeaders.Add("X-STUDENT-GROUP", studentGroup);
+            });
+
+            return services;
+        }
+
         public static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration)
         {
-            var connectionString = configuration.GetConnectionString("Postgres") ?? throw new InvalidOperationException("Missing required configuration: ConnectionStrings:Postgres. Set it via environment variable ConnectionStrings__Postgres or appsettings.json.");
+            var connectionString = configuration.GetConnectionString("Postgres")
+                ?? throw new InvalidOperationException("Missing required configuration: ConnectionStrings:Postgres. Set it via environment variable ConnectionStrings__Postgres or appsettings.json.");
+
             services.AddDbContext<NotificationDbContext>(options =>
             {
                 options.UseNpgsql(connectionString, npgsqlOptions =>
@@ -121,7 +168,7 @@ namespace NotificationService.Infrastructure.Extensions
             return services;
         }
 
-        private static Action<OpenTelemetry.Exporter.OtlpExporterOptions> ConfigureExporter(OpenTelemetryOptions options)
+        private static Action<OtlpExporterOptions> ConfigureExporter(OpenTelemetryOptions options)
         {
             return exporter =>
             {
