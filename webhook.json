@@ -1,17 +1,47 @@
 {
-  "action": "CREATED",
-  "tenantId": "00000000-0000-0000-0000-000000000001",
-  "patient": {
-    "externalId": "PP-0042",
-    "givenName": "Jan",
-    "email": "jan.devries@email.com",
-    "phoneNumber": "+31612345678"
+  "_comment": "POST /webhooks/appointments",
+
+  "headers": {
+    "Content-Type": "application/json",
+    "X-Tenant-Id": "00000000-0000-0000-0000-000000000001",
+    "X-Webhook-Secret": "kjsbjhkanldsghijokamsdjsfheuwijnfkbhidwoknhbvfdn"
   },
-  "appointment": {
-    "externalId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    "scheduledAt": "2026-06-15T09:30:00+02:00",
-    "service": "General Medicine",
-    "location": "Cardiologie, Kamer B3",
-    "instructions": "Neem uw vorige testresultaten mee"
+
+  "body": {
+    "action": "CREATED",
+    "patient": {
+      "externalId": "PP-0042",
+      "givenName": "Jan",
+      "email": "jan.devries@email.com",
+      "phoneNumber": "+31612345678"
+    },
+    "appointment": {
+      "externalId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "scheduledAt": "2026-06-15T09:30:00+02:00",
+      "service": "General Medicine",
+      "location": "Cardiologie, Kamer B3",
+      "instructions": "Neem uw vorige testresultaten mee"
+    }
+  },
+
+  "response_success": {
+    "status": 201,
+    "body": {
+      "received": true,
+      "action": "CREATED",
+      "tenantId": "00000000-0000-0000-0000-000000000001",
+      "patientExternalId": "PP-0042",
+      "appointmentExternalId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+    }
+  },
+
+  "response_error": {
+    "status": 400,
+    "body": {
+      "type": "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+      "title": "Invalid Appointment",
+      "status": 400,
+      "detail": "appointment.scheduledAt must be a valid future date with timezone offset."
+    }
   }
 }

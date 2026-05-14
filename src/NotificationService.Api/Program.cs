@@ -1,3 +1,4 @@
+using FluentValidation;
 using NotificationService.Api.Endpoints;
 using NotificationService.Infrastructure.Extensions;
 
@@ -5,7 +6,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 
-// Database
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+
+// Infrastructure
 builder.Services
     .AddDatabase(builder.Configuration)
     .AddOpenTelemetry(

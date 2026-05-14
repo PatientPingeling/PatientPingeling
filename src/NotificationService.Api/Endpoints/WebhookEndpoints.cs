@@ -1,6 +1,6 @@
-using System.Text.Json.Serialization;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
-using NotificationService.Application.Services;
+using NotificationService.Api.Contracts;
 
 namespace NotificationService.Api.Endpoints
 {
@@ -15,39 +15,34 @@ namespace NotificationService.Api.Endpoints
             return app;
         }
 
-        private static IResult ReceiveAppointmentWebhook(IAppointmentIngestionService appointmentIngestionService, [FromBody] AppointmentWebhookRequest request)
+        private static async Task<IResult> ReceiveAppointmentWebhook(
+           [FromBody] AppointmentWebhookRequest request,
+           [FromHeader(Name = "X-Tenant-Id")] Guid tenantId,
+           [FromHeader(Name = "X-Webhook-Secret")] string? webhookSecret,
+           IValidator<AppointmentWebhookRequest> validator,
+           CancellationToken ct
+        )
         {
-            if (request is null)
-                return TypedResults.BadRequest();
+            var validation = await validator.ValidateAsync(request, ct);
+            if (!validation.IsValid)
+            {
+                return TypedResults.Problem(
+                    detail: string.Join(", ", validation.Errors.Select(e => e.ErrorMessage)),
+                    statusCode: StatusCodes.Status400BadRequest,
+                    title: "Validation Failed"
+                );
+            }
 
-            // Process webhook
+            // TODO: replace with real ingestion service call once feat/webhook-implementation is merged
 
-            return TypedResults.Ok();
+            return TypedResults.Created("/webhooks/appointments", new
+            {
+                received = true,
+                action = request.Action.ToString(),
+                tenantId,
+                patientExternalId = request.Patient.ExternalId,
+                appointmentExternalId = request.Appointment.ExternalId
+            });
         }
     }
-
-    [JsonConverter(typeof(JsonStringEnumConverter))]
-    internal enum AppointmentAction { CREATED, UPDATED, CANCELLED, UNKNOWN }
-
-    internal sealed record AppointmentWebhookRequest(
-        AppointmentAction Action,
-        string TenantId,
-        AppointmentPatientDto Patient,
-        AppointmentDetailsDto Appointment
-    );
-
-    internal sealed record AppointmentPatientDto(
-        string ExternalId,
-        string GivenName,
-        string Email,
-        string PhoneNumber
-    );
-
-    internal sealed record AppointmentDetailsDto(
-        string ExternalId,          // Appointment UUID from source system — idempotency key
-        DateTimeOffset ScheduledAt, // Timezone-aware — critical for 24h/1h scheduling
-        string? Service,
-        string Location,
-        string? Instructions
-    );
 }
