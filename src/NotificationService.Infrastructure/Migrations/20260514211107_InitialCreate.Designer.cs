@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace NotificationService.Infrastructure.Migrations
 {
     [DbContext(typeof(NotificationDbContext))]
-    [Migration("20260514161051_InitialCreate")]
+    [Migration("20260514211107_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -103,6 +103,10 @@ namespace NotificationService.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("ExternalId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("GivenName")
                         .IsRequired()
                         .HasColumnType("text");
@@ -176,6 +180,10 @@ namespace NotificationService.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<string>("ApiKeyHash")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .IsRequired()
