@@ -4,21 +4,26 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.module.BaseModuleActivator;
 import org.openmrs.module.ModuleFactory;
+import org.openmrs.module.DaemonToken; // Import toegevoegd
 import org.openmrs.module.patientpingeling.enricher.event.EventSubscriber;
 
 public class PatientpingelingenricherActivator extends BaseModuleActivator {
 	
-	static {
-		System.out.println("PP_ENRICHER_STATIC: Class loaded!");
+	private static DaemonToken daemonToken; // Statisch opslaan zodat we erbij kunnen
+	
+	public static DaemonToken getDaemonToken() {
+		return daemonToken;
+	}
+	
+	public void setDaemonToken(DaemonToken token) {
+		daemonToken = token;
 	}
 	
 	private final Log log = LogFactory.getLog(this.getClass());
 	
 	@Override
 	public void started() {
-		System.out.println("PP_ENRICHER_STATIC: started() called!");
 		log.error("PP_ENRICHER: started() called");
-		log.error("PP_ENRICHER: event started = " + ModuleFactory.isModuleStarted("event"));
 		try {
 			EventSubscriber.subscribe();
 			log.error("PP_ENRICHER: subscribe completed");
@@ -31,14 +36,9 @@ public class PatientpingelingenricherActivator extends BaseModuleActivator {
 	@Override
 	public void stopped() {
 		log.info("PP_ENRICHER: stopped() called");
-		
-		boolean eventStarted = ModuleFactory.isModuleStarted("event");
-		log.info("PP_ENRICHER: isModuleStarted('event') = " + eventStarted);
-		
-		if (eventStarted) {
+		if (ModuleFactory.isModuleStarted("event")) {
 			try {
 				EventSubscriber.unsubscribe();
-				log.info("PP_ENRICHER: Unsubscribed from Event module.");
 			}
 			catch (Exception e) {
 				log.error("PP_ENRICHER: Unsubscribe failed", e);

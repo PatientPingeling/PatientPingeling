@@ -1,9 +1,11 @@
 package org.openmrs.module.patientpingeling.enricher.event;
 
 import org.openmrs.module.patientpingeling.enricher.Model.EnrichedEvent;
+import org.openmrs.module.patientpingeling.enricher.PatientpingelingenricherActivator; // Import toegevoegd
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.context.Context;
+import org.openmrs.api.context.Daemon;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -21,40 +23,46 @@ public class SimpleAppointmentListener {
 		    new InvocationHandler() {
 			    
 			    @Override
-			    public Object invoke(Object proxy, Method method, Object[] args) {
+			    public Object invoke(Object proxy, final Method method, final Object[] args) {
 				    if ("onMessage".equals(method.getName()) && args != null && args.length == 1) {
 					    try {
-						    Object message = args[0];
+						    final Object message = args[0];
 						    if (mapMessageClass.isInstance(message)) {
-							    Method getString = mapMessageClass.getMethod("getString", String.class);
+							    final Method getString = mapMessageClass.getMethod("getString", String.class);
 							    
-							    // 'action' bevat CREATED, UPDATED, etc.
-							    String action = (String) getString.invoke(message, "action");
-							    String uuid = (String) getString.invoke(message, "uuid");
+							    final String action = (String) getString.invoke(message, "action");
+							    final String uuid = (String) getString.invoke(message, "uuid");
 							    
 							    log.error("PP_EVENT_LOG: Received " + action + " for UUID: " + uuid);
 							    
-							    Context.openSession();
-							    try {
-								    Context.authenticate("admin", "Admin123");
-								    EventEnricher enricher = new EventEnricher();
+							    // Daemon aanroep met het token van de Activator
+							    Daemon.runInDaemonThread(new Runnable() {
 								    
-								    // Geef nu zowel UUID als ACTION mee aan de enricher
-								    EnrichedEvent enriched = (EnrichedEvent) enricher.enrichAppointment(uuid, action);
-								    
-								    if (enriched == null) {
-									    log.error("PP_ENRICHER: Enrichment returned null for UUID: " + uuid);
+								    @Override
+								    public void run() {
+									    try {
+										    Context.openSession();
+										    EventEnricher enricher = new EventEnricher();
+										    EnrichedEvent enriched = enricher.enrichAppointment(uuid, action);
+										    
+										    if (enriched == null) {
+											    log.error("PP_ENRICHER: Enrichment returned null for UUID: " + uuid);
+										    }else{
+											// Logica for webhook benaderen met enriched data.
+											}
+									    }
+									    catch (Exception e) {
+										    log.error("PP_ENRICHER: Error in background processing", e);
+									    }
+									    finally {
+										    Context.closeSession();
+									    }
 								    }
-								    // De succesvolle log wordt nu in EventEnricher gedaan, 
-								    // dus die hoeft hier niet dubbel te staan.
-							    }
-							    finally {
-								    Context.closeSession();
-							    }
+							    }, PatientpingelingenricherActivator.getDaemonToken());
 						    }
 					    }
 					    catch (Exception e) {
-						    log.error("PP_ENRICHER: Error during message processing", e);
+						    log.error("PP_ENRICHER: Error during proxy invocation", e);
 					    }
 				    }
 				    return null;
