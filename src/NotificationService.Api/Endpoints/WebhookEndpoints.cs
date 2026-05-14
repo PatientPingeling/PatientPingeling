@@ -19,7 +19,7 @@ namespace NotificationService.Api.Endpoints
            [FromBody] AppointmentWebhookRequest request,
            [FromHeader(Name = "X-Tenant-Id")] Guid tenantId,
            [FromHeader(Name = "X-Webhook-Secret")] string? webhookSecret,
-           IValidator<AppointmentWebhookRequest> validator,
+           [FromServices] IValidator<AppointmentWebhookRequest> validator,
            CancellationToken ct
         )
         {
