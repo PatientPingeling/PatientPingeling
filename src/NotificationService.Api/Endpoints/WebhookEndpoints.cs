@@ -23,6 +23,9 @@ namespace NotificationService.Api.Endpoints
            CancellationToken ct
         )
         {
+            // Log incoming webhook details
+            Console.WriteLine($"Webhook received: Action={request.Action}, TenantId={tenantId}, PatientId={request.Patient.ExternalId}, AppointmentId={request.Appointment.ExternalId}");
+
             var validation = await validator.ValidateAsync(request, ct);
             if (!validation.IsValid)
             {
