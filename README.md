@@ -134,7 +134,7 @@ The notification service follows **Clean Architecture (Onion)** — dependencies
 
 The OpenMRS plugin follows a two-layer structure: `api/` holds all business logic and RabbitMQ publishing; `omod/` handles module bootstrapping and the admin UI. RabbitMQ logic never leaks into `omod/`.
 
-For full architectural context, ADRs, and C4 diagrams, see the [Docs repository](https://github.com/PatientPingeling/Docs).
+For full architectural context, ADRs, and C4 diagrams, see the [Docs repository](https://github.com/PatientPingeling/Docs). The local docs also include the Notification Service database ERD as [Markdown](docs/ERD/notification-service-database.md) and [draw.io](docs/ERD/notification-service-database.drawio).
 
 ---
 

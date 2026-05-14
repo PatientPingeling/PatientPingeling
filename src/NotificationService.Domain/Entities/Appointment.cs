@@ -11,6 +11,9 @@ namespace NotificationService.Domain.Entities
         public int PatientId { get; set; }
         public Patient Patient { get; set; } = null!;
 
+        public Guid TenantId { get; set; }
+        public Tenant Tenant { get; set; } = null!;
+
         public ICollection<ScheduledNotification> ScheduledNotifications { get; set; } = [];
     }
 }
