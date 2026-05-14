@@ -3,8 +3,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using NotificationService.Application.Abstractions;
+using NotificationService.Application.Services;
 using NotificationService.Infrastructure.Options;
 using NotificationService.Infrastructure.Persistence;
+using NotificationService.Infrastructure.Persistence.Repositories;
 using NotificationService.Infrastructure.Providers;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Logs;
@@ -71,6 +73,12 @@ namespace NotificationService.Infrastructure.Extensions
                     npgsqlOptions.EnableRetryOnFailure(5);
                 });
             });
+
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IAppointmentRepository, AppointmentRepository>();
+            services.AddScoped<IPatientRepository, PatientRepository>();
+            services.AddScoped<IScheduledNotificationRepository, ScheduledNotificationRepository>();
+            services.AddScoped<IAppointmentIngestionService, AppointmentIngestionService>();
 
             return services;
         }
