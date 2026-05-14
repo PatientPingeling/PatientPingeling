@@ -3,9 +3,9 @@ using NotificationService.Api.Contracts;
 
 namespace NotificationService.Api.Validators
 {
-  internal sealed class AppointmentWebhookRequestValidator : AbstractValidator<AppointmentWebhookRequest>
+  public sealed class AppointmentWebhookRequestValidator : AbstractValidator<AppointmentWebhookRequest>
   {
-    internal AppointmentWebhookRequestValidator()
+    public AppointmentWebhookRequestValidator()
     {
       // 1. Top-level safety
       // TODO: Possibly remove (fail if unknown) when service can figure it out himself
@@ -22,9 +22,9 @@ namespace NotificationService.Api.Validators
     }
   }
 
-  internal sealed class PatientValidator : AbstractValidator<AppointmentPatientDto>
+  public sealed class PatientValidator : AbstractValidator<AppointmentPatientDto>
   {
-    internal PatientValidator()
+    public PatientValidator()
     {
       RuleFor(x => x.ExternalId).NotEmpty().MaximumLength(100);
       RuleFor(x => x.GivenName).NotEmpty().MaximumLength(200);
@@ -36,9 +36,9 @@ namespace NotificationService.Api.Validators
     }
   }
 
-  internal sealed class AppointmentDetailsValidator : AbstractValidator<AppointmentDetailsDto>
+  public sealed class AppointmentDetailsValidator : AbstractValidator<AppointmentDetailsDto>
   {
-    internal AppointmentDetailsValidator()
+    public AppointmentDetailsValidator()
     {
       RuleFor(x => x.ExternalId).NotEmpty();
       RuleFor(x => x.Location).NotEmpty().MaximumLength(500);

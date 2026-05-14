@@ -29,10 +29,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-      otel-lgtm:
-        condition: service_started
+      # otel-lgtm:
+      #   condition: service_started
     ports:
       - "8000:8000"
     restart: unless-stopped
@@ -186,6 +184,10 @@ services:
       OMRS_CONFIG_CONNECTION_DATABASE: openmrs
       OMRS_CONFIG_CONNECTION_USERNAME: ${OMRS_DB_USER:-openmrs}
       OMRS_CONFIG_CONNECTION_PASSWORD: ${OMRS_DB_PASSWORD:-openmrs}
+      # --- PATIENT PINGELING SECRETS ---
+      PP_API_KEY: "nt9jiornejrbhyu8eihbru89niejhruy"
+      PP_WEBHOOK_URL: "http://api:8000/webhooks/appointments"
+      PP_TENANT_KEY: "92f5ffdb-0ae7-4cfa-8458-8988b8bc7ee8"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/openmrs"]
       timeout: 5s

@@ -1,61 +1,159 @@
 package org.openmrs.module.patientpingeling.enricher.Model;
 
-import java.time.LocalDateTime;
-
 public class EnrichedEvent {
 	
-	// Enum voor duidelijke acties
 	public enum AppointmentAction {
 		CREATED, UPDATED, CANCELLED, UNKNOWN
 	}
 	
-	private String uuid;
-	
 	private AppointmentAction action;
 	
-	private String status; // De ruwe status uit DB (Scheduled/Cancelled)
+	private PatientDto patient;
 	
-	private String appointmentService; // Bijv. 'General Medicine'
+	private AppointmentDto appointment;
 	
-	private String locatie;
+	// -- Nested: Patient --
+	public static class PatientDto {
+		
+		private String externalId;
+		
+		private String givenName;
+		
+		private String email;
+		
+		private String phoneNumber;
+		
+		public PatientDto() {
+		}
+		
+		public PatientDto(String externalId, String givenName, String email, String phoneNumber) {
+			this.externalId = externalId;
+			this.givenName = givenName;
+			this.email = email;
+			this.phoneNumber = phoneNumber;
+		}
+		
+		public String getExternalId() {
+			return externalId;
+		}
+		
+		public void setExternalId(String externalId) {
+			this.externalId = externalId;
+		}
+		
+		public String getGivenName() {
+			return givenName;
+		}
+		
+		public void setGivenName(String givenName) {
+			this.givenName = givenName;
+		}
+		
+		public String getEmail() {
+			return email;
+		}
+		
+		public void setEmail(String email) {
+			this.email = email;
+		}
+		
+		public String getPhoneNumber() {
+			return phoneNumber;
+		}
+		
+		public void setPhoneNumber(String phoneNumber) {
+			this.phoneNumber = phoneNumber;
+		}
+		
+		@Override
+		public String toString() {
+			return "PatientDto{externalId='" + externalId + "', givenName='" + givenName + "', email='" + email
+			        + "', phoneNumber='" + phoneNumber + "'}";
+		}
+	}
 	
-	private LocalDateTime datumEnTijd;
+	// -- Nested: Appointment --
+	public static class AppointmentDto {
+		
+		private String externalId;
+		
+		private String scheduledAt; // ISO-8601 with offset e.g. "2026-06-01T10:00:00+02:00"
+		
+		private String service;
+		
+		private String location;
+		
+		private String instructions;
+		
+		public AppointmentDto() {
+		}
+		
+		public AppointmentDto(String externalId, String scheduledAt, String service, String location, String instructions) {
+			this.externalId = externalId;
+			this.scheduledAt = scheduledAt;
+			this.service = service;
+			this.location = location;
+			this.instructions = instructions;
+		}
+		
+		public String getExternalId() {
+			return externalId;
+		}
+		
+		public void setExternalId(String externalId) {
+			this.externalId = externalId;
+		}
+		
+		public String getScheduledAt() {
+			return scheduledAt;
+		}
+		
+		public void setScheduledAt(String scheduledAt) {
+			this.scheduledAt = scheduledAt;
+		}
+		
+		public String getService() {
+			return service;
+		}
+		
+		public void setService(String service) {
+			this.service = service;
+		}
+		
+		public String getLocation() {
+			return location;
+		}
+		
+		public void setLocation(String location) {
+			this.location = location;
+		}
+		
+		public String getInstructions() {
+			return instructions;
+		}
+		
+		public void setInstructions(String instructions) {
+			this.instructions = instructions;
+		}
+		
+		@Override
+		public String toString() {
+			return "AppointmentDto{externalId='" + externalId + "', scheduledAt='" + scheduledAt + "', service='" + service
+			        + "', location='" + location + "', instructions='" + instructions + "'}";
+		}
+	}
 	
-	private String comments;
-	
-	private String email;
-	
-	private String tel;
-	
-	private String naam;
-	
-	// Constructors
+	// -- Constructors --
 	public EnrichedEvent() {
 	}
 	
-	public EnrichedEvent(String uuid, AppointmentAction action, String status, String appointmentService, String locatie,
-	    LocalDateTime datumEnTijd, String comments, String email, String tel, String naam) {
-		this.uuid = uuid;
+	public EnrichedEvent(AppointmentAction action, PatientDto patient, AppointmentDto appointment) {
 		this.action = action;
-		this.status = status;
-		this.appointmentService = appointmentService;
-		this.locatie = locatie;
-		this.datumEnTijd = datumEnTijd;
-		this.comments = comments;
-		this.email = email;
-		this.tel = tel;
-		this.naam = naam;
+		this.patient = patient;
+		this.appointment = appointment;
 	}
 	
-	// Getters and Setters
-	public String getUuid() {
-		return uuid;
-	}
-	
-	public void setUuid(String uuid) {
-		this.uuid = uuid;
-	}
-	
+	// -- Getters & Setters --
 	public AppointmentAction getAction() {
 		return action;
 	}
@@ -64,75 +162,24 @@ public class EnrichedEvent {
 		this.action = action;
 	}
 	
-	public String getStatus() {
-		return status;
+	public PatientDto getPatient() {
+		return patient;
 	}
 	
-	public void setStatus(String status) {
-		this.status = status;
+	public void setPatient(PatientDto patient) {
+		this.patient = patient;
 	}
 	
-	public String getAppointmentService() {
-		return appointmentService;
+	public AppointmentDto getAppointment() {
+		return appointment;
 	}
 	
-	public void setAppointmentService(String appointmentService) {
-		this.appointmentService = appointmentService;
-	}
-	
-	public String getLocatie() {
-		return locatie;
-	}
-	
-	public void setLocatie(String locatie) {
-		this.locatie = locatie;
-	}
-	
-	public LocalDateTime getDatumEnTijd() {
-		return datumEnTijd;
-	}
-	
-	public void setDatumEnTijd(LocalDateTime datumEnTijd) {
-		this.datumEnTijd = datumEnTijd;
-	}
-	
-	public String getComments() {
-		return comments;
-	}
-	
-	public void setComments(String comments) {
-		this.comments = comments;
-	}
-	
-	public String getEmail() {
-		return email;
-	}
-	
-	public void setEmail(String email) {
-		this.email = email;
-	}
-	
-	public String getTel() {
-		return tel;
-	}
-	
-	public void setTel(String tel) {
-		this.tel = tel;
-	}
-	
-	public String getNaam() {
-		return naam;
-	}
-	
-	public void setNaam(String naam) {
-		this.naam = naam;
+	public void setAppointment(AppointmentDto appointment) {
+		this.appointment = appointment;
 	}
 	
 	@Override
 	public String toString() {
-		return "EnrichedEvent{" + "uuid='" + uuid + '\'' + ", action=" + action + ", status='" + status + '\''
-		        + ", service='" + appointmentService + '\'' + ", naam='" + naam + '\'' + ", locatie='" + locatie + '\''
-		        + ", datumEnTijd=" + datumEnTijd + ", email='" + email + '\'' + ", tel='" + tel + '\'' + ", comments='"
-		        + comments + '\'' + '}';
+		return "EnrichedEvent{action=" + action + ", patient=" + patient + ", appointment=" + appointment + "}";
 	}
 }
