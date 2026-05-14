@@ -4,6 +4,9 @@ namespace NotificationService.Application.Abstractions
 {
   public interface IAppointmentRepository
   {
-    Task IngestAsync(Patient patient, Appointment appointment, IReadOnlyCollection<ScheduledNotification> notifications, CancellationToken ct = default);
+    Task<Appointment?> GetByExternalIdAsync(string externalId, CancellationToken ct = default);
+    Task AddAsync(Appointment appointment, CancellationToken ct = default);
+    Task UpdateAsync(Appointment appointment, CancellationToken ct = default);
+
   }
 }
