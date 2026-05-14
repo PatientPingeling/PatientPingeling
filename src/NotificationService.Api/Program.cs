@@ -34,6 +34,8 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+// TODO: Add JsonStringEnumConverter
+
 // Middleware
 app.UseHttpsRedirection();
 
