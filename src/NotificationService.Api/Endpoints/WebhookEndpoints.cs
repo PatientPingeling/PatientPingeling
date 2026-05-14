@@ -18,11 +18,17 @@ namespace NotificationService.Api.Endpoints
         private static async Task<IResult> ReceiveAppointmentWebhook(
            [FromBody] AppointmentWebhookRequest request,
            [FromHeader(Name = "X-Tenant-Id")] Guid tenantId,
-           [FromHeader(Name = "X-Webhook-Secret")] string? webhookSecret,
+           [FromHeader(Name = "X-Api-Key")] string? apiKey,
            [FromServices] IValidator<AppointmentWebhookRequest> validator,
            CancellationToken ct
         )
         {
+            if (tenantId == Guid.Empty)
+                return TypedResults.Problem("Missing or invalid X-Tenant-Id header.", statusCode: StatusCodes.Status400BadRequest, title: "Bad Request");
+
+            if (string.IsNullOrWhiteSpace(apiKey))
+                return TypedResults.Problem("Missing X-Api-Key header.", statusCode: StatusCodes.Status400BadRequest, title: "Bad Request");
+
             // Log incoming webhook details
             Console.WriteLine($"Webhook received: Action={request.Action}, TenantId={tenantId}, PatientId={request.Patient.ExternalId}, AppointmentId={request.Appointment.ExternalId}");
 
