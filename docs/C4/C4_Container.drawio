@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram name="C4 Container" id="0">
-        <mxGraphModel dx="1860" dy="1281" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1000" math="0" shadow="0">
+        <mxGraphModel dx="2003" dy="1380" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1000" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -63,7 +63,7 @@
                 </object>
                 <object placeholders="1" c4Name="Patient / Client" c4Type="Person" c4Description="Ontvangt notificaties via een van de messaging providers." label="%c4Name%&lt;br&gt;[%c4Type%]&lt;br&gt;&lt;br&gt;%c4Description%" id="patient">
                     <mxCell style="fontSize=11;dashed=0;whiteSpace=wrap;fillColor=#083F75;strokeColor=#06315C;fontColor=#FFFFFF;shape=mxgraph.c4.person2;align=center;metaEdit=1;points=[[0.5,0,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0]];resizable=0;html=1;" parent="1" vertex="1">
-                        <mxGeometry x="1545" y="440" width="155" height="150" as="geometry"/>
+                        <mxGeometry x="1552.5" y="440" width="155" height="150" as="geometry"/>
                     </mxCell>
                 </object>
                 <object placeholders="1" c4Type="Relationship" c4Technology="HTTP" c4Description="Stuurt voorbeeldrequest" label="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;%c4Description%&lt;/b&gt;&lt;br&gt;[%c4Technology%]&lt;/div&gt;" id="rel-admin-api">
