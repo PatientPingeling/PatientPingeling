@@ -58,7 +58,11 @@ public class SimpleAppointmentListener {
 										    if (enriched != null) {
 											    ObjectMapper mapper = new ObjectMapper();
 											    String json = mapper.writeValueAsString(enriched);
-											    log.error("PP_DEBUG: JSON built, calling webhook...");
+											    String maskedApi = API_KEY == null ? "<null>"
+											            : (API_KEY.length() > 4 ? API_KEY.substring(0, 4) + "..."
+											                    : "<short>");
+											    log.error("PP_WEBHOOK: URL=" + WEBHOOK_URL + " TENANT=" + TENANT_ID
+											            + " API_KEY_NULL=" + (API_KEY == null));
 											    webHookCaller(json);
 										    }
 									    }

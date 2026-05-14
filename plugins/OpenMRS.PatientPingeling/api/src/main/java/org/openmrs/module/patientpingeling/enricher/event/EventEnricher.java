@@ -7,8 +7,8 @@ import org.openmrs.api.context.Context;
 import org.openmrs.module.patientpingeling.enricher.Model.EnrichedEvent;
 import org.openmrs.module.patientpingeling.enricher.Model.EnrichedEvent.AppointmentAction;
 
+import java.time.format.DateTimeFormatter;
 import java.lang.reflect.Method;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 
@@ -16,7 +16,6 @@ public class EventEnricher {
 	
 	private static final Log log = LogFactory.getLog(EventEnricher.class);
 	
-	// Nu met eventType als parameter!
 	public EnrichedEvent enrichAppointment(String appointmentUuid, String eventType) {
 		if (appointmentUuid == null || appointmentUuid.isEmpty()) {
 			log.info("PP_ENRICHER: Appointment UUID must not be null or empty");
@@ -35,34 +34,28 @@ public class EventEnricher {
 				return null;
 			}
 			
-			EnrichedEvent enriched = new EnrichedEvent();
-			enriched.setUuid(appointmentUuid);
-			
-			// 1. Status & Action mapping
+			// 1. Action mapping
 			String rawStatus = invokeStringMethod(appointment, "getStatus");
-			enriched.setStatus(rawStatus);
-			
+			AppointmentAction action;
 			if ("Cancelled".equalsIgnoreCase(rawStatus)) {
-				enriched.setAction(AppointmentAction.CANCELLED);
+				action = AppointmentAction.CANCELLED;
 			} else if ("UPDATED".equals(eventType)) {
-				enriched.setAction(AppointmentAction.UPDATED);
+				action = AppointmentAction.UPDATED;
 			} else if ("CREATED".equals(eventType)) {
-				enriched.setAction(AppointmentAction.CREATED);
+				action = AppointmentAction.CREATED;
 			} else {
-				enriched.setAction(AppointmentAction.UNKNOWN);
+				action = AppointmentAction.UNKNOWN;
 			}
 			
-			// 2. Service/Department Extraction (Multiple fallbacks)
-			String serviceName = "Unknown Service";
+			// 2. Service name (multiple fallbacks)
+			String serviceName = null;
 			try {
-				// Poging A: getService()
 				Object sObj = null;
 				try {
 					sObj = appointment.getClass().getMethod("getService").invoke(appointment);
 				}
 				catch (Exception ignored) {}
 				
-				// Poging B: getAppointmentService()
 				if (sObj == null) {
 					try {
 						sObj = appointment.getClass().getMethod("getAppointmentService").invoke(appointment);
@@ -70,7 +63,6 @@ public class EventEnricher {
 					catch (Exception ignored) {}
 				}
 				
-				// Poging C: getAppointmentType()
 				if (sObj == null) {
 					try {
 						sObj = appointment.getClass().getMethod("getAppointmentType").invoke(appointment);
@@ -85,32 +77,45 @@ public class EventEnricher {
 			catch (Exception e) {
 				log.debug("PP_ENRICHER: Could not extract service name");
 			}
-			enriched.setAppointmentService(serviceName);
 			
-			// 3. General Data
-			enriched.setLocatie(invokeStringMethod(appointment, "getLocation"));
-			enriched.setComments(invokeStringMethod(appointment, "getComments"));
-			
+			// 3. Scheduled date with timezone offset
 			Date startDate = (Date) appointment.getClass().getMethod("getStartDateTime").invoke(appointment);
-			if (startDate != null) {
-				enriched.setDatumEnTijd(startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
+			String scheduledAt = startDate != null ? startDate.toInstant().atZone(ZoneId.of("Europe/Amsterdam"))
+			        .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME) : null;
+			
+			// 4. Location & instructions
+			String location = invokeStringMethod(appointment, "getLocation");
+			String instructions = invokeStringMethod(appointment, "getComments");
+			
+			// 5. Patient details
+			Patient patient = (Patient) appointment.getClass().getMethod("getPatient").invoke(appointment);
+			EnrichedEvent.PatientDto patientDto = new EnrichedEvent.PatientDto();
+			if (patient != null) {
+				patientDto.setExternalId(patient.getPatientIdentifier() != null ? patient.getPatientIdentifier()
+				        .getIdentifier() : appointmentUuid);
+				patientDto.setGivenName(patient.getPersonName() != null ? patient.getPersonName().getGivenName() : null);
+				patientDto.setEmail(patient.getAttribute("email") != null ? patient.getAttribute("email").getValue() : null);
+				patientDto.setPhoneNumber(patient.getAttribute("Telephone Number") != null ? patient.getAttribute(
+				    "Telephone Number").getValue() : null);
 			}
 			
-			// 4. Patient Details
-			Patient patient = (Patient) appointment.getClass().getMethod("getPatient").invoke(appointment);
-			if (patient != null) {
-				enriched.setNaam(patient.getPersonName().getFullName());
-				enriched.setEmail(patient.getAttribute("email") != null ? patient.getAttribute("email").getValue() : "N/A");
-				enriched.setTel(patient.getAttribute("Telephone Number") != null ? patient.getAttribute("Telephone Number")
-				        .getValue() : "N/A");
-			}
+			// 6. Appointment DTO
+			EnrichedEvent.AppointmentDto apptDto = new EnrichedEvent.AppointmentDto();
+			apptDto.setExternalId(appointmentUuid);
+			apptDto.setScheduledAt(scheduledAt);
+			apptDto.setService(serviceName);
+			apptDto.setLocation(location);
+			apptDto.setInstructions(instructions);
+			
+			// 7. Build final event
+			EnrichedEvent enriched = new EnrichedEvent(action, patientDto, apptDto);
 			
 			log.error("PP_ENRICHER: Data successfully captured -> " + enriched.toString());
 			return enriched;
 			
 		}
 		catch (Exception e) {
-			log.debug("PP_ENRICHER: Error enriching appointment " + appointmentUuid, e);
+			log.error("PP_ENRICHER: Error enriching appointment " + appointmentUuid, e);
 			return null;
 		}
 	}
