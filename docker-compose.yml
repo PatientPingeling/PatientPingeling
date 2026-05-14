@@ -70,12 +70,16 @@ services:
       - RabbitMQ__Password=${RABBITMQ_PASSWORD}
       - OpenTelemetry__Endpoint=http://otel-lgtm:4317
       - OpenTelemetry__Environment=${ASPNETCORE_ENVIRONMENT:-Production}
+      - Providers__BaseUrl=http://messageproviders:8080
+      - Providers__StudentGroup=${STUDENT_GROUP:-PatientPingeling}
     depends_on:
       postgres:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
       otel-lgtm:
+        condition: service_started
+      messageproviders:
         condition: service_started
     restart: unless-stopped
 
