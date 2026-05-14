@@ -1,10 +1,5 @@
 namespace NotificationService.Domain
 {
-    public record Error(string Code, string Message, bool IsCritical = false)
-    {
-        public static readonly Error None = new(string.Empty, string.Empty);
-    }
-
     public class Result
     {
         public bool IsSuccess { get; }
@@ -33,17 +28,29 @@ namespace NotificationService.Domain
     {
         private readonly TValue _value;
 
-        protected internal Result(TValue value, bool isSuccess, Error error)
-            : base(isSuccess, error)
+        protected internal Result(TValue value, bool isSuccess, Error error) : base(isSuccess, error)
         {
             _value = value;
         }
 
-        public TValue Value => IsSuccess
-            ? _value
-            : throw new InvalidOperationException("The value of a failure result can not be accessed.");
+        public TValue Value => IsSuccess ? _value : throw new InvalidOperationException("The value of a failure result can not be accessed.");
 
         // Implicit conversion for cleaner syntax
         public static implicit operator Result<TValue>(TValue value) => Success(value);
+    }
+
+    public record Error(string Code, string Message, ErrorType Type = ErrorType.Failure) // TODO: Might add support for Exception consumation
+    {
+        public static readonly Error None = new(string.Empty, string.Empty, ErrorType.Failure);
+    }
+
+    public enum ErrorType
+    {
+        Validation,   // 400
+        NotFound,     // 404
+        Conflict,     // 409
+        Unauthorized, // 401
+        Forbidden,     // 403
+        Failure       // 500
     }
 }
