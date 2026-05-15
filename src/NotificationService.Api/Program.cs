@@ -3,6 +3,7 @@ using NotificationService.Api.Endpoints;
 using NotificationService.Application.Abstractions;
 using NotificationService.Application.Services;
 using NotificationService.Infrastructure.Extensions;
+using NotificationService.Infrastructure.Persistence;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -38,9 +39,14 @@ builder.Services
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("testing"))
 {
     app.MapOpenApi();
+
+    // Seed database with mock data
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<NotificationDbContext>();
+    await DevDataSeeder.SeedAsync(db);
 }
 
 // Middleware
