@@ -53,7 +53,17 @@ namespace NotificationService.Application.Services
         return Result.Failure(new Error("patient.db_error", "Failed to retrieve or create patient.", ErrorType.Failure));
       }
 
-      var existing = await _appointmentRepository.GetByExternalIdAsync(command.Appointment.ExternalId, command.TenantId, ct);
+      Appointment? existing;
+      try
+      {
+        existing = await _appointmentRepository.GetByExternalIdAsync(command.Appointment.ExternalId, command.TenantId, ct);
+      }
+      catch (Exception ex)
+      {
+        _logger.LogError(ex, "Failed to check existing appointment {ExternalId}", command.Appointment.ExternalId);
+        return Result.Failure(new Error("appointment.db_error", "Failed to check for existing appointment.", ErrorType.Failure));
+      }
+
       if (existing is not null)
       {
         // Idempotent — duplicate webhook, appointment already exists, skip silently
