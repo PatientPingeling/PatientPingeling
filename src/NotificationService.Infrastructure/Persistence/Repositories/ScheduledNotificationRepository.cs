@@ -22,6 +22,9 @@ namespace NotificationService.Infrastructure.Persistence.Repositories
 
     public async Task<int> DeletePendingByAppointmentIdAsync(int appointmentId, CancellationToken ct = default)
     {
+      // TODO: This read-then-delete is not atomic. The Scheduler can mark a notification as
+      // Processing between this read and SaveChanges. Fix with SELECT FOR UPDATE SKIP LOCKED
+      // when implementing the Scheduler polling query.
       var toDelete = await _dbContext.ScheduledNotifications
         .Where(x => x.AppointmentId == appointmentId &&
           x.Status == ScheduledNotificationStatus.Pending)
