@@ -56,7 +56,9 @@ namespace NotificationService.Application.Services
       var existing = await _appointmentRepository.GetByExternalIdAsync(command.Appointment.ExternalId, ct);
       if (existing is not null)
       {
-        return Result.Failure(new Error("appointment.conflict", "Appointment with this external ID already exists.", ErrorType.Conflict));
+        // Idempotent — duplicate webhook, appointment already exists, skip silently
+        _logger.LogInformation("Skipping duplicate CREATED webhook for appointment {ExternalId}", command.Appointment.ExternalId);
+        return Result.Success();
       }
 
       var appointment = new Appointment
@@ -163,7 +165,7 @@ namespace NotificationService.Application.Services
     {
       try
       {
-        var existing = await _patientRepository.GetByExternalIdAsync(command.Patient.ExternalId, ct);
+        var existing = await _patientRepository.GetByExternalIdAsync(command.Patient.ExternalId, command.TenantId, ct);
         if (existing is not null)
         {
           return (existing, false);

@@ -39,7 +39,7 @@ namespace NotificationService.Domain
         public static implicit operator Result<TValue>(TValue value) => Success(value);
     }
 
-    public record Error(string Code, string Message, ErrorType Type = ErrorType.Failure) // TODO: Might add support for Exception consumation
+    public record Error(string Code, string Message, ErrorType Type = ErrorType.Failure) // TODO: Might add support for Exception consumption
     {
         public static readonly Error None = new(string.Empty, string.Empty, ErrorType.Failure);
     }
