@@ -4,6 +4,7 @@ using NotificationService.Api.Contracts;
 using NotificationService.Api.Extensions;
 using NotificationService.Application.Abstractions;
 using NotificationService.Application.Commands;
+using NotificationService.Domain;
 
 namespace NotificationService.Api.Endpoints
 {
@@ -42,7 +43,7 @@ namespace NotificationService.Api.Endpoints
             }
 
             var validation = await validator.ValidateAsync(request, ct);
-            if (!validation.IsValid)
+            if (validation.IsValid is false)
             {
                 return TypedResults.Problem(detail: string.Join(", ", validation.Errors.Select(e => e.ErrorMessage)), statusCode: StatusCodes.Status400BadRequest, title: "Validation Failed");
             }
@@ -68,10 +69,21 @@ namespace NotificationService.Api.Endpoints
             var result = await ingestionService.IngestAsync(command, ct);
             if (result.IsFailure)
             {
+                if (result.Error.Type == ErrorType.Duplicate)
+                {
+                    return TypedResults.Ok(new { message = "Appointment already exists." });
+                }
+
                 return result.ToProblemDetails();
             }
 
-            return TypedResults.Created();
+            return TypedResults.Created((string?)null, new
+            {
+                appointmentExternalId = request.Appointment.ExternalId,
+                patientExternalId = request.Patient.ExternalId,
+                tenantId,
+                action = request.Action.ToString()
+            });
         }
     }
 }

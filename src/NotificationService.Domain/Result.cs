@@ -50,7 +50,8 @@ namespace NotificationService.Domain
         NotFound,     // 404
         Conflict,     // 409
         Unauthorized, // 401
-        Forbidden,     // 403
-        Failure       // 500
+        Forbidden,    // 403
+        Failure,      // 500
+        Duplicate     // 200 — already exists, idempotent skip
     }
 }

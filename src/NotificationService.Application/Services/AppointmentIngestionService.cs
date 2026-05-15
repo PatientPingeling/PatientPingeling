@@ -66,9 +66,8 @@ namespace NotificationService.Application.Services
 
       if (existing is not null)
       {
-        // Idempotent — duplicate webhook, appointment already exists, skip silently
         _logger.LogInformation("Skipping duplicate CREATED webhook for appointment {ExternalId}", command.Appointment.ExternalId);
-        return Result.Success();
+        return Result.Failure(new Error("appointment.duplicate", "Appointment already exists.", ErrorType.Duplicate));
       }
 
       var appointment = new Appointment
@@ -77,14 +76,14 @@ namespace NotificationService.Application.Services
         Reason = command.Appointment.Service ?? string.Empty,
         Instructions = command.Appointment.Instructions,
         Location = command.Appointment.Location,
-        ScheduledAt = command.Appointment.ScheduledAt,
+        ScheduledAt = command.Appointment.ScheduledAt.ToUniversalTime(),
         TenantId = command.TenantId,
         // If patient is existing (AsNoTracking), use FK only to avoid duplicate insert
         PatientId = isNewPatient ? 0 : patient.Id,
         Patient = isNewPatient ? patient : null!
       };
 
-      var notifications = CreateScheduledNotifications(appointment, command.Appointment.ScheduledAt);
+      var notifications = CreateScheduledNotifications(appointment, appointment.ScheduledAt);
 
       return await ExecuteInTransactionAsync(async () =>
       {
@@ -125,7 +124,7 @@ namespace NotificationService.Application.Services
       appointment.Location = command.Appointment.Location;
 
       var oldScheduledAt = appointment.ScheduledAt;
-      appointment.ScheduledAt = command.Appointment.ScheduledAt;
+      appointment.ScheduledAt = command.Appointment.ScheduledAt.ToUniversalTime();
 
       return await ExecuteInTransactionAsync(async () =>
       {
@@ -134,7 +133,7 @@ namespace NotificationService.Application.Services
 
         if (oldScheduledAt != command.Appointment.ScheduledAt)
         {
-          var notifications = CreateScheduledNotifications(appointment, command.Appointment.ScheduledAt);
+          var notifications = CreateScheduledNotifications(appointment, appointment.ScheduledAt);
           await _scheduledNotificationRepository.DeletePendingByAppointmentIdAsync(appointment.Id, ct);
           await _scheduledNotificationRepository.AddRangeAsync(notifications, ct);
         }
