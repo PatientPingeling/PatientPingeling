@@ -1,6 +1,6 @@
 using NotificationService.Application.Abstractions;
 
-namespace NotificationService.Infrastructure.Providers
+namespace NotificationService.Infrastructure.Providers.AsyncFlow
 {
     public class AsyncFlowProvider(IHttpClientFactory httpClientFactory) : IMessageProvider
     {
