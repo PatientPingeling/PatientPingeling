@@ -22,12 +22,13 @@ namespace NotificationService.Infrastructure.Persistence.Repositories
 
     public async Task<int> DeletePendingByAppointmentIdAsync(int appointmentId, CancellationToken ct = default)
     {
-      // TODO: This read-then-delete is not atomic. The Scheduler can mark a notification as
-      // Processing between this read and SaveChanges. Fix with SELECT FOR UPDATE SKIP LOCKED
-      // when implementing the Scheduler polling query.
+      // SELECT FOR UPDATE SKIP LOCKED — locks rows so the Scheduler cannot concurrently
+      // mark them as Processing between our read and the SaveChanges commit.
       var toDelete = await _dbContext.ScheduledNotifications
-        .Where(x => x.AppointmentId == appointmentId &&
-          x.Status == ScheduledNotificationStatus.Pending)
+        .FromSqlRaw(@"SELECT * FROM ""ScheduledNotifications""
+                      WHERE ""AppointmentId"" = {0}
+                      AND ""Status"" = 'Pending'
+                      FOR UPDATE SKIP LOCKED", appointmentId)
         .ToListAsync(ct);
 
       _dbContext.ScheduledNotifications.RemoveRange(toDelete);
@@ -36,12 +37,12 @@ namespace NotificationService.Infrastructure.Persistence.Repositories
 
     public Task<IReadOnlyCollection<ScheduledNotification>> GetPendingAsync(DateTimeOffset before, CancellationToken ct = default)
     {
-      throw new NotImplementedException();
+      throw new NotImplementedException(); // TODO @JanssenJochem
     }
 
     public Task UpdateStatusAsync(Guid id, ScheduledNotificationStatus status, CancellationToken ct = default)
     {
-      throw new NotImplementedException();
+      throw new NotImplementedException(); // TODO @JanssenJochem
     }
 
 
