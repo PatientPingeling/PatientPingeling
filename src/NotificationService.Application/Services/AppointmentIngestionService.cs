@@ -67,7 +67,9 @@ namespace NotificationService.Application.Services
         Location = command.Appointment.Location,
         ScheduledAt = command.Appointment.ScheduledAt,
         TenantId = command.TenantId,
-        Patient = patient
+        // If patient is existing (AsNoTracking), use FK only to avoid duplicate insert
+        PatientId = isNewPatient ? 0 : patient.Id,
+        Patient = isNewPatient ? patient : null!
       };
 
       var notifications = CreateScheduledNotifications(appointment, command.Appointment.ScheduledAt);
@@ -149,6 +151,7 @@ namespace NotificationService.Application.Services
 
       return await ExecuteInTransactionAsync(async () =>
       {
+        await _scheduledNotificationRepository.DeletePendingByAppointmentIdAsync(appointment.Id, ct);
         await _appointmentRepository.UpdateAsync(appointment, ct);
       }, "cancel.db_error", "cancel appointment", ct);
     }

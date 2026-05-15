@@ -68,10 +68,9 @@ namespace NotificationService.Infrastructure.Extensions
 
             services.AddDbContext<NotificationDbContext>(options =>
             {
-                options.UseNpgsql(connectionString, npgsqlOptions =>
-                {
-                    npgsqlOptions.EnableRetryOnFailure(5);
-                });
+                // TODO: EnableRetryOnFailure is incompatible with manual transactions (UnitOfWork).
+                // To re-enable retries, wrap all ExecuteInTransactionAsync calls in CreateExecutionStrategy().ExecuteAsync.
+                options.UseNpgsql(connectionString);
             });
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
