@@ -85,7 +85,7 @@ namespace NotificationService.Application.Services
 
       var notifications = CreateScheduledNotifications(appointment, appointment.ScheduledAt);
 
-      return await ExecuteInTransactionAsync(async () =>
+      var result = await ExecuteInTransactionAsync(async () =>
       {
         if (isNewPatient)
         {
@@ -95,6 +95,13 @@ namespace NotificationService.Application.Services
         await _appointmentRepository.AddAsync(appointment, ct);
         await _scheduledNotificationRepository.AddRangeAsync(notifications, ct);
       }, "persist.db_error", "persist appointment", ct);
+
+      if (result.IsSuccess)
+      {
+        _logger.LogInformation("Appointment {ExternalId} created for tenant {TenantId}", command.Appointment.ExternalId, command.TenantId);
+      }
+
+      return result;
     }
 
     private async Task<Result> HandleUpdateAsync(IngestAppointmentCommand command, CancellationToken ct)
@@ -112,6 +119,7 @@ namespace NotificationService.Application.Services
 
       if (appointment is null)
       {
+        _logger.LogWarning("Appointment {ExternalId} not found for tenant {TenantId}", command.Appointment.ExternalId, command.TenantId);
         return Result.Failure(new Error("appointment.not_found", "Appointment not found.", ErrorType.NotFound));
       }
 
@@ -126,7 +134,7 @@ namespace NotificationService.Application.Services
       var oldScheduledAt = appointment.ScheduledAt;
       appointment.ScheduledAt = command.Appointment.ScheduledAt.ToUniversalTime();
 
-      return await ExecuteInTransactionAsync(async () =>
+      var result = await ExecuteInTransactionAsync(async () =>
       {
         await _patientRepository.UpdateAsync(appointment.Patient, ct); // TODO: only update if patient fields actually changed
         await _appointmentRepository.UpdateAsync(appointment, ct);
@@ -138,6 +146,13 @@ namespace NotificationService.Application.Services
           await _scheduledNotificationRepository.AddRangeAsync(notifications, ct);
         }
       }, "update.db_error", "update appointment", ct);
+
+      if (result.IsSuccess)
+      {
+        _logger.LogInformation("Appointment {ExternalId} updated for tenant {TenantId}", command.Appointment.ExternalId, command.TenantId);
+      }
+
+      return result;
     }
 
     private async Task<Result> HandleCancelledAsync(IngestAppointmentCommand command, CancellationToken ct)
@@ -155,16 +170,24 @@ namespace NotificationService.Application.Services
 
       if (appointment is null)
       {
+        _logger.LogWarning("Appointment {ExternalId} not found for tenant {TenantId} on CANCELLED", command.Appointment.ExternalId, command.TenantId);
         return Result.Failure(new Error("appointment.not_found", "Appointment not found.", ErrorType.NotFound));
       }
 
       appointment.IsCancelled = true;
 
-      return await ExecuteInTransactionAsync(async () =>
+      var result = await ExecuteInTransactionAsync(async () =>
       {
         await _scheduledNotificationRepository.DeletePendingByAppointmentIdAsync(appointment.Id, ct);
         await _appointmentRepository.UpdateAsync(appointment, ct);
       }, "cancel.db_error", "cancel appointment", ct);
+
+      if (result.IsSuccess)
+      {
+        _logger.LogInformation("Appointment {ExternalId} cancelled for tenant {TenantId}", command.Appointment.ExternalId, command.TenantId);
+      }
+
+      return result;
     }
 
     //! =================================

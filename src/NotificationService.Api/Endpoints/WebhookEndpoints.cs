@@ -20,13 +20,14 @@ namespace NotificationService.Api.Endpoints
             [FromServices] ITenantService tenantService,
             [FromServices] IAppointmentIngestionService ingestionService,
             [FromServices] IValidator<AppointmentWebhookRequest> validator,
+            [FromServices] ILoggerFactory loggerFactory,
             [FromBody] AppointmentWebhookRequest request,
-            [FromHeader(Name = "X-Tenant-Id")] Guid tenantId,
+            [FromHeader(Name = "X-Tenant-Id")] Guid? tenantId,
             [FromHeader(Name = "X-Api-Key")] string? apiKey,
             CancellationToken ct
         )
         {
-            if (tenantId == Guid.Empty)
+            if (tenantId is null || tenantId == Guid.Empty)
             {
                 return TypedResults.Problem("Missing or invalid X-Tenant-Id header.", statusCode: StatusCodes.Status400BadRequest, title: "Bad Request");
             }
@@ -36,9 +37,12 @@ namespace NotificationService.Api.Endpoints
                 return TypedResults.Problem("Missing X-Api-Key header.", statusCode: StatusCodes.Status400BadRequest, title: "Bad Request");
             }
 
-            var apiKeyResult = await tenantService.ValidateApiKeyAsync(tenantId, apiKey, ct);
-            if (apiKeyResult.IsFailure || apiKeyResult.Value is false) // Check if hash matches what is in DB
+            var logger = loggerFactory.CreateLogger("WebhookEndpoints");
+
+            var apiKeyResult = await tenantService.ValidateApiKeyAsync(tenantId.Value, apiKey, ct);
+            if (apiKeyResult.IsFailure || apiKeyResult.Value is false)
             {
+                logger.LogWarning("Unauthorized webhook request for tenant {TenantId}", tenantId);
                 return TypedResults.Problem("Invalid API key.", statusCode: StatusCodes.Status401Unauthorized, title: "Unauthorized");
             }
 
@@ -50,7 +54,7 @@ namespace NotificationService.Api.Endpoints
 
             var command = new IngestAppointmentCommand(
                 request.Action,
-                tenantId,
+                tenantId.Value,
                 new PatientInfo(
                     request.Patient.ExternalId,
                     request.Patient.GivenName,
@@ -81,7 +85,7 @@ namespace NotificationService.Api.Endpoints
             {
                 appointmentExternalId = request.Appointment.ExternalId,
                 patientExternalId = request.Patient.ExternalId,
-                tenantId,
+                tenantId = tenantId.Value,
                 action = request.Action.ToString()
             });
         }
