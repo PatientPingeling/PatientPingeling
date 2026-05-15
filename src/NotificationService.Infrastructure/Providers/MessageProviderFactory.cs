@@ -10,5 +10,4 @@ namespace NotificationService.Infrastructure.Providers
             return sp.GetRequiredKeyedService<IMessageProvider>(providerName);
         }
     }
-
 }

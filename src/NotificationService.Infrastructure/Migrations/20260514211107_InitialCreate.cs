@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
@@ -21,6 +20,7 @@ namespace NotificationService.Infrastructure.Migrations
                     GivenName = table.Column<string>(type: "text", nullable: false),
                     Email = table.Column<string>(type: "text", nullable: false),
                     PhoneNumber = table.Column<string>(type: "text", nullable: false),
+                    ExternalId = table.Column<string>(type: "text", nullable: false),
                     LastCommunicationAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
@@ -35,7 +35,8 @@ namespace NotificationService.Infrastructure.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
                     TimeZone = table.Column<string>(type: "text", nullable: false),
-                    Provider = table.Column<string>(type: "text", nullable: false)
+                    Provider = table.Column<string>(type: "text", nullable: false),
+                    ApiKeyHash = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {

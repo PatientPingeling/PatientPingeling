@@ -11,8 +11,8 @@ http:
   headers:
     - name: X-Tenant-Id
       value: "{{tenantId}}"
-    - name: X-Webhook-Secret
-      value: "{{webhookSecret}}"
+    - name: X-Api-Key
+      value: "{{apiKey}}"
   body:
     type: json
     data: |-

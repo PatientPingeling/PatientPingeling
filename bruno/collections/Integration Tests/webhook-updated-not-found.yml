@@ -1,7 +1,7 @@
 info:
-  name: webhook CREATED - happy path
+  name: webhook UPDATED - appointment not found
   type: http
-  seq: 1
+  seq: 9
 
 http:
   method: POST
@@ -15,15 +15,15 @@ http:
     type: json
     data: |-
       {
-        "action": "CREATED",
+        "action": "UPDATED",
         "patient": {
           "externalId": "TEST-0001",
           "givenName": "Testpersoon",
           "email": "test@patientpingeling.nl",
-          "phoneNumber": "+31600000001"
+          "phoneNumber": null
         },
         "appointment": {
-          "externalId": "test-uuid-created-001",
+          "externalId": "non-existing-uuid-9999",
           "scheduledAt": "2027-01-01T10:00:00+01:00",
           "service": "General Medicine",
           "location": "Kamer 1",
@@ -37,3 +37,8 @@ settings:
   timeout: 0
   followRedirects: true
   maxRedirects: 5
+
+tests:
+  - name: returns 404 Not Found
+    script: |
+      expect(res.status).to.equal(404);

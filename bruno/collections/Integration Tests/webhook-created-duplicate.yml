@@ -1,7 +1,7 @@
 info:
-  name: webhook CREATED - happy path
+  name: webhook CREATED - duplicate (idempotent)
   type: http
-  seq: 1
+  seq: 3
 
 http:
   method: POST
@@ -37,3 +37,11 @@ settings:
   timeout: 0
   followRedirects: true
   maxRedirects: 5
+
+tests:
+  - name: returns 200 OK (idempotent skip)
+    script: |
+      expect(res.status).to.equal(200);
+  - name: response says already exists
+    script: |
+      expect(res.body.message).to.equal('Appointment already exists.');

@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 using System.Text;
-using NotificationService.Application.Services;
+using NotificationService.Application.Abstractions;
 using NotificationService.Infrastructure.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;

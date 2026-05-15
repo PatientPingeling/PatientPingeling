@@ -5,7 +5,9 @@ using Microsoft.Extensions.Options;
 using NotificationService.Application.Abstractions;
 using NotificationService.Infrastructure.Options;
 using NotificationService.Infrastructure.Persistence;
+using NotificationService.Infrastructure.Persistence.Repositories;
 using NotificationService.Infrastructure.Providers;
+using NotificationService.Infrastructure.Security;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
@@ -66,11 +68,17 @@ namespace NotificationService.Infrastructure.Extensions
 
             services.AddDbContext<NotificationDbContext>(options =>
             {
-                options.UseNpgsql(connectionString, npgsqlOptions =>
-                {
-                    npgsqlOptions.EnableRetryOnFailure(5);
-                });
+                // TODO: EnableRetryOnFailure is incompatible with manual transactions (UnitOfWork).
+                // To re-enable retries, wrap all ExecuteInTransactionAsync calls in CreateExecutionStrategy().ExecuteAsync.
+                options.UseNpgsql(connectionString);
             });
+
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IAppointmentRepository, AppointmentRepository>();
+            services.AddScoped<IPatientRepository, PatientRepository>();
+            services.AddScoped<IScheduledNotificationRepository, ScheduledNotificationRepository>();
+            services.AddScoped<ITenantRepository, TenantRepository>();
+            services.AddScoped<IHashingService, Sha256HashingService>();
 
             return services;
         }

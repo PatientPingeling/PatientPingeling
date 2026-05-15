@@ -7,9 +7,12 @@ namespace NotificationService.Domain.Entities
         public string Location { get; set; } = string.Empty;
         public string? Instructions { get; set; }
         public DateTimeOffset ScheduledAt { get; set; }
+        public string ExternalId { get; set; } = string.Empty;
 
         public int PatientId { get; set; }
         public Patient Patient { get; set; } = null!;
+
+        public bool IsCancelled { get; set; }
 
         public Guid TenantId { get; set; }
         public Tenant Tenant { get; set; } = null!;

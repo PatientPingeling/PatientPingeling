@@ -73,17 +73,37 @@ docker compose up --build
 
 ### Test the webhook
 
-Use the reference payload in [`webhook.json`](webhook.json):
+Open the Bruno workspace in [`bruno/`](bruno/), select the `docker` environment, and run the **Integration Tests** collection in order:
+
+1. `webhook CREATED` — creates patient + appointment + 2 scheduled notifications
+2. `webhook UPDATED` — updates appointment and regenerates notifications if time changed
+3. `webhook CANCELLED` — sets `IsCancelled = true` and deletes pending notifications
+4. `webhook validation failure` — verifies 400 on invalid payload
+
+Or use curl:
 
 ```bash
 curl -X POST http://localhost:8000/webhooks/appointments \
   -H "Content-Type: application/json" \
-  -H "X-Tenant-Id: 00000000-0000-0000-0000-000000000001" \
-  -H "X-Webhook-Secret: your-secret-here" \
-  -d @webhook.json
+  -H "X-Tenant-Id: 3fa85f64-5717-4562-b3fc-2c963f66afa6" \
+  -H "X-Api-Key: test-secret" \
+  -d '{
+    "action": "CREATED",
+    "patient": { "externalId": "PP-001", "givenName": "Jan", "email": "jan@example.com", "phoneNumber": null },
+    "appointment": { "externalId": "APT-001", "scheduledAt": "2027-01-01T10:00:00+01:00", "service": "General Medicine", "location": "Kamer 1", "instructions": null }
+  }'
 ```
 
 Expected response: `201 Created`
+
+> **Dev tenant** is seeded automatically on startup in Development/testing environments.
+> Tenant ID: `3fa85f64-5717-4562-b3fc-2c963f66afa6`, API key: `test-secret`
+
+To reset test data:
+```bash
+./scripts/reset-dev-db.sh   # macOS/Linux
+./scripts/reset-dev-db.ps1  # Windows
+```
 
 ---
 

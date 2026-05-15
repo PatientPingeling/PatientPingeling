@@ -1,10 +1,7 @@
-using System.Text.Json.Serialization;
+using NotificationService.Application.Commands;
 
 namespace NotificationService.Api.Contracts
 {
-    [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum AppointmentAction { CREATED, UPDATED, CANCELLED, UNKNOWN }
-
     public sealed record AppointmentWebhookRequest(
         AppointmentAction Action,
         AppointmentPatientDto Patient,

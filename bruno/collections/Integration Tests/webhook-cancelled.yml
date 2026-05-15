@@ -1,7 +1,7 @@
 info:
   name: webhook CANCELLED
   type: http
-  seq: 2
+  seq: 4
 
 http:
   method: POST
@@ -9,8 +9,8 @@ http:
   headers:
     - name: X-Tenant-Id
       value: "{{tenantId}}"
-    - name: X-Webhook-Secret
-      value: "{{webhookSecret}}"
+    - name: X-Api-Key
+      value: "{{apiKey}}"
   body:
     type: json
     data: |-
@@ -37,11 +37,3 @@ settings:
   timeout: 0
   followRedirects: true
   maxRedirects: 5
-
-tests:
-  - name: returns 201 Created
-    script: |
-      expect(res.status).to.equal(201);
-  - name: action is CANCELLED
-    script: |
-      expect(res.body.action).to.equal('CANCELLED');

@@ -1,6 +1,10 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using NotificationService.Api.Contracts;
+using NotificationService.Api.Extensions;
+using NotificationService.Application.Abstractions;
+using NotificationService.Application.Commands;
+using NotificationService.Domain;
 
 namespace NotificationService.Api.Endpoints
 {
@@ -8,49 +12,81 @@ namespace NotificationService.Api.Endpoints
     {
         internal static WebApplication MapWebhookEndpoints(this WebApplication app)
         {
-            var group = app.MapGroup("/webhooks");
-
-            group.MapPost("/appointments", ReceiveAppointmentWebhook);
-
+            app.MapGroup("/webhooks").MapPost("/appointments", ReceiveAppointmentWebhook);
             return app;
         }
 
         private static async Task<IResult> ReceiveAppointmentWebhook(
-           [FromBody] AppointmentWebhookRequest request,
-           [FromHeader(Name = "X-Tenant-Id")] Guid tenantId,
-           [FromHeader(Name = "X-Api-Key")] string? apiKey,
-           [FromServices] IValidator<AppointmentWebhookRequest> validator,
-           CancellationToken ct
+            [FromServices] ITenantService tenantService,
+            [FromServices] IAppointmentIngestionService ingestionService,
+            [FromServices] IValidator<AppointmentWebhookRequest> validator,
+            [FromServices] ILoggerFactory loggerFactory,
+            [FromBody] AppointmentWebhookRequest request,
+            [FromHeader(Name = "X-Tenant-Id")] Guid? tenantId,
+            [FromHeader(Name = "X-Api-Key")] string? apiKey,
+            CancellationToken ct
         )
         {
-            if (tenantId == Guid.Empty)
-                return TypedResults.Problem("Missing or invalid X-Tenant-Id header.", statusCode: StatusCodes.Status400BadRequest, title: "Bad Request");
-
-            if (string.IsNullOrWhiteSpace(apiKey))
-                return TypedResults.Problem("Missing X-Api-Key header.", statusCode: StatusCodes.Status400BadRequest, title: "Bad Request");
-
-            // Log incoming webhook details
-            Console.WriteLine($"Webhook received: Action={request.Action}, TenantId={tenantId}, PatientId={request.Patient.ExternalId}, AppointmentId={request.Appointment.ExternalId}");
-
-            var validation = await validator.ValidateAsync(request, ct);
-            if (!validation.IsValid)
+            if (tenantId is null || tenantId == Guid.Empty)
             {
-                return TypedResults.Problem(
-                    detail: string.Join(", ", validation.Errors.Select(e => e.ErrorMessage)),
-                    statusCode: StatusCodes.Status400BadRequest,
-                    title: "Validation Failed"
-                );
+                return TypedResults.Problem("Missing or invalid X-Tenant-Id header.", statusCode: StatusCodes.Status400BadRequest, title: "Bad Request");
             }
 
-            // TODO: replace with real ingestion service call once feat/webhook-implementation is merged
-
-            return TypedResults.Created("/webhooks/appointments", new
+            if (string.IsNullOrWhiteSpace(apiKey))
             {
-                received = true,
-                action = request.Action.ToString(),
-                tenantId,
+                return TypedResults.Problem("Missing X-Api-Key header.", statusCode: StatusCodes.Status400BadRequest, title: "Bad Request");
+            }
+
+            var logger = loggerFactory.CreateLogger("WebhookEndpoints");
+
+            var apiKeyResult = await tenantService.ValidateApiKeyAsync(tenantId.Value, apiKey, ct);
+            if (apiKeyResult.IsFailure || apiKeyResult.Value is false)
+            {
+                logger.LogWarning("Unauthorized webhook request for tenant {TenantId}", tenantId);
+                return TypedResults.Problem("Invalid API key.", statusCode: StatusCodes.Status401Unauthorized, title: "Unauthorized");
+            }
+
+            var validation = await validator.ValidateAsync(request, ct);
+            if (validation.IsValid is false)
+            {
+                return TypedResults.Problem(detail: string.Join(", ", validation.Errors.Select(e => e.ErrorMessage)), statusCode: StatusCodes.Status400BadRequest, title: "Validation Failed");
+            }
+
+            var command = new IngestAppointmentCommand(
+                request.Action,
+                tenantId.Value,
+                new PatientInfo(
+                    request.Patient.ExternalId,
+                    request.Patient.GivenName,
+                    request.Patient.Email,
+                    request.Patient.PhoneNumber
+                ),
+                new AppointmentInfo(
+                    request.Appointment.ExternalId,
+                    request.Appointment.ScheduledAt,
+                    request.Appointment.Service,
+                    request.Appointment.Location,
+                    request.Appointment.Instructions
+                )
+            );
+
+            var result = await ingestionService.IngestAsync(command, ct);
+            if (result.IsFailure)
+            {
+                if (result.Error.Type == ErrorType.Duplicate)
+                {
+                    return TypedResults.Ok(new { message = "Appointment already exists." });
+                }
+
+                return result.ToProblemDetails();
+            }
+
+            return TypedResults.Created((string?)null, new
+            {
+                appointmentExternalId = request.Appointment.ExternalId,
                 patientExternalId = request.Patient.ExternalId,
-                appointmentExternalId = request.Appointment.ExternalId
+                tenantId = tenantId.Value,
+                action = request.Action.ToString()
             });
         }
     }
