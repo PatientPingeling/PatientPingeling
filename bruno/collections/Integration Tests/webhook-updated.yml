@@ -1,7 +1,7 @@
 info:
-  name: webhook CANCELLED
+  name: webhook UPDATED
   type: http
-  seq: 3
+  seq: 2
 
 http:
   method: POST
@@ -15,19 +15,19 @@ http:
     type: json
     data: |-
       {
-        "action": "CANCELLED",
+        "action": "UPDATED",
         "patient": {
           "externalId": "TEST-0001",
-          "givenName": "Testpersoon",
-          "email": "test@patientpingeling.nl",
-          "phoneNumber": "+31600000001"
+          "givenName": "Testpersoon Gewijzigd",
+          "email": "updated@patientpingeling.nl",
+          "phoneNumber": "+31600000002"
         },
         "appointment": {
           "externalId": "test-uuid-created-001",
-          "scheduledAt": "2027-01-01T10:00:00+01:00",
-          "service": "General Medicine",
-          "location": "Kamer 1",
-          "instructions": null
+          "scheduledAt": "2027-02-01T10:00:00+01:00",
+          "service": "Cardiology",
+          "location": "Kamer 2",
+          "instructions": "Gewijzigde instructies"
         }
       }
   auth: inherit

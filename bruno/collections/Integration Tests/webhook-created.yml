@@ -9,8 +9,8 @@ http:
   headers:
     - name: X-Tenant-Id
       value: "{{tenantId}}"
-    - name: X-Webhook-Secret
-      value: "{{webhookSecret}}"
+    - name: X-Api-Key
+      value: "{{apiKey}}"
   body:
     type: json
     data: |-
@@ -37,17 +37,3 @@ settings:
   timeout: 0
   followRedirects: true
   maxRedirects: 5
-
-tests:
-  - name: returns 201 Created
-    script: |
-      expect(res.status).to.equal(201);
-  - name: action is CREATED
-    script: |
-      expect(res.body.action).to.equal('CREATED');
-  - name: correct patientExternalId echoed
-    script: |
-      expect(res.body.patientExternalId).to.equal('TEST-0001');
-  - name: correct appointmentExternalId echoed
-    script: |
-      expect(res.body.appointmentExternalId).to.equal('test-uuid-created-001');

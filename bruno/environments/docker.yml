@@ -3,7 +3,6 @@ variables:
   - name: baseUrl
     value: http://localhost:8000
   - name: tenantId
-    value: 00000000-0000-0000-0000-000000000001
-  - name: webhookSecret
-    value: your-secret-here
-    secret: true
+    value: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+  - secret: true
+    name: apiKey

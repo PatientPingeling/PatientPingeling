@@ -10,5 +10,7 @@ collections:
     path: "collections/Integration Tests"
 
 specs:
+  - name: "openapi"
+    path: "../openapi.json"
 
 docs: ''
