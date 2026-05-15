@@ -4,7 +4,6 @@ using NotificationService.Api.Contracts;
 using NotificationService.Api.Extensions;
 using NotificationService.Application.Abstractions;
 using NotificationService.Application.Commands;
-using NotificationService.Domain;
 
 namespace NotificationService.Api.Endpoints
 {
@@ -12,15 +11,13 @@ namespace NotificationService.Api.Endpoints
     {
         internal static WebApplication MapWebhookEndpoints(this WebApplication app)
         {
-            var group = app.MapGroup("/webhooks");
-
-            group.MapPost("/appointments", ReceiveAppointmentWebhook);
-
+            app.MapGroup("/webhooks").MapPost("/appointments", ReceiveAppointmentWebhook);
             return app;
         }
 
         private static async Task<IResult> ReceiveAppointmentWebhook(
-            [FromServices] IAppointmentIngestionService service,
+            [FromServices] ITenantService tenantService,
+            [FromServices] IAppointmentIngestionService ingestionService,
             [FromServices] IValidator<AppointmentWebhookRequest> validator,
             [FromBody] AppointmentWebhookRequest request,
             [FromHeader(Name = "X-Tenant-Id")] Guid tenantId,
@@ -38,13 +35,16 @@ namespace NotificationService.Api.Endpoints
                 return TypedResults.Problem("Missing X-Api-Key header.", statusCode: StatusCodes.Status400BadRequest, title: "Bad Request");
             }
 
+            var apiKeyResult = await tenantService.ValidateApiKeyAsync(tenantId, apiKey, ct);
+            if (apiKeyResult.IsFailure || apiKeyResult.Value is false) // Check if hash matches what is in DB
+            {
+                return TypedResults.Problem("Invalid API key.", statusCode: StatusCodes.Status401Unauthorized, title: "Unauthorized");
+            }
+
             var validation = await validator.ValidateAsync(request, ct);
             if (!validation.IsValid)
             {
-                return TypedResults.Problem(
-                    detail: string.Join(", ", validation.Errors.Select(e => e.ErrorMessage)),
-                    statusCode: StatusCodes.Status400BadRequest,
-                    title: "Validation Failed");
+                return TypedResults.Problem(detail: string.Join(", ", validation.Errors.Select(e => e.ErrorMessage)), statusCode: StatusCodes.Status400BadRequest, title: "Validation Failed");
             }
 
             var command = new IngestAppointmentCommand(
@@ -65,7 +65,7 @@ namespace NotificationService.Api.Endpoints
                 )
             );
 
-            var result = await service.IngestAsync(command, ct);
+            var result = await ingestionService.IngestAsync(command, ct);
             if (result.IsFailure)
             {
                 return result.ToProblemDetails();
