@@ -24,7 +24,7 @@ namespace NotificationService.Infrastructure.Persistence.Repositories
     {
       var toDelete = await _dbContext.ScheduledNotifications
         .Where(x => x.AppointmentId == appointmentId &&
-          (x.Status == ScheduledNotificationStatus.Pending || x.Status == ScheduledNotificationStatus.Failed))
+          x.Status == ScheduledNotificationStatus.Pending)
         .ToListAsync(ct);
 
       _dbContext.ScheduledNotifications.RemoveRange(toDelete);

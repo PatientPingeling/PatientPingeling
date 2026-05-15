@@ -8,9 +8,9 @@ namespace NotificationService.Infrastructure.Persistence.Repositories
   {
     private readonly NotificationDbContext _dbContext = dbContext;
 
-    public async Task<Appointment?> GetByExternalIdAsync(string externalId, CancellationToken ct = default)
+    public async Task<Appointment?> GetByExternalIdAsync(string externalId, Guid tenantId, CancellationToken ct = default)
     {
-      return await _dbContext.Appointments.AsNoTracking().Include(a => a.Patient).FirstOrDefaultAsync(x => x.ExternalId == externalId, ct);
+      return await _dbContext.Appointments.AsNoTracking().Include(a => a.Patient).FirstOrDefaultAsync(x => x.ExternalId == externalId && x.TenantId == tenantId, ct);
     }
 
     public Task AddAsync(Appointment appointment, CancellationToken ct = default)
