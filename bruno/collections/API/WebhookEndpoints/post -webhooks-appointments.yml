@@ -12,7 +12,7 @@ http:
     - name: X-Tenant-Id
       value: "{{tenantId}}"
     - name: X-Api-Key
-      value: "{{apiKey}}"
+      value: "{{process.env.apiKey}}"
   body:
     type: json
     data: |-

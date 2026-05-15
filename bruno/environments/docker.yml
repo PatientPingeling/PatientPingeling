@@ -4,5 +4,15 @@ variables:
     value: http://localhost:8000
   - name: tenantId
     value: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+  - name: providersBaseUrl
+    value: http://localhost:1337
+  - name: studentGroup
+    value: B4
+  - name: securePostToken
+    value: ""
   - secret: true
     name: apiKey
+  - secret: true
+    name: securePostClientId
+  - secret: true
+    name: securePostClientSecret

@@ -1,0 +1,32 @@
+info:
+  name: POST /securepost/auth
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{providersBaseUrl}}/securepost/auth"
+  headers:
+    - name: X-STUDENT-GROUP
+      value: "{{studentGroup}}"
+  body:
+    type: json
+    data: |-
+      {
+        "clientId": "{{process.env.securePostClientId}}",
+        "clientSecret": "{{process.env.securePostClientSecret}}"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const token = res.body.accessToken;
+        bru.setVar("securePostToken",token)
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

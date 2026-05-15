@@ -1,0 +1,28 @@
+info:
+  name: POST /securepost/message
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{providersBaseUrl}}/securepost/message"
+  headers:
+    - name: X-STUDENT-GROUP
+      value: "{{studentGroup}}"
+    - name: Authorization
+      value: Bearer {{securePostToken}}
+  body:
+    type: json
+    data: |-
+      {
+        "format": "EMAIL",
+        "recipient": "test@patientpingeling.nl",
+        "body": "Beste Jan, u heeft op 15 juni 2026 om 10:00 een afspraak bij Kamer B3.",
+        "subject": "Herinnering afspraak"
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

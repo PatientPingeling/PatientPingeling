@@ -8,6 +8,8 @@ collections:
     path: "collections/API"
   - name: "Integration Tests"
     path: "collections/Integration Tests"
+  - name: "Providers"
+    path: "collections/Providers"
 
 specs:
   - name: "openapi"
