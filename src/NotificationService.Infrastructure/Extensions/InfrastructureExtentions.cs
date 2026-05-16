@@ -84,6 +84,13 @@ namespace NotificationService.Infrastructure.Extensions
             services.AddScoped<IScheduledNotificationRepository, ScheduledNotificationRepository>();
             services.AddScoped<ITenantRepository, TenantRepository>();
             services.AddScoped<IHashingService, Sha256HashingService>();
+            services.AddMemoryCache();
+            services.AddSingleton<IEncryptionService>(sp =>
+            {
+                var key = configuration["Security:EncryptionKey"]
+                    ?? throw new InvalidOperationException("Missing required configuration: Security:EncryptionKey.");
+                return new AesGcmEncryptionService(Convert.FromBase64String(key));
+            });
 
             return services;
         }
