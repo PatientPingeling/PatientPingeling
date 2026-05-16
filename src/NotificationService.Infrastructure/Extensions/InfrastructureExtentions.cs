@@ -34,7 +34,7 @@ namespace NotificationService.Infrastructure.Extensions
             services.AddKeyedScoped<IMessageProvider, SwiftSendProvider>("SwiftSend");
             services.AddHttpClient("SwiftSend", client =>
             {
-                client.BaseAddress = new Uri(baseUrl);
+                client.BaseAddress = new Uri(baseUrl + "/swiftsend");
                 client.DefaultRequestHeaders.Add("X-STUDENT-GROUP", studentGroup);
             });
 
@@ -42,15 +42,16 @@ namespace NotificationService.Infrastructure.Extensions
             services.AddKeyedScoped<IMessageProvider, SecurePostProvider>("SecurePost");
             services.AddHttpClient("SecurePost", client =>
             {
-                client.BaseAddress = new Uri(baseUrl);
+                client.BaseAddress = new Uri(baseUrl + "/securepost");
                 client.DefaultRequestHeaders.Add("X-STUDENT-GROUP", studentGroup);
+                client.DefaultRequestHeaders.Add("Content-Type", "application/json");
             });
 
             // AsyncFlow
             services.AddKeyedScoped<IMessageProvider, AsyncFlowProvider>("AsyncFlow");
             services.AddHttpClient("AsyncFlow", client =>
             {
-                client.BaseAddress = new Uri(baseUrl);
+                client.BaseAddress = new Uri(baseUrl + "/asyncflow");
                 client.DefaultRequestHeaders.Add("X-STUDENT-GROUP", studentGroup);
             });
 
@@ -58,7 +59,7 @@ namespace NotificationService.Infrastructure.Extensions
             services.AddKeyedScoped<IMessageProvider, LegacyLinkProvider>("LegacyLink");
             services.AddHttpClient("LegacyLink", client =>
             {
-                client.BaseAddress = new Uri(baseUrl);
+                client.BaseAddress = new Uri(baseUrl + "/legacylink");
                 client.DefaultRequestHeaders.Add("X-STUDENT-GROUP", studentGroup);
             });
 
