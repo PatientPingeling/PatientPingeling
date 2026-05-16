@@ -46,7 +46,8 @@ if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("testing"))
     // Seed database with mock data
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<NotificationDbContext>();
-    await DevDataSeeder.SeedAsync(db);
+    var encryption = scope.ServiceProvider.GetRequiredService<IEncryptionService>();
+    await DevDataSeeder.SeedAsync(db, encryption);
 }
 
 // Middleware
