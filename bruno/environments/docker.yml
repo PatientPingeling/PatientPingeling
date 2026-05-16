@@ -8,8 +8,6 @@ variables:
     value: http://localhost:1337
   - name: studentGroup
     value: B4
-  - name: securePostToken
-    value: ""
   - secret: true
     name: apiKey
   - secret: true
