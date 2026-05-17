@@ -21,7 +21,7 @@ public sealed class SecurePostProvider(IHttpClientFactory httpClientFactory, IMe
 
     public async Task<string> SendAsync(MessageFormat format, string message, string recipient, IReadOnlyDictionary<string, string> credentials, CancellationToken ct)
     {
-        string? subject = null; // TODO: Add Subject
+        var subject = format == MessageFormat.Email ? "Afspraak herinnering" : "Herinnering";
 
         if (!credentials.TryGetValue("ClientId", out var clientId))
         {
@@ -40,7 +40,11 @@ public sealed class SecurePostProvider(IHttpClientFactory httpClientFactory, IMe
         request.Content = JsonContent.Create(new SecurePostMessageRequest(MapFormat(format), recipient, message, subject));
 
         var response = await _client.SendAsync(request, ct);
-        response.EnsureSuccessStatusCode();
+        if (response.IsSuccessStatusCode is false)
+        {
+            var body = await response.Content.ReadAsStringAsync(ct);
+            throw new HttpRequestException($"SecurePost /message returned {(int)response.StatusCode}: {body}");
+        }
 
         var result = await response.Content.ReadFromJsonAsync<SecurePostMessageResponse>(ct)
             ?? throw new InvalidOperationException("SecurePost message response was empty.");
