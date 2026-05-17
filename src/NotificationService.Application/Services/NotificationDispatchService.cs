@@ -77,7 +77,14 @@ namespace NotificationService.Application.Services
             }
             finally
             {
-                // write NotificationLog with trackingId + succeeded flag
+                // TODO: Retry/logging tension — currently we log both success and failure.
+                // If the Worker NACKs a failed message, RabbitMQ redelivers it and we log again on retry.
+                // This means multiple failed log entries per notification attempt.
+                // Options:
+                //   A) Only log on success — failed attempts are silently retried via RabbitMQ
+                //   B) Log every attempt with attempt number — requires schema change
+                //   C) Log failure only after DLQ (max retries exhausted) — requires Worker-level handling
+                // Decision needed before production. See FMEA issue #48.
                 try
                 {
                     var log = new NotificationLog
