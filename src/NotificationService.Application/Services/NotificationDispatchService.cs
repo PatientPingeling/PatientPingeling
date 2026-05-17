@@ -56,10 +56,19 @@ namespace NotificationService.Application.Services
             var message = BuildMessage(format, patient, appointment, tenant);
 
             // Decrypt provider credentials 🤯
-            var decryptedCreds = tenant.Credentials.ToDictionary(
-                c => c.Key,
-                c => _encryptionService.Decrypt(c.EncryptedValue)
-            );
+            Dictionary<string, string> decryptedCreds;
+            try
+            {
+                decryptedCreds = tenant.Credentials.ToDictionary(
+                    c => c.Key,
+                    c => _encryptionService.Decrypt(c.EncryptedValue)
+                );
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to decrypt credentials for tenant {TenantId}.", tenant.Id);
+                return Result.Failure(new Error("credentials.decrypt_error", "Failed to decrypt provider credentials.", ErrorType.Failure));
+            }
 
             // Call provider to send message
             string? externalMessageId = null;
