@@ -7,7 +7,8 @@ namespace NotificationService.Infrastructure.Providers.AsyncFlow
     {
         private readonly HttpClient _client = httpClientFactory.CreateClient("AsyncFlow");
 
-        public IReadOnlySet<MessageFormat> SupportedFormats => throw new NotImplementedException();
+        public IReadOnlySet<MessageFormat> SupportedFormats { get; } =
+            new HashSet<MessageFormat> { MessageFormat.Sms, MessageFormat.Email, MessageFormat.Push };
 
         public Task<string> SendAsync(MessageFormat format, string message, string recipient, IReadOnlyDictionary<string, string> credentials, CancellationToken ct)
         {
