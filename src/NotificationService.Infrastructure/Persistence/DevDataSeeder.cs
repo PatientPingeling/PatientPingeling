@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using NotificationService.Application.Abstractions;
 using NotificationService.Domain.Entities;
 
@@ -11,14 +12,16 @@ namespace NotificationService.Infrastructure.Persistence
         private static readonly Guid SecurePostTenantId = new("4fa85f64-5717-4562-b3fc-2c963f66afa7");
         private const string DevApiKeyHash = "9caf06bb4436cdbfa20af9121a626bc1093c4f54b31c0fa937957856135345b6";
 
-        public static async Task SeedAsync(NotificationDbContext db, IEncryptionService encryption)
+        public static async Task SeedAsync(NotificationDbContext db, IEncryptionService encryption, ILogger logger)
         {
             if (await db.Tenants.AnyAsync())
             {
+                logger.LogInformation("DevDataSeeder: tenants already exist, skipping seed.");
                 return;
             }
 
-            // Dev tenant — SwiftSend (placeholder, not yet implemented)
+            logger.LogInformation("DevDataSeeder: seeding dev tenants...");
+
             db.Tenants.Add(new Tenant
             {
                 Id = DevTenantId,
@@ -28,35 +31,35 @@ namespace NotificationService.Infrastructure.Persistence
                 ApiKeyHash = DevApiKeyHash
             });
 
-            // SecurePost tenant
             var securePostTenant = new Tenant
             {
                 Id = SecurePostTenantId,
                 Name = "Dev Tenant (SecurePost)",
                 TimeZone = "Europe/Amsterdam",
                 Provider = "SecurePost",
-                ApiKeyHash = DevApiKeyHash
+                ApiKeyHash = DevApiKeyHash,
+                Credentials =
+              [
+                  new ProviderCredential
+                  {
+                      Key = "ClientId",
+                      EncryptedValue = encryption.Encrypt("securepost-client-id"),
+                      TenantId = SecurePostTenantId
+                  },
+                  new ProviderCredential
+                  {
+                      Key = "ClientSecret",
+                      EncryptedValue = encryption.Encrypt("securepost-secret-key"),
+                      TenantId = SecurePostTenantId
+                  }
+              ]
             };
-
-            securePostTenant.Credentials =
-            [
-                new ProviderCredential
-                {
-                    Key = "ClientId",
-                    EncryptedValue = encryption.Encrypt("securepost-client-id"),
-                    TenantId = SecurePostTenantId
-                },
-                new ProviderCredential
-                {
-                    Key = "ClientSecret",
-                    EncryptedValue = encryption.Encrypt("securepost-secret-key"),
-                    TenantId = SecurePostTenantId
-                }
-            ];
 
             db.Tenants.Add(securePostTenant);
 
             await db.SaveChangesAsync();
+
+            logger.LogInformation("DevDataSeeder: seeded 2 tenants (SwiftSend, SecurePost).");
         }
     }
 }
