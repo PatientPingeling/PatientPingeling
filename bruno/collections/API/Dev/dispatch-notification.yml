@@ -1,0 +1,20 @@
+info:
+  name: GET /dev/dispatch/:id
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{baseUrl}}/dev/dispatch/{{scheduledNotificationId}}"
+  auth: inherit
+
+runtime:
+  variables:
+    - name: scheduledNotificationId
+      value: 019e357f-077e-76c0-82e2-862e90f4fb52
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
