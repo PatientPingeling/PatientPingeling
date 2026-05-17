@@ -45,6 +45,8 @@ namespace NotificationService.Infrastructure.Extensions
                 client.BaseAddress = new Uri(baseUrl + "/securepost/");
                 client.DefaultRequestHeaders.Add("X-STUDENT-GROUP", studentGroup);
             });
+            // TODO: Add .AddStandardResilienceHandler() for retry on 429/503/timeouts (issue #33 acceptance criteria)
+            // Use Microsoft.Extensions.Http.Resilience package — handles exponential backoff out of the box
 
             // AsyncFlow
             services.AddKeyedScoped<IMessageProvider, AsyncFlowProvider>("AsyncFlow");
