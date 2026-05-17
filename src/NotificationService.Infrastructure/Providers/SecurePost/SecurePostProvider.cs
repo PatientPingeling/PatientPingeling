@@ -35,7 +35,7 @@ public sealed class SecurePostProvider(IHttpClientFactory httpClientFactory, IMe
         var authResult = await AuthenticateAsync(clientId, clientSecret, ct);
 
         //! Send Message
-        using var request = new HttpRequestMessage(HttpMethod.Post, "/message");
+        using var request = new HttpRequestMessage(HttpMethod.Post, "message");
         request.Headers.Authorization = new AuthenticationHeaderValue(authResult.TokenType, authResult.AccessToken);
         request.Content = JsonContent.Create(new SecurePostMessageRequest(MapFormat(format), recipient, message, subject));
 
@@ -64,7 +64,7 @@ public sealed class SecurePostProvider(IHttpClientFactory httpClientFactory, IMe
         }
 
         //* Cache miss — call auth
-        var response = await _client.PostAsJsonAsync("/auth", new SecurePostAuthRequest(clientId, clientSecret), ct);
+        var response = await _client.PostAsJsonAsync("auth", new SecurePostAuthRequest(clientId, clientSecret), ct);
         response.EnsureSuccessStatusCode();
 
         var authResult = await response.Content.ReadFromJsonAsync<SecurePostAuthResponse>(ct)

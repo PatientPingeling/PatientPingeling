@@ -42,9 +42,8 @@ namespace NotificationService.Infrastructure.Extensions
             services.AddKeyedScoped<IMessageProvider, SecurePostProvider>("SecurePost");
             services.AddHttpClient("SecurePost", client =>
             {
-                client.BaseAddress = new Uri(baseUrl + "/securepost");
+                client.BaseAddress = new Uri(baseUrl + "/securepost/");
                 client.DefaultRequestHeaders.Add("X-STUDENT-GROUP", studentGroup);
-                client.DefaultRequestHeaders.Add("Content-Type", "application/json");
             });
 
             // AsyncFlow
@@ -83,6 +82,8 @@ namespace NotificationService.Infrastructure.Extensions
             services.AddScoped<IPatientRepository, PatientRepository>();
             services.AddScoped<IScheduledNotificationRepository, ScheduledNotificationRepository>();
             services.AddScoped<ITenantRepository, TenantRepository>();
+            services.AddScoped<INotificationLogRepository, NotificationLogRepository>();
+            services.AddScoped<IProviderCredentialRepository, ProviderCredentialRepository>();
             services.AddScoped<IHashingService, Sha256HashingService>();
             services.AddMemoryCache();
             services.AddSingleton<IEncryptionService>(sp =>
