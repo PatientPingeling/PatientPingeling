@@ -8,7 +8,12 @@ namespace NotificationService.Infrastructure.Persistence.Repositories
   {
     private readonly NotificationDbContext _dbContext = dbContext;
 
-    public Task<IReadOnlyCollection<ProviderCredential>> GetByTenantAsync(Guid tenantId, CancellationToken ct = default)
+    public Task AddAsync(ProviderCredential credential, CancellationToken ct = default)
+    {
+      throw new NotImplementedException();
+    }
+
+    public Task DeleteByTenantAsync(Guid tenantId, CancellationToken ct = default)
     {
       throw new NotImplementedException();
     }
