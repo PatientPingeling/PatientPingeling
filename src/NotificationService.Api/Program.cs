@@ -27,7 +27,7 @@ builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.C
 builder.Services.AddScoped<IAppointmentIngestionService, AppointmentIngestionService>();
 builder.Services.AddScoped<ITenantService, TenantService>();
 
-if (builder.Environment.IsDevelopment() || builder.Environment.IsEnvironment("testing"))
+if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddMessageProviders(builder.Configuration);
     builder.Services.AddScoped<INotificationDispatchService, NotificationDispatchService>();
@@ -45,7 +45,7 @@ builder.Services
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("testing"))
+if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 
@@ -53,7 +53,8 @@ if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("testing"))
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<NotificationDbContext>();
     var encryption = scope.ServiceProvider.GetRequiredService<IEncryptionService>();
-    await DevDataSeeder.SeedAsync(db, encryption);
+    var seederLogger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("DevDataSeeder");
+    await DevDataSeeder.SeedAsync(db, encryption, seederLogger);
 
     // DEV ONLY — test dispatch without Scheduler/Worker
     app.MapGet("/dev/dispatch/{id:guid}", async (
