@@ -40,7 +40,7 @@ namespace NotificationService.Api.Endpoints
             var logger = loggerFactory.CreateLogger("WebhookEndpoints");
 
             var apiKeyResult = await tenantService.ValidateApiKeyAsync(tenantId.Value, apiKey, ct);
-            if (apiKeyResult.IsFailure || apiKeyResult.Value is false)
+            if (apiKeyResult.IsFailure)
             {
                 logger.LogWarning("Unauthorized webhook request for tenant {TenantId}", tenantId);
                 return TypedResults.Problem("Invalid API key.", statusCode: StatusCodes.Status401Unauthorized, title: "Unauthorized");

@@ -8,6 +8,20 @@ namespace NotificationService.Infrastructure.Persistence.Repositories
   {
     private readonly NotificationDbContext _dbContext = dbContext;
 
+
+    public async Task<ScheduledNotification?> GetByIdWithDetailsAsync(Guid id, CancellationToken ct = default)
+    {
+      return await _dbContext.ScheduledNotifications
+          .Include(n => n.Appointment)
+              .ThenInclude(a => a.Patient)
+          .Include(n => n.Appointment)
+              .ThenInclude(a => a.Tenant)
+                  .ThenInclude(t => t.Credentials)
+          .AsSplitQuery()
+          .AsNoTracking()
+          .FirstOrDefaultAsync(n => n.Id == id, ct);
+    }
+
     public Task AddAsync(ScheduledNotification notification, CancellationToken ct = default)
     {
       _dbContext.ScheduledNotifications.Add(notification);

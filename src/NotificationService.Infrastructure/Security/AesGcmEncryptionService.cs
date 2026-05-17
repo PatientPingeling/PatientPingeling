@@ -2,7 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using NotificationService.Application.Abstractions;
 
-namespace NotificationService.Infrastructure.Encryption
+namespace NotificationService.Infrastructure.Security
 {
     public sealed class AesGcmEncryptionService(byte[] secretKey) : IEncryptionService
     {

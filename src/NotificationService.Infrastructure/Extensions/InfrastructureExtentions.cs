@@ -34,7 +34,7 @@ namespace NotificationService.Infrastructure.Extensions
             services.AddKeyedScoped<IMessageProvider, SwiftSendProvider>("SwiftSend");
             services.AddHttpClient("SwiftSend", client =>
             {
-                client.BaseAddress = new Uri(baseUrl);
+                client.BaseAddress = new Uri(baseUrl + "/swiftsend");
                 client.DefaultRequestHeaders.Add("X-STUDENT-GROUP", studentGroup);
             });
 
@@ -42,15 +42,17 @@ namespace NotificationService.Infrastructure.Extensions
             services.AddKeyedScoped<IMessageProvider, SecurePostProvider>("SecurePost");
             services.AddHttpClient("SecurePost", client =>
             {
-                client.BaseAddress = new Uri(baseUrl);
+                client.BaseAddress = new Uri(baseUrl + "/securepost/");
                 client.DefaultRequestHeaders.Add("X-STUDENT-GROUP", studentGroup);
             });
+            // TODO: Add .AddStandardResilienceHandler() for retry on 429/503/timeouts (issue #33 acceptance criteria)
+            // Use Microsoft.Extensions.Http.Resilience package — handles exponential backoff out of the box
 
             // AsyncFlow
             services.AddKeyedScoped<IMessageProvider, AsyncFlowProvider>("AsyncFlow");
             services.AddHttpClient("AsyncFlow", client =>
             {
-                client.BaseAddress = new Uri(baseUrl);
+                client.BaseAddress = new Uri(baseUrl + "/asyncflow");
                 client.DefaultRequestHeaders.Add("X-STUDENT-GROUP", studentGroup);
             });
 
@@ -58,7 +60,7 @@ namespace NotificationService.Infrastructure.Extensions
             services.AddKeyedScoped<IMessageProvider, LegacyLinkProvider>("LegacyLink");
             services.AddHttpClient("LegacyLink", client =>
             {
-                client.BaseAddress = new Uri(baseUrl);
+                client.BaseAddress = new Uri(baseUrl + "/legacylink");
                 client.DefaultRequestHeaders.Add("X-STUDENT-GROUP", studentGroup);
             });
 
@@ -82,7 +84,16 @@ namespace NotificationService.Infrastructure.Extensions
             services.AddScoped<IPatientRepository, PatientRepository>();
             services.AddScoped<IScheduledNotificationRepository, ScheduledNotificationRepository>();
             services.AddScoped<ITenantRepository, TenantRepository>();
+            services.AddScoped<INotificationLogRepository, NotificationLogRepository>();
+            services.AddScoped<IProviderCredentialRepository, ProviderCredentialRepository>();
             services.AddScoped<IHashingService, Sha256HashingService>();
+            services.AddMemoryCache();
+            services.AddSingleton<IEncryptionService>(sp =>
+            {
+                var key = configuration["Security:EncryptionKey"]
+                    ?? throw new InvalidOperationException("Missing required configuration: Security:EncryptionKey.");
+                return new AesGcmEncryptionService(Convert.FromBase64String(key));
+            });
 
             return services;
         }

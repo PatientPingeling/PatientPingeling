@@ -10,7 +10,7 @@ namespace NotificationService.Infrastructure.Persistence.Repositories
 
     public async Task<Appointment?> GetByExternalIdAsync(string externalId, Guid tenantId, CancellationToken ct = default)
     {
-      return await _dbContext.Appointments.AsNoTracking().Include(a => a.Patient).FirstOrDefaultAsync(x => x.ExternalId == externalId && x.TenantId == tenantId, ct);
+      return await _dbContext.Appointments.Include(a => a.Patient).AsNoTracking().FirstOrDefaultAsync(x => x.ExternalId == externalId && x.TenantId == tenantId, ct);
     }
 
     public Task AddAsync(Appointment appointment, CancellationToken ct = default)

@@ -9,7 +9,8 @@ namespace NotificationService.Infrastructure.Persistence.Repositories
 
     public Task AddAsync(NotificationLog log, CancellationToken ct = default)
     {
-      throw new NotImplementedException();
+      _dbContext.NotificationLogs.Add(log);
+      return Task.CompletedTask;
     }
   }
 }

@@ -27,6 +27,12 @@ builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.C
 builder.Services.AddScoped<IAppointmentIngestionService, AppointmentIngestionService>();
 builder.Services.AddScoped<ITenantService, TenantService>();
 
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddMessageProviders(builder.Configuration);
+    builder.Services.AddScoped<INotificationDispatchService, NotificationDispatchService>();
+}
+
 // Infrastructure
 builder.Services
     .AddDatabase(builder.Configuration)
@@ -39,14 +45,28 @@ builder.Services
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("testing"))
+if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 
     // Seed database with mock data
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<NotificationDbContext>();
-    await DevDataSeeder.SeedAsync(db);
+    var encryption = scope.ServiceProvider.GetRequiredService<IEncryptionService>();
+    var seederLogger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("DevDataSeeder");
+    await DevDataSeeder.SeedAsync(db, encryption, seederLogger);
+
+    // DEV ONLY — test dispatch without Scheduler/Worker
+    app.MapGet("/dev/dispatch/{id:guid}", async (
+        Guid id,
+        INotificationDispatchService dispatchService,
+        CancellationToken ct) =>
+    {
+        var result = await dispatchService.DispatchAsync(id, ct);
+        return result.IsSuccess
+            ? Results.Ok(new { message = "Dispatched successfully." })
+            : Results.Problem(result.Error.Message, statusCode: 500, title: result.Error.Code);
+    });
 }
 
 // Middleware
