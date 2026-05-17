@@ -4,6 +4,6 @@ namespace NotificationService.Application.Abstractions
 {
     public interface INotificationDispatchService
     {
-        Task<Result> DispatchAsync(Guid scheduledNotificationId, CancellationToken ct = default);
+        Task<Result<string>> DispatchAsync(Guid scheduledNotificationId, CancellationToken ct = default);
     }
 }

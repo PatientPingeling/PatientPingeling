@@ -15,7 +15,7 @@ namespace NotificationService.Application.Services
     {
       if (tenantId == Guid.Empty || string.IsNullOrWhiteSpace(apiKey))
       {
-        return Result.Failure<bool>(new Error("tenant.invalid_request", "Tenant ID or API key is missing.", ErrorType.Validation));
+        return Result<bool>.Failure(new Error("tenant.invalid_request", "Tenant ID or API key is missing.", ErrorType.Validation));
       }
 
       Tenant? tenant;
@@ -26,16 +26,16 @@ namespace NotificationService.Application.Services
       catch (Exception ex)
       {
         _logger.LogError(ex, "Failed to retrieve tenant {TenantId}", tenantId);
-        return Result.Failure<bool>(new Error("tenant.db_error", "Failed to retrieve tenant.", ErrorType.Failure));
+        return Result<bool>.Failure(new Error("tenant.db_error", "Failed to retrieve tenant.", ErrorType.Failure));
       }
 
       if (tenant is null)
       {
-        return Result.Failure<bool>(new Error("tenant.not_found", "Tenant not found.", ErrorType.NotFound));
+        return Result<bool>.Failure(new Error("tenant.not_found", "Tenant not found.", ErrorType.NotFound));
       }
 
       var isMatch = _hashingService.Validate(hashedValue: tenant.ApiKeyHash, plainText: apiKey);
-      return Result.Success(isMatch);
+      return Result<bool>.Success(isMatch);
     }
   }
 }
