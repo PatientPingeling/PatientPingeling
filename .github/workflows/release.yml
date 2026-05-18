@@ -13,16 +13,16 @@ jobs:
     name: Build Notification API
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: "10.x"
 
       - name: Publish
         run: dotnet publish src/NotificationService.Api/NotificationService.Api.csproj --configuration Release --output ./publish/api
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: notification-api
           path: ./publish/api
@@ -31,16 +31,16 @@ jobs:
     name: Build Scheduler
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: "10.x"
 
       - name: Publish
         run: dotnet publish src/NotificationService.Scheduler/NotificationService.Scheduler.csproj --configuration Release --output ./publish/scheduler
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: scheduler
           path: ./publish/scheduler
@@ -49,16 +49,16 @@ jobs:
     name: Build Notification Worker
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: "10.x"
 
       - name: Publish
         run: dotnet publish src/NotificationService.Worker/NotificationService.Worker.csproj --configuration Release --output ./publish/worker
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: notification-worker
           path: ./publish/worker
@@ -67,9 +67,9 @@ jobs:
     name: Build OpenMRS Plugin
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           java-version: "8"
           distribution: "temurin"
@@ -79,7 +79,7 @@ jobs:
         run: mvn package --batch-mode -DskipTests
         working-directory: plugins/OpenMRS.PatientPingeling
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: patientpingeling-enricher.omod
           path: plugins/OpenMRS.PatientPingeling/omod/target/*.omod
@@ -91,10 +91,10 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: ./artifacts
 
@@ -106,7 +106,7 @@ jobs:
           zip -r notification-worker.zip notification-worker/
 
       - name: Create release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ github.event.inputs.version }}
           name: PatientPingeling ${{ github.event.inputs.version }}
