@@ -32,3 +32,8 @@ target/
 # Test Output
 # ==========================================
 surefire-reports/
+
+# ==========================================
+# Local secrets (do not commit)
+# ==========================================
+secrets/pp-secrets.json

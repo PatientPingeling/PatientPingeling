@@ -195,9 +195,12 @@ services:
       OMRS_CONFIG_CONNECTION_USERNAME: ${OMRS_DB_USER:-openmrs}
       OMRS_CONFIG_CONNECTION_PASSWORD: ${OMRS_DB_PASSWORD:-openmrs}
       # --- PATIENT PINGELING SECRETS ---
-      PP_API_KEY: "nt9jiornejrbhyu8eihbru89niejhruy"
-      PP_WEBHOOK_URL: "http://api:8000/webhooks/appointments"
-      PP_TENANT_KEY: "92f5ffdb-0ae7-4cfa-8458-8988b8bc7ee8"
+      PP_API_KEY: ${PP_API_KEY}
+      PP_TENANT_KEY: ${PP_TENANT_KEY}
+      PP_WEBHOOK_URL: ${PP_WEBHOOK_URL:-http://api:8000/webhooks/appointments}
+      PP_SECRETS_FILE: ${PP_SECRETS_FILE:-}
+      PP_SERVICE_USER: ${PP_SERVICE_USER}
+      PP_SERVICE_PASSWORD: ${PP_SERVICE_PASSWORD}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/openmrs"]
       timeout: 5s

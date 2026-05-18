@@ -48,3 +48,58 @@ If uploads are not allowed from the web (changable via a runtime property), you 
 into the ~/.OpenMRS/modules folder.  (Where ~/.OpenMRS is assumed to be the Application 
 Data Directory that the running openmrs is currently using.)  After putting the file in there 
 simply restart OpenMRS/tomcat and the module will be loaded and started.
+
+Webhook secrets
+---------------
+This module sends webhook requests and needs two secrets: `apiKey` and `tenantId`.
+
+Option A (UI, easiest): OpenMRS Global Properties
+-------------------------------------------------
+You do not need a custom screen: OpenMRS already has an admin UI for configuration.
+
+1. Go to **Administration**
+2. Open **Advanced Settings** (or **Manage Global Properties** depending on your distro)
+3. Search for `patientpingeling.` and create / edit these Global Properties:
+
+- `patientpingeling.apiKey`
+- `patientpingeling.tenantId`
+
+Note: the module will auto-create these Global Properties (with empty values) on startup if they do not exist yet. If you don't see them immediately, restart OpenMRS or reload the module.
+
+The module will read these values at runtime, so you can change them without rebuilding the `.omod`.
+
+Security note: Global Properties are stored in the OpenMRS database and may be visible to admins. Treat them as secrets.
+
+Option B (file): External JSON file
+-----------------------------------
+Because a `.omod` is a packaged artifact, you typically cannot “edit a file inside the module” after installing it.
+Instead, provide the secrets as an external JSON file:
+
+- **Recommended default location**: `${OPENMRS_APPLICATION_DATA_DIRECTORY}/patientpingeling/pp-secrets.json`
+    - The application data directory is often `~/.OpenMRS` on Linux/macOS (but depends on your OpenMRS setup).
+- **Override**: set environment variable `PP_SECRETS_FILE` to the full path of your JSON file (useful for Docker secrets/mounts).
+
+JSON format:
+
+        {
+            "apiKey": "...",
+            "tenantId": "..."
+        }
+
+Fallback (legacy): environment variables
+--------------------------------------
+If neither Global Properties nor a JSON file are configured, the module falls back to:
+
+- `PP_API_KEY`
+- `PP_TENANT_KEY`
+
+Service account credentials
+--------------------------
+This module needs to authenticate to OpenMRS to enrich events. Do **not** hardcode credentials in the code.
+
+Docker Compose: environment variables
+------------------------------------
+Set these environment variables for the OpenMRS container (for example via your `.env` file):
+
+- `PP_SERVICE_USER`
+- `PP_SERVICE_PASSWORD`
