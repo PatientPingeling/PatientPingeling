@@ -5,6 +5,7 @@ var builder = Host.CreateApplicationBuilder(args);
 builder.Services
         .AddDatabase(builder.Configuration)
         .AddMessageBroker(builder.Configuration)
+        .AddMessageProviders(builder.Configuration)
         .AddOpenTelemetry(
                 builder.Configuration,
                 serviceName: "NotificationService.Worker",

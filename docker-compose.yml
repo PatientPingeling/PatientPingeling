@@ -25,6 +25,8 @@ services:
       - RabbitMQ__Username=${RABBITMQ_USERNAME}
       - RabbitMQ__Password=${RABBITMQ_PASSWORD}
       - Security__EncryptionKey=${ENCRYPTION_KEY}
+      - Providers__BaseUrl=http://messageproviders:8080
+      - Providers__StudentGroup=${STUDENT_GROUP:-PatientPingeling}
       - OpenTelemetry__Endpoint=http://otel-lgtm:4317
       - OpenTelemetry__Environment=${ASPNETCORE_ENVIRONMENT:-Production}
     depends_on:
@@ -87,6 +89,13 @@ services:
 # ==========================================
   messageproviders:
     image: ghcr.io/avansict/in2.4-fakecomworld:main
+    environment:
+      - SwiftSend__ApiKey=swiftsend-api-key
+      - SecurePost__ClientId=securepost-client-id
+      - SecurePost__ClientSecret=securepost-secret-key
+      - AsyncFlow__ApiKey=asyncflow-api-key
+      - LegacyLink__Username=legacylink-user
+      - LegacyLink__Password=legacylink-password
     ports:
       - "1337:8080"
     restart: unless-stopped
