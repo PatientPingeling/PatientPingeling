@@ -11,11 +11,11 @@ namespace NotificationService.Application.Services
     private readonly IHashingService _hashingService = hashingService;
     private readonly ILogger<TenantService> _logger = logger;
 
-    public async Task<Result<bool>> ValidateApiKeyAsync(Guid tenantId, string apiKey, CancellationToken ct = default)
+    public async Task<Result> ValidateApiKeyAsync(Guid tenantId, string apiKey, CancellationToken ct = default)
     {
       if (tenantId == Guid.Empty || string.IsNullOrWhiteSpace(apiKey))
       {
-        return Result<bool>.Failure(new Error("tenant.invalid_request", "Tenant ID or API key is missing.", ErrorType.Validation));
+        return Result.Failure(new Error("tenant.invalid_request", "Tenant ID or API key is missing.", ErrorType.Validation));
       }
 
       Tenant? tenant;
@@ -26,16 +26,21 @@ namespace NotificationService.Application.Services
       catch (Exception ex)
       {
         _logger.LogError(ex, "Failed to retrieve tenant {TenantId}", tenantId);
-        return Result<bool>.Failure(new Error("tenant.db_error", "Failed to retrieve tenant.", ErrorType.Failure));
+        return Result.Failure(new Error("tenant.db_error", "Failed to retrieve tenant.", ErrorType.Failure));
       }
 
       if (tenant is null)
       {
-        return Result<bool>.Failure(new Error("tenant.not_found", "Tenant not found.", ErrorType.NotFound));
+        return Result.Failure(new Error("tenant.not_found", "Tenant not found.", ErrorType.NotFound));
       }
 
       var isMatch = _hashingService.Validate(hashedValue: tenant.ApiKeyHash, plainText: apiKey);
-      return Result<bool>.Success(isMatch);
+      if (isMatch is false)
+      {
+        return Result.Failure(new Error("tenant.invalid_api_key", "API key does not match.", ErrorType.Unauthorized));
+      }
+
+      return Result.Success();
     }
   }
 }

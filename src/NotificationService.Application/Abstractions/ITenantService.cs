@@ -4,6 +4,6 @@ namespace NotificationService.Application.Abstractions
 {
     public interface ITenantService
     {
-        Task<Result<bool>> ValidateApiKeyAsync(Guid tenantId, string apiKey, CancellationToken ct = default);
+        Task<Result> ValidateApiKeyAsync(Guid tenantId, string apiKey, CancellationToken ct = default);
     }
 }
