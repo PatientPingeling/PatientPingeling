@@ -12,6 +12,8 @@ builder.Services
                 enableEntityFrameworkCore: true);
         
 builder.Services.AddScoped<RabbitMQEstablisher>();
+// builder.Services.AddScoped<Poller>();
+// builder.Services.AddHostedService<PollerBackgroundService>();
 
 using var host = builder.Build();
 
