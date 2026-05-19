@@ -110,7 +110,7 @@ namespace NotificationService.Infrastructure.Extensions
             services.AddSingleton(sp =>
             {
                 var options = sp.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
-                var factory = new ConnectionFactory()
+                return new ConnectionFactory()
                 {
                     HostName = options.Host,
                     UserName = options.Username,
@@ -118,7 +118,6 @@ namespace NotificationService.Infrastructure.Extensions
                     Port = options.Port
                 };
 
-                return factory.CreateConnectionAsync().GetAwaiter().GetResult();
             });
 
             return services;
