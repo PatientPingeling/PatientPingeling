@@ -9,6 +9,7 @@ namespace NotificationService.Infrastructure.Persistence
         public DbSet<Patient> Patients { get; set; }
         public DbSet<Appointment> Appointments { get; set; }
         public DbSet<NotificationLog> NotificationLogs { get; set; }
+        public DbSet<DispatchLog> DispatchLogs { get; set; }
         public DbSet<ProviderCredential> ProviderCredentials { get; set; }
         public DbSet<ScheduledNotification> ScheduledNotifications { get; set; }
 
@@ -29,10 +30,20 @@ namespace NotificationService.Infrastructure.Persistence
 
             modelBuilder.Entity<ScheduledNotification>(entity =>
             {
-                entity.Property(e => e.Status)
+                entity.HasIndex(e => e.SendAt);
+            });
+
+            modelBuilder.Entity<DispatchLog>(entity =>
+            {
+                entity.Property(e => e.Outcome)
                     .HasConversion<string>();
 
-                entity.HasIndex(e => new { e.Status, e.SendAt });
+                entity.HasIndex(e => new { e.ScheduledNotificationId, e.AttemptedAt });
+            });
+
+            modelBuilder.Entity<NotificationLog>(entity =>
+            {
+                entity.HasIndex(e => new { e.TenantId, e.SentAt });
             });
         }
     }
