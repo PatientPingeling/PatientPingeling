@@ -102,22 +102,22 @@ namespace NotificationService.Infrastructure.Extensions
         {
             // 1. Setup Options with Validation
             services.AddOptions<RabbitMqOptions>()
-                .Bind(configuration.GetSection("RabbitMq"))
+                .Bind(configuration.GetSection(RabbitMqOptions.SectionName))
                 .ValidateDataAnnotations()
                 .ValidateOnStart();
 
-            // 2. Register the Connection as a Singleton
-            services.AddSingleton(sp =>
+            // 2. Register the factory once; each hosted service owns its connection/channel lifetime.
+            services.AddSingleton<IConnectionFactory>(sp =>
             {
                 var options = sp.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
-                return new ConnectionFactory()
+
+                return new ConnectionFactory
                 {
                     HostName = options.Host,
                     UserName = options.Username,
                     Password = options.Password,
                     Port = options.Port
                 };
-
             });
 
             return services;
