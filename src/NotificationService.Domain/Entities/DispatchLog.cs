@@ -13,8 +13,11 @@ namespace NotificationService.Domain.Entities
 
     public enum Outcome
     {
+        NEW,
         SUCCESS,
         EXPIRED,
+        INSCHEDULER,
+        INQUEUE,
         ERROR_429
     }
 }
