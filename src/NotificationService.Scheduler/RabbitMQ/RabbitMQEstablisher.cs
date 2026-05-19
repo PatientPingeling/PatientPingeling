@@ -1,6 +1,4 @@
 using NotificationService.Infrastructure.Options;
-using System.Collections.Immutable;
-using Microsoft.VisualBasic;
 using System.Text.Json;
 using RabbitMQ.Client;
 using System.Text;
