@@ -1,3 +1,4 @@
+using NotificationService.Infrastructure.Messaging;
 using NotificationService.Infrastructure.Options;
 using System.Text.Json;
 using RabbitMQ.Client;
@@ -32,7 +33,7 @@ namespace NotificationService.Scheduler.RabbitMQ
                 arguments: null);
         }
 
-        public async Task PublishAsync<T>(T message)
+        public async Task PublishAsync(RabbitMQNotificationmessage message)
         {
             if (_channel is null)
                 throw new InvalidOperationException("Call EstablishConnection first.");
