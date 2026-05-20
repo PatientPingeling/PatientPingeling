@@ -1,4 +1,5 @@
 using NotificationService.Application.Abstractions;
+using NotificationService.Application.Factories;
 using NotificationService.Infrastructure.Messaging;
 using NotificationService.Scheduler.RabbitMQ;
 using NotificationService.Domain.Entities;
@@ -10,49 +11,70 @@ namespace NotificationService.Scheduler.Polling
     public class PollAction(
         ILogger<PollAction> logger,
         IDispatchLogRepository dispatchLogRepository,
-        RabbitMQEstablisher queueEstablisher)
+        RabbitMQEstablisher queueEstablisher,
+        IScheduledNotificationRepository scheduledNotificationRepository,
+        INotificationMessageFactory notificationMessageFactory)
         // Class that contains service to fill rabbitMQNotification
     {
         private readonly ILogger<PollAction> _logger = logger;
         private readonly IDispatchLogRepository _dispatchLogRepository = dispatchLogRepository;
         private readonly RabbitMQEstablisher _queueEstablisher = queueEstablisher;
+        private readonly IScheduledNotificationRepository _scheduledNotificationRepository = scheduledNotificationRepository;
+        private readonly INotificationMessageFactory _notificationMessageFactory = notificationMessageFactory;
 
         public async Task PollAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Polling for scheduled notifications...");
 
             // Add in transaction log: Notification X status: trying to publish to queue
+            var pending = await _scheduledNotificationRepository.GetPendingAsync(DateTimeOffset.UtcNow, cancellationToken);
+
+            var notificationMessages = await _notificationMessageFactory.CreateAsync(pending.ToArray(), cancellationToken);
+            RabbitMQNotificationMessage[] notifications = notificationMessages
+                .Select(RabbitMQNotificationMessage.FromNotificationMessage)
+                .ToArray();
+
+            if (notifications.Count() == 0){
+                _logger.LogInformation("No scheduled notifications found, ending polling sequence.");
+                return;
+            }
 
             foreach (var notification in notifications)
             {
                 try
                     {
-                        // Publish the notification
-                        await _queueEstablisher.PublishAsync(notification);
+                        var dispatchLog = new DispatchLog
+                        {
+                            AttemptedAt = DateTimeOffset.UtcNow,
+                            Outcome = Outcome.INSCHEDULER,
+                            ScheduledNotificationId = notification.ScheduledNotification.Id
+                        };
 
+                        await _dispatchLogRepository.AddAsync(dispatchLog, cancellationToken);
+                        
                         // Log success in the transaction log
-                        await _dispatchLogRepository.LogAsync(notification.Id, "Sent to queue");
-                        _logger.LogInformation("Notification {Id} successfully published to RabbitMQ.", notification.Id);
+                        _logger.LogInformation("Notification set to dispatch outcome: INSCHEDULER");
                     }
-                    catch (BrokerUnreachableException ex)
+                    catch
                     {
-                        _logger.LogError(ex, "RabbitMQ is unreachable. Notification {Id} will be retried.", notification.Id);
-                        await _dispatchLogRepository.LogAsync(notification.Id, "Waiting (to be sent again)");
-                    }
-                    catch (OperationInterruptedException ex)
-                    {
-                        _logger.LogError(ex, "RabbitMQ operation failed for notification {Id}.", notification.Id);
-                        await _dispatchLogRepository.LogAsync(notification.Id, "Waiting (to be sent again)");
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "An unexpected error occurred while publishing notification {Id}.", notification.Id);
-                        await _dispatchLogRepository.LogAsync(notification.Id, "Failed");
+                        _logger.LogError("Dispatch Log is unreachable, skipping notification.");
                     }
                 // Als lukt
-                // Transaction als success: Notification X status: Sent to queue
-                // Als failed: Notification X status: waiting (to be sent again)
-                _logger.LogInformation("Notification {Id} published to RabbitMQ.", notification.Id);
+                try{
+                    await _queueEstablisher.PublishAsync(notification, cancellationToken);
+                    _logger.LogInformation("Notification {Id} published to RabbitMQ.", notification.ScheduledNotification.Id);
+                }catch{
+                    // Dispatchlog with outcome NEW
+                    var dispatchLog = new DispatchLog
+                    {
+                        AttemptedAt = DateTimeOffset.UtcNow,
+                        Outcome = Outcome.NEW,
+                        ScheduledNotificationId = notification.ScheduledNotification.Id
+                    };
+
+                    await _dispatchLogRepository.AddAsync(dispatchLog, cancellationToken);
+                    _logger.LogInformation("RabbitMQ is unreachable, set dispatch outcome back to NEW");
+                }
             }
         }
     }

@@ -33,17 +33,20 @@ namespace NotificationService.Scheduler.RabbitMQ
                 arguments: null);
         }
 
-        public async Task PublishAsync(RabbitMQNotificationmessage message)
+        public async Task PublishAsync(RabbitMQNotificationMessage message, CancellationToken ct = default)
         {
             if (_channel is null)
                 throw new InvalidOperationException("Call EstablishConnection first.");
+
+            ct.ThrowIfCancellationRequested();
 
             var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message));
 
             await _channel.BasicPublishAsync(
                 exchange: string.Empty,
                 routingKey: RabbitMqOptions.NotificationQueue,
-                body: body);
+                body: body,
+                cancellationToken: ct);
         }
     }
 }
