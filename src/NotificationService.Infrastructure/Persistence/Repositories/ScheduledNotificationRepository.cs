@@ -79,11 +79,16 @@ namespace NotificationService.Infrastructure.Persistence.Repositories
                         WHERE a."Id" = s."AppointmentId"
                         AND a."IsCancelled" = FALSE
                       )
-                      AND NOT EXISTS (
+                      AND EXISTS (
                         SELECT 1
                         FROM "DispatchLogs" d
                         WHERE d."ScheduledNotificationId" = s."Id"
-                        AND d."Outcome" = 'SUCCESS'
+                          AND d."AttemptedAt" = (
+                            SELECT MAX(d2."AttemptedAt")
+                            FROM "DispatchLogs" d2
+                            WHERE d2."ScheduledNotificationId" = s."Id"
+                          )
+                          AND d."Outcome" IN ('NEW', 'EXPIRED', 'ERROR_429')
                       )
                       ORDER BY s."SendAt"
                       FOR UPDATE SKIP LOCKED
