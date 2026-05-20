@@ -204,9 +204,21 @@ namespace NotificationService.Application.Services
 
       var result = await ExecuteInTransactionAsync(async () =>
       {
+        var pendingIds = await _scheduledNotificationRepository.GetPendingIdsByAppointmentIdAsync(appointment.Id, ct);
+
+        foreach (var id in pendingIds)
+        {
+          await _dispatchLogRepository.AddAsync(new DispatchLog
+          {
+            Id = Guid.CreateVersion7(),
+            AttemptedAt = DateTimeOffset.UtcNow,
+            Outcome = Outcome.CANCELLED,
+            ScheduledNotificationId = id
+          }, ct);
+        }
+
         await _scheduledNotificationRepository.DeletePendingByAppointmentIdAsync(appointment.Id, ct);
         await _appointmentRepository.UpdateAsync(appointment, ct);
-        // TODO: write DispatchLog with Outcome.CANCELLED before deleting — needs IScheduledNotificationRepository.GetPendingByAppointmentIdAsync to fetch IDs first, since FK prevents writing logs after deletion (#56)
       }, "cancel.db_error", "cancel appointment", ct);
 
       if (result.IsSuccess)

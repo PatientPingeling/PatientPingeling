@@ -34,6 +34,15 @@ namespace NotificationService.Infrastructure.Persistence.Repositories
       return Task.CompletedTask;
     }
 
+    public async Task<IReadOnlyCollection<Guid>> GetPendingIdsByAppointmentIdAsync(int appointmentId, CancellationToken ct = default)
+    {
+      return await _dbContext.ScheduledNotifications
+        .Where(s => s.AppointmentId == appointmentId)
+        .Where(s => !_dbContext.DispatchLogs.Any(d => d.ScheduledNotificationId == s.Id && d.Outcome == Outcome.SUCCESS))
+        .Select(s => s.Id)
+        .ToListAsync(ct);
+    }
+
     public async Task<int> DeletePendingByAppointmentIdAsync(int appointmentId, CancellationToken ct = default)
     {
       // SELECT FOR UPDATE SKIP LOCKED — locks rows so the Scheduler cannot concurrently
