@@ -43,6 +43,9 @@ namespace NotificationService.Scheduler.RabbitMQ
 
             ct.ThrowIfCancellationRequested();
 
+            // Timestamp the moment we enqueue the message.
+            message.EnqueuedAt = DateTimeOffset.UtcNow;
+
             var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message, _jsonOptions));
 
             await _channel.BasicPublishAsync(

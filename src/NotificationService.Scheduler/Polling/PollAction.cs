@@ -51,17 +51,17 @@ namespace NotificationService.Scheduler.Polling
                     {
                         AttemptedAt = DateTimeOffset.UtcNow,
                         Outcome = Outcome.INSCHEDULER,
-                        ScheduledNotificationId = notification.ScheduledNotification.Id
+                        ScheduledNotificationId = notification.ScheduledNotificationId
                     };
 
                     await _dispatchLogRepository.AddAsync(inSchedulerLog, cancellationToken);
                     await _unitOfWork.CommitAsync();
 
-                    _logger.LogInformation("Notification {Id} set to dispatch outcome: INSCHEDULER.", notification.ScheduledNotification.Id);
+                    _logger.LogInformation("Notification {Id} set to dispatch outcome: INSCHEDULER.", notification.ScheduledNotificationId);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Failed to write INSCHEDULER dispatch log for notification {Id}, skipping.", notification.ScheduledNotification.Id);
+                    _logger.LogError(ex, "Failed to write INSCHEDULER dispatch log for notification {Id}, skipping.", notification.ScheduledNotificationId);
                     continue;
                 }
 
@@ -69,7 +69,7 @@ namespace NotificationService.Scheduler.Polling
                 try
                 {
                     await _queueEstablisher.PublishAsync(notification, cancellationToken);
-                    _logger.LogInformation("Notification {Id} published to RabbitMQ.", notification.ScheduledNotification.Id);
+                    _logger.LogInformation("Notification {Id} published to RabbitMQ.", notification.ScheduledNotificationId);
 
                     await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
@@ -77,17 +77,17 @@ namespace NotificationService.Scheduler.Polling
                     {
                         AttemptedAt = DateTimeOffset.UtcNow,
                         Outcome = Outcome.INQUEUE,
-                        ScheduledNotificationId = notification.ScheduledNotification.Id
+                        ScheduledNotificationId = notification.ScheduledNotificationId
                     };
 
                     await _dispatchLogRepository.AddAsync(inQueueLog, cancellationToken);
                     await _unitOfWork.CommitAsync();
 
-                    _logger.LogInformation("Notification {Id} dispatch outcome set to: INQUEUE.", notification.ScheduledNotification.Id);
+                    _logger.LogInformation("Notification {Id} dispatch outcome set to: INQUEUE.", notification.ScheduledNotificationId);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Failed to publish notification {Id} to RabbitMQ, rolling back to NEW.", notification.ScheduledNotification.Id);
+                    _logger.LogError(ex, "Failed to publish notification {Id} to RabbitMQ, rolling back to NEW.", notification.ScheduledNotificationId);
 
                     try
                     {
@@ -97,17 +97,17 @@ namespace NotificationService.Scheduler.Polling
                         {
                             AttemptedAt = DateTimeOffset.UtcNow,
                             Outcome = Outcome.NEW,
-                            ScheduledNotificationId = notification.ScheduledNotification.Id
+                            ScheduledNotificationId = notification.ScheduledNotificationId
                         };
 
                         await _dispatchLogRepository.AddAsync(newLog, cancellationToken);
                         await _unitOfWork.CommitAsync();
 
-                        _logger.LogInformation("Notification {Id} dispatch outcome set back to: NEW.", notification.ScheduledNotification.Id);
+                        _logger.LogInformation("Notification {Id} dispatch outcome set back to: NEW.", notification.ScheduledNotificationId);
                     }
                     catch (Exception innerEx)
                     {
-                        _logger.LogError(innerEx, "Failed to write NEW dispatch log for notification {Id}.", notification.ScheduledNotification.Id);
+                        _logger.LogError(innerEx, "Failed to write NEW dispatch log for notification {Id}.", notification.ScheduledNotificationId);
                     }
                 }
             }
