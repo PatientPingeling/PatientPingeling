@@ -1,6 +1,7 @@
 using NotificationService.Infrastructure.Messaging;
 using NotificationService.Infrastructure.Options;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using RabbitMQ.Client;
 using System.Text;
 
@@ -12,19 +13,21 @@ namespace NotificationService.Scheduler.RabbitMQ
         private IConnection? _connection;
         private IChannel? _channel;
 
+        private static readonly JsonSerializerOptions _jsonOptions = new()
+        {
+            ReferenceHandler = ReferenceHandler.IgnoreCycles
+        };
+
         public async Task EstablishConnection()
         {
-            // Creating connection and channel
             _connection = await _connectionFactory.CreateConnectionAsync();
             _channel = await _connection.CreateChannelAsync();
 
-            // Enabling fair dispatch
             await _channel.BasicQosAsync(
                 prefetchSize: 0,
                 prefetchCount: 1,
                 global: false);
 
-            // Declaring queue
             await _channel.QueueDeclareAsync(
                 queue: RabbitMqOptions.NotificationQueue,
                 durable: true,
@@ -40,7 +43,7 @@ namespace NotificationService.Scheduler.RabbitMQ
 
             ct.ThrowIfCancellationRequested();
 
-            var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message));
+            var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message, _jsonOptions));
 
             await _channel.BasicPublishAsync(
                 exchange: string.Empty,

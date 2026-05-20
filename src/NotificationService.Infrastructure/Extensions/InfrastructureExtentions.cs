@@ -87,6 +87,7 @@ namespace NotificationService.Infrastructure.Extensions
             services.AddScoped<INotificationLogRepository, NotificationLogRepository>();
             services.AddScoped<IProviderCredentialRepository, ProviderCredentialRepository>();
             services.AddScoped<IHashingService, Sha256HashingService>();
+            services.AddScoped<IDispatchLogRepository, DispatchLogRepository>();
             services.AddMemoryCache();
             services.AddSingleton<IEncryptionService>(sp =>
             {

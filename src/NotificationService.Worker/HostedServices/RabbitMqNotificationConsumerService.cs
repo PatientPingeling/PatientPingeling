@@ -1,5 +1,4 @@
 using NotificationService.Infrastructure.Options;
-using NotificationService.Worker.Messaging;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
