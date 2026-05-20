@@ -1,3 +1,7 @@
+using System.Text;
+using System.Text.Json;
+using NotificationService.Application.Abstractions;
+using NotificationService.Application.Commands;
 using NotificationService.Infrastructure.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -5,13 +9,14 @@ using RabbitMQ.Client.Events;
 namespace NotificationService.Worker.HostedServices
 {
   public sealed class RabbitMqNotificationConsumerService(
+    IServiceScopeFactory scopeFactory,
     IConnectionFactory connectionFactory,
-    // NotificationCommandMessageHandler messageProcessor,
     ILogger<RabbitMqNotificationConsumerService> logger) : BackgroundService
   {
     private readonly IConnectionFactory _connectionFactory = connectionFactory;
-    // private readonly NotificationCommandMessageHandler _messageProcessor = messageProcessor;
     private readonly ILogger<RabbitMqNotificationConsumerService> _logger = logger;
+    private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
     protected override async Task ExecuteAsync(CancellationToken ct)
     {
@@ -36,7 +41,21 @@ namespace NotificationService.Worker.HostedServices
       {
         try
         {
-          // await _messageProcessor.ProcessAsync(ea.Body, ct);
+          await using var scope = _scopeFactory.CreateAsyncScope();
+          var dispatchService = scope.ServiceProvider.GetRequiredService<INotificationDispatchService>();
+
+          ct.ThrowIfCancellationRequested();
+
+          var message = Encoding.UTF8.GetString(ea.Body.Span);
+          var command = JsonSerializer.Deserialize<RabbitMQNotificationMessage>(message, JsonOptions) ?? throw new InvalidOperationException("RabbitMQ notification command is missing a scheduled notification id.");
+
+          var result = await dispatchService.DispatchAsync(command, ct);
+          if (result.IsFailure)
+          {
+            throw new InvalidOperationException($"Notification dispatch failed: {result.Error.Code}.");
+          }
+
+          _logger.LogInformation("Dispatched scheduled notification {ScheduledNotificationId} through provider message {ExternalMessageId}.", command.ScheduledNotificationId, result.Value);
 
           await channel.BasicAckAsync(
                 ea.DeliveryTag,

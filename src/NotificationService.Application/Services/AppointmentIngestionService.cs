@@ -70,6 +70,8 @@ namespace NotificationService.Application.Services
         return Result.Failure(new Error("appointment.duplicate", "Appointment already exists.", ErrorType.Duplicate));
       }
 
+      // TODO: @DanielvG-IT Add dispatchlogging "new" when doing this. maybe in updating also idk atm!
+
       var appointment = new Appointment
       {
         ExternalId = command.Appointment.ExternalId,
