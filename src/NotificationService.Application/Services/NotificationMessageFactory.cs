@@ -48,13 +48,13 @@ public sealed class NotificationMessageFactory(IScheduledNotificationRepository 
             // NOTE: NotificationMessage currently requires a *single* ProviderCredential,
             // while Tenant holds the full collection of credentials.
             // We pass the first credential as a minimal, consistent value.
+
+            // TODO: @BaasW SECUREPOST HAS CLIENTID AND CLIENTSECRET. THIS WILL FAIL WITH SECUREPOST!
             var providerCredential = tenant.Credentials.FirstOrDefault();
             if (providerCredential is null)
             {
                 continue;
             }
-
-            
 
             messages.Add(new NotificationMessage
             {
