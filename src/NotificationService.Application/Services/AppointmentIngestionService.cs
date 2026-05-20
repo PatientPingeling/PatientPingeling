@@ -223,8 +223,8 @@ namespace NotificationService.Application.Services
     {
       return
       [
-        new() { Id = Guid.CreateVersion7(), Status = ScheduledNotificationStatus.Pending, SendAt = scheduledAt.AddHours(-24), Appointment = appointment },
-        new() { Id = Guid.CreateVersion7(), Status = ScheduledNotificationStatus.Pending, SendAt = scheduledAt.AddHours(-1), Appointment = appointment }
+        new() { Id = Guid.CreateVersion7(), SendAt = scheduledAt.AddHours(-24), Appointment = appointment },
+        new() { Id = Guid.CreateVersion7(), SendAt = scheduledAt.AddHours(-1), Appointment = appointment }
       ];
     }
 

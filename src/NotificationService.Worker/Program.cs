@@ -1,4 +1,7 @@
+using NotificationService.Application.Abstractions;
+using NotificationService.Application.Services;
 using NotificationService.Infrastructure.Extensions;
+using NotificationService.Worker.HostedServices;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -11,6 +14,9 @@ builder.Services
                 serviceName: "NotificationService.Worker",
                 enableHttpClient: true,
                 enableEntityFrameworkCore: true);
+
+builder.Services.AddScoped<INotificationDispatchService, NotificationDispatchService>();
+builder.Services.AddHostedService<RabbitMqNotificationConsumerService>();
 
 using var host = builder.Build();
 

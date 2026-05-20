@@ -13,7 +13,9 @@ COPY . .
 
 RUN dotnet publish NotificationService.Scheduler/NotificationService.Scheduler.csproj -c Release -o /app/publish --no-restore
 
-FROM mcr.microsoft.com/dotnet/runtime:10.0 AS final
+# The scheduler references the ASP.NET shared framework (Microsoft.AspNetCore.App)
+# so it must run on the aspnet image (not the plain runtime image).
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "NotificationService.Scheduler.dll"]

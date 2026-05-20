@@ -1,10 +1,10 @@
 <mxfile host="65bd71144e">
     <diagram name="C4 Container" id="0">
-        <mxGraphModel dx="2003" dy="1380" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1000" math="0" shadow="0">
+        <mxGraphModel dx="920" dy="513" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1000" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
-                <mxCell id="2" value="&lt;font style=&quot;color: rgb(0, 0, 0);&quot;&gt;OpenMRS + Enricher Plugin&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;color: rgb(0, 0, 0);&quot;&gt;[Software System]&lt;/font&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;dashed=1;align=left;verticalAlign=top;fontColor=#969696;fontStyle=1;fontSize=13;spacing=10;spacingLeft=18;" vertex="1" parent="1">
+                <mxCell id="2" value="&lt;font style=&quot;color: rgb(0, 0, 0);&quot;&gt;OpenMRS + Enricher Plugin&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;color: rgb(0, 0, 0);&quot;&gt;[Software System]&lt;/font&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;dashed=1;align=left;verticalAlign=top;fontColor=#969696;fontStyle=1;fontSize=13;spacing=10;spacingLeft=18;" parent="1" vertex="1">
                     <mxGeometry x="70" y="300" width="330" height="390" as="geometry"/>
                 </mxCell>
                 <mxCell id="title" value="C2 - Containerdiagram: Communicatiemodule" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=24;fontStyle=1;fontColor=#1F2937;" parent="1" vertex="1">
@@ -121,7 +121,7 @@
                         </mxGeometry>
                     </mxCell>
                 </object>
-                <object placeholders="1" c4Type="Relationship" c4Technology="SQL / EF Core" c4Description="Werkt verzendstatus bij" label="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;%c4Description%&lt;/b&gt;&lt;br&gt;[%c4Technology%]&lt;/div&gt;" id="rel-worker-db">
+                <object placeholders="1" c4Type="Relationship" c4Technology="SQL / EF Core" c4Description="Werkt verzendstatus bij &amp; Controleert actualiteit message" label="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;%c4Description%&lt;/b&gt;&lt;br&gt;[%c4Technology%]&lt;/div&gt;" id="rel-worker-db">
                     <mxCell style="endArrow=blockThin;html=1;fontSize=10;fontColor=#404040;strokeWidth=1;endFill=1;strokeColor=#828282;metaEdit=1;endSize=14;startSize=14;rounded=0;edgeStyle=orthogonalEdgeStyle;entryX=0.855;entryY=0;entryDx=0;entryDy=4.35;entryPerimeter=0;exitX=0.25;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="notification-worker" target="communication-db" edge="1">
                         <mxGeometry relative="1" as="geometry">
                             <Array as="points">

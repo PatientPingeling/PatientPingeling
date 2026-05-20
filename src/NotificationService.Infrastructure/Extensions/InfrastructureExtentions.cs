@@ -87,6 +87,7 @@ namespace NotificationService.Infrastructure.Extensions
             services.AddScoped<INotificationLogRepository, NotificationLogRepository>();
             services.AddScoped<IProviderCredentialRepository, ProviderCredentialRepository>();
             services.AddScoped<IHashingService, Sha256HashingService>();
+            services.AddScoped<IDispatchLogRepository, DispatchLogRepository>();
             services.AddMemoryCache();
             services.AddSingleton<IEncryptionService>(sp =>
             {
@@ -102,23 +103,22 @@ namespace NotificationService.Infrastructure.Extensions
         {
             // 1. Setup Options with Validation
             services.AddOptions<RabbitMqOptions>()
-                .Bind(configuration.GetSection("RabbitMq"))
+                .Bind(configuration.GetSection(RabbitMqOptions.SectionName))
                 .ValidateDataAnnotations()
                 .ValidateOnStart();
 
-            // 2. Register the Connection as a Singleton
-            services.AddSingleton(sp =>
+            // 2. Register the factory once; each hosted service owns its connection/channel lifetime.
+            services.AddSingleton<IConnectionFactory>(sp =>
             {
                 var options = sp.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
-                var factory = new ConnectionFactory()
+
+                return new ConnectionFactory
                 {
                     HostName = options.Host,
                     UserName = options.Username,
                     Password = options.Password,
                     Port = options.Port
                 };
-
-                return factory.CreateConnectionAsync().GetAwaiter().GetResult();
             });
 
             return services;

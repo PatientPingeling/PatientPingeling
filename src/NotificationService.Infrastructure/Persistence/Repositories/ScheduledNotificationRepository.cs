@@ -37,26 +37,49 @@ namespace NotificationService.Infrastructure.Persistence.Repositories
     public async Task<int> DeletePendingByAppointmentIdAsync(int appointmentId, CancellationToken ct = default)
     {
       // SELECT FOR UPDATE SKIP LOCKED — locks rows so the Scheduler cannot concurrently
-      // mark them as Processing between our read and the SaveChanges commit.
+      // pick them for dispatch between our read and the SaveChanges commit.
       var toDelete = await _dbContext.ScheduledNotifications
-        .FromSqlRaw(@"SELECT * FROM ""ScheduledNotifications""
-                      WHERE ""AppointmentId"" = {0}
-                      AND ""Status"" = 'Pending'
-                      FOR UPDATE SKIP LOCKED", appointmentId)
+        .FromSqlRaw("""
+                      SELECT *
+                      FROM "ScheduledNotifications" s
+                      WHERE s."AppointmentId" = {0}
+                      AND NOT EXISTS (
+                        SELECT 1
+                        FROM "DispatchLogs" d
+                        WHERE d."ScheduledNotificationId" = s."Id"
+                        AND d."Outcome" = 'SUCCESS'
+                      )
+                      FOR UPDATE SKIP LOCKED
+                      """, appointmentId)
         .ToListAsync(ct);
 
       _dbContext.ScheduledNotifications.RemoveRange(toDelete);
       return toDelete.Count;
     }
 
-    public Task<IReadOnlyCollection<ScheduledNotification>> GetPendingAsync(DateTimeOffset before, CancellationToken ct = default)
+    public async Task<IReadOnlyCollection<ScheduledNotification>> GetPendingAsync(DateTimeOffset before, CancellationToken ct = default)
     {
-      throw new NotImplementedException(); // TODO @JanssenJochem
-    }
-
-    public Task UpdateStatusAsync(Guid id, ScheduledNotificationStatus status, CancellationToken ct = default)
-    {
-      throw new NotImplementedException(); // TODO @JanssenJochem
+      return await _dbContext.ScheduledNotifications
+        .FromSqlRaw("""
+                      SELECT *
+                      FROM "ScheduledNotifications" s
+                      WHERE s."SendAt" <= {0}
+                      AND EXISTS (
+                        SELECT 1
+                        FROM "Appointments" a
+                        WHERE a."Id" = s."AppointmentId"
+                        AND a."IsCancelled" = FALSE
+                      )
+                      AND NOT EXISTS (
+                        SELECT 1
+                        FROM "DispatchLogs" d
+                        WHERE d."ScheduledNotificationId" = s."Id"
+                        AND d."Outcome" = 'SUCCESS'
+                      )
+                      ORDER BY s."SendAt"
+                      FOR UPDATE SKIP LOCKED
+                      """, before)
+        .ToListAsync(ct);
     }
 
 
