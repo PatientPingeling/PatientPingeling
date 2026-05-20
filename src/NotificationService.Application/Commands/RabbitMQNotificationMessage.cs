@@ -19,6 +19,7 @@ namespace NotificationService.Application.Commands
 
         public required Guid TenantId { get; set; }
         public required string Provider { get; set; }
+        // TODO: replace ProviderCredential entity with a dedicated DTO (Key + EncryptedValue only) to avoid leaking EF navigation properties onto the queue (#56)
         public required ProviderCredential[] ProviderCredentials { get; set; }
 
         public DateTimeOffset EnqueuedAt { get; set; }

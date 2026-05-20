@@ -49,13 +49,19 @@ namespace NotificationService.Worker.HostedServices
           var message = Encoding.UTF8.GetString(ea.Body.Span);
           var command = JsonSerializer.Deserialize<RabbitMQNotificationMessage>(message, JsonOptions) ?? throw new InvalidOperationException("RabbitMQ notification command is missing a scheduled notification id.");
 
+          // TODO: check message staleness — if DateTimeOffset.UtcNow is far past command.SendAt, ACK and log Outcome.EXPIRED instead of dispatching (#56)
+
           var result = await dispatchService.DispatchAsync(command, ct);
           if (result.IsFailure)
           {
+            // TODO: distinguish transient (requeue: true) from permanent failures (requeue: false / dead-letter) based on result.Error.Type to avoid infinite requeue loops (#56)
             throw new InvalidOperationException($"Notification dispatch failed: {result.Error.Code}.");
           }
 
           _logger.LogInformation("Dispatched scheduled notification {ScheduledNotificationId} through provider message {ExternalMessageId}.", command.ScheduledNotificationId, result.Value);
+
+          // TODO: write DispatchLog (Outcome.SUCCESS, HttpStatusCode, command.ScheduledNotificationId) via IDispatchLogRepository
+          // TODO: write NotificationLog (billing record) via INotificationLogRepository
 
           await channel.BasicAckAsync(
                 ea.DeliveryTag,

@@ -17,6 +17,7 @@ namespace NotificationService.Application.Services
 
         public async Task<Result<string>> DispatchAsync(RabbitMQNotificationMessage notificationMessage, CancellationToken ct)
         {
+            // TODO: validate notificationMessage.Provider against tenant's actual Provider in DB using TenantId to prevent provider spoofing (security issue #56)
             var provider = _providerFactory.Create(notificationMessage.Provider);
 
             var resolved = ResolveFormatAndRecipient(provider, notificationMessage);
@@ -91,6 +92,7 @@ namespace NotificationService.Application.Services
             Met vriendelijke groet,
             {msg.Provider}
             """;
+            // TODO: replace {msg.Provider} with tenant display name — add TenantName field to RabbitMQNotificationMessage (#56)
         }
 
         private static string BuildSmsMessage(RabbitMQNotificationMessage msg)

@@ -70,7 +70,7 @@ namespace NotificationService.Application.Services
         return Result.Failure(new Error("appointment.duplicate", "Appointment already exists.", ErrorType.Duplicate));
       }
 
-      // TODO: @DanielvG-IT Add dispatchlogging "new" when doing this. maybe in updating also idk atm!
+      // TODO: after AddRangeAsync, write a DispatchLog with Outcome.NEW for each created ScheduledNotification (#56)
 
       var appointment = new Appointment
       {
@@ -146,6 +146,7 @@ namespace NotificationService.Application.Services
           var notifications = CreateScheduledNotifications(appointment, appointment.ScheduledAt);
           await _scheduledNotificationRepository.DeletePendingByAppointmentIdAsync(appointment.Id, ct);
           await _scheduledNotificationRepository.AddRangeAsync(notifications, ct);
+          // TODO: write DispatchLog with Outcome.NEW for each newly created ScheduledNotification after reschedule (#56)
         }
       }, "update.db_error", "update appointment", ct);
 
@@ -182,6 +183,7 @@ namespace NotificationService.Application.Services
       {
         await _scheduledNotificationRepository.DeletePendingByAppointmentIdAsync(appointment.Id, ct);
         await _appointmentRepository.UpdateAsync(appointment, ct);
+        // TODO: write DispatchLog with Outcome.CANCELLED for deleted ScheduledNotifications — requires adding CANCELLED to the Outcome enum (#56)
       }, "cancel.db_error", "cancel appointment", ct);
 
       if (result.IsSuccess)
