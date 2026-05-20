@@ -16,13 +16,20 @@ namespace NotificationService.Infrastructure.Persistence
         public async Task CommitAsync(CancellationToken ct = default)
         {
             await _dbContext.SaveChangesAsync(ct);
-            await _transaction!.CommitAsync(ct);
+            if (_transaction is not null)
+            {
+                await _transaction.CommitAsync(ct);
+                _transaction = null;
+            }
         }
 
         public async Task RollbackAsync(CancellationToken ct = default)
         {
             if (_transaction is not null)
+            {
                 await _transaction.RollbackAsync(ct);
+                _transaction = null;
+            }
         }
     }
 }
