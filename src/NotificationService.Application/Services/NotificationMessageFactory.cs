@@ -45,13 +45,8 @@ public sealed class NotificationMessageFactory(IScheduledNotificationRepository 
             var patient = appointment.Patient;
             var tenant = appointment.Tenant;
 
-            // NOTE: NotificationMessage currently requires a *single* ProviderCredential,
-            // while Tenant holds the full collection of credentials.
-            // We pass the first credential as a minimal, consistent value.
-
-            // TODO: @BaasW SECUREPOST HAS CLIENTID AND CLIENTSECRET. THIS WILL FAIL WITH SECUREPOST!
-            var providerCredential = tenant.Credentials.FirstOrDefault();
-            if (providerCredential is null)
+            var providerCredentials = tenant.Credentials?.ToArray() ?? [];
+            if (providerCredentials.Length == 0)
             {
                 continue;
             }
@@ -60,7 +55,7 @@ public sealed class NotificationMessageFactory(IScheduledNotificationRepository 
             {
                 Patient = patient,
                 Appointment = appointment,
-                ProviderCredential = providerCredential,
+                ProviderCredentials = providerCredentials,
                 Tenant = tenant,
                 ScheduledNotification = detailedNotification
             });

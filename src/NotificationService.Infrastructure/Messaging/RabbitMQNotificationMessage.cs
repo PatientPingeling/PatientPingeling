@@ -2,6 +2,12 @@ using NotificationService.Application.Models;
 
 namespace NotificationService.Infrastructure.Messaging;
 
+public sealed class RabbitMqProviderCredential
+{
+    public required string Key { get; init; }
+    public required string EncryptedValue { get; init; }
+}
+
 public sealed class RabbitMQNotificationMessage
 {
     public required Guid ScheduledNotificationId { get; set; }
@@ -18,6 +24,10 @@ public sealed class RabbitMQNotificationMessage
 
     public required Guid TenantId { get; set; }
     public required string Provider { get; set; }
+
+    // Provider credentials are included as *encrypted* values.
+    // The consumer is expected to decrypt them before calling the provider.
+    public required RabbitMqProviderCredential[] ProviderCredentials { get; set; }
 
     // Set when the message is published to RabbitMQ.
     public DateTimeOffset EnqueuedAt { get; set; }
@@ -37,6 +47,11 @@ public sealed class RabbitMQNotificationMessage
         AppointmentScheduledAt = message.Appointment.ScheduledAt,
 
         TenantId = message.Tenant.Id,
-        Provider = message.Tenant.Provider
+        Provider = message.Tenant.Provider,
+
+        ProviderCredentials = message.ProviderCredentials
+            .OrderBy(c => c.Key)
+            .Select(c => new RabbitMqProviderCredential { Key = c.Key, EncryptedValue = c.EncryptedValue })
+            .ToArray()
     };
 }
