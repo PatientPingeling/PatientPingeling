@@ -56,17 +56,6 @@ if (app.Environment.IsDevelopment())
     var seederLogger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("DevDataSeeder");
     await DevDataSeeder.SeedAsync(db, encryption, seederLogger);
 
-    // DEV ONLY — test dispatch without Scheduler/Worker
-    app.MapGet("/dev/dispatch/{id:guid}", async (
-        Guid id,
-        INotificationDispatchService dispatchService,
-        CancellationToken ct) =>
-    {
-        var result = await dispatchService.DispatchAsync(id, ct);
-        return result.IsSuccess
-            ? Results.Ok(new { message = "Dispatched successfully." })
-            : Results.Problem(result.Error.Message, statusCode: 500, title: result.Error.Code);
-    });
 }
 
 // Middleware
