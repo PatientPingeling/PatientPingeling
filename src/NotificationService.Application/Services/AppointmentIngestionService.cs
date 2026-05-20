@@ -10,11 +10,13 @@ namespace NotificationService.Application.Services
     IAppointmentRepository appointmentRepository,
     IPatientRepository patientRepository,
     IScheduledNotificationRepository scheduledNotificationRepository,
+    IDispatchLogRepository dispatchLogRepository,
     IUnitOfWork unitOfWork,
     ILogger<AppointmentIngestionService> logger) : IAppointmentIngestionService
   {
     private readonly IAppointmentRepository _appointmentRepository = appointmentRepository;
     private readonly IScheduledNotificationRepository _scheduledNotificationRepository = scheduledNotificationRepository;
+    private readonly IDispatchLogRepository _dispatchLogRepository = dispatchLogRepository;
     private readonly IPatientRepository _patientRepository = patientRepository;
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly ILogger<AppointmentIngestionService> _logger = logger;
@@ -96,6 +98,17 @@ namespace NotificationService.Application.Services
 
         await _appointmentRepository.AddAsync(appointment, ct);
         await _scheduledNotificationRepository.AddRangeAsync(notifications, ct);
+
+        foreach (var n in notifications)
+        {
+          await _dispatchLogRepository.AddAsync(new DispatchLog
+          {
+            Id = Guid.CreateVersion7(),
+            AttemptedAt = DateTimeOffset.UtcNow,
+            Outcome = Outcome.NEW,
+            ScheduledNotificationId = n.Id
+          }, ct);
+        }
       }, "persist.db_error", "persist appointment", ct);
 
       if (result.IsSuccess)
@@ -146,7 +159,17 @@ namespace NotificationService.Application.Services
           var notifications = CreateScheduledNotifications(appointment, appointment.ScheduledAt);
           await _scheduledNotificationRepository.DeletePendingByAppointmentIdAsync(appointment.Id, ct);
           await _scheduledNotificationRepository.AddRangeAsync(notifications, ct);
-          // TODO: write DispatchLog with Outcome.NEW for each newly created ScheduledNotification after reschedule (#56)
+
+          foreach (var n in notifications)
+          {
+            await _dispatchLogRepository.AddAsync(new DispatchLog
+            {
+              Id = Guid.CreateVersion7(),
+              AttemptedAt = DateTimeOffset.UtcNow,
+              Outcome = Outcome.NEW,
+              ScheduledNotificationId = n.Id
+            }, ct);
+          }
         }
       }, "update.db_error", "update appointment", ct);
 
@@ -183,7 +206,7 @@ namespace NotificationService.Application.Services
       {
         await _scheduledNotificationRepository.DeletePendingByAppointmentIdAsync(appointment.Id, ct);
         await _appointmentRepository.UpdateAsync(appointment, ct);
-        // TODO: write DispatchLog with Outcome.CANCELLED for deleted ScheduledNotifications — requires adding CANCELLED to the Outcome enum (#56)
+        // TODO: write DispatchLog with Outcome.CANCELLED before deleting — needs IScheduledNotificationRepository.GetPendingByAppointmentIdAsync to fetch IDs first, since FK prevents writing logs after deletion (#56)
       }, "cancel.db_error", "cancel appointment", ct);
 
       if (result.IsSuccess)
