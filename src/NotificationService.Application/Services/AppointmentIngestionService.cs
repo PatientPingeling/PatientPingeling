@@ -10,11 +10,13 @@ namespace NotificationService.Application.Services
     IAppointmentRepository appointmentRepository,
     IPatientRepository patientRepository,
     IScheduledNotificationRepository scheduledNotificationRepository,
+    IDispatchLogRepository dispatchLogRepository,
     IUnitOfWork unitOfWork,
     ILogger<AppointmentIngestionService> logger) : IAppointmentIngestionService
   {
     private readonly IAppointmentRepository _appointmentRepository = appointmentRepository;
     private readonly IScheduledNotificationRepository _scheduledNotificationRepository = scheduledNotificationRepository;
+    private readonly IDispatchLogRepository _dispatchLogRepository = dispatchLogRepository;
     private readonly IPatientRepository _patientRepository = patientRepository;
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly ILogger<AppointmentIngestionService> _logger = logger;
@@ -70,6 +72,8 @@ namespace NotificationService.Application.Services
         return Result.Failure(new Error("appointment.duplicate", "Appointment already exists.", ErrorType.Duplicate));
       }
 
+      // TODO: after AddRangeAsync, write a DispatchLog with Outcome.NEW for each created ScheduledNotification (#56)
+
       var appointment = new Appointment
       {
         ExternalId = command.Appointment.ExternalId,
@@ -94,6 +98,17 @@ namespace NotificationService.Application.Services
 
         await _appointmentRepository.AddAsync(appointment, ct);
         await _scheduledNotificationRepository.AddRangeAsync(notifications, ct);
+
+        foreach (var n in notifications)
+        {
+          await _dispatchLogRepository.AddAsync(new DispatchLog
+          {
+            Id = Guid.CreateVersion7(),
+            AttemptedAt = DateTimeOffset.UtcNow,
+            Outcome = Outcome.NEW,
+            ScheduledNotificationId = n.Id
+          }, ct);
+        }
       }, "persist.db_error", "persist appointment", ct);
 
       if (result.IsSuccess)
@@ -144,6 +159,17 @@ namespace NotificationService.Application.Services
           var notifications = CreateScheduledNotifications(appointment, appointment.ScheduledAt);
           await _scheduledNotificationRepository.DeletePendingByAppointmentIdAsync(appointment.Id, ct);
           await _scheduledNotificationRepository.AddRangeAsync(notifications, ct);
+
+          foreach (var n in notifications)
+          {
+            await _dispatchLogRepository.AddAsync(new DispatchLog
+            {
+              Id = Guid.CreateVersion7(),
+              AttemptedAt = DateTimeOffset.UtcNow,
+              Outcome = Outcome.NEW,
+              ScheduledNotificationId = n.Id
+            }, ct);
+          }
         }
       }, "update.db_error", "update appointment", ct);
 
@@ -178,6 +204,19 @@ namespace NotificationService.Application.Services
 
       var result = await ExecuteInTransactionAsync(async () =>
       {
+        var pendingIds = await _scheduledNotificationRepository.GetPendingIdsByAppointmentIdAsync(appointment.Id, ct);
+
+        foreach (var id in pendingIds)
+        {
+          await _dispatchLogRepository.AddAsync(new DispatchLog
+          {
+            Id = Guid.CreateVersion7(),
+            AttemptedAt = DateTimeOffset.UtcNow,
+            Outcome = Outcome.CANCELLED,
+            ScheduledNotificationId = id
+          }, ct);
+        }
+
         await _scheduledNotificationRepository.DeletePendingByAppointmentIdAsync(appointment.Id, ct);
         await _appointmentRepository.UpdateAsync(appointment, ct);
       }, "cancel.db_error", "cancel appointment", ct);

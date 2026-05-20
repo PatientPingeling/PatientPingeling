@@ -16,6 +16,7 @@ namespace NotificationService.Domain.Entities
         NEW,
         SUCCESS,
         EXPIRED,
+        CANCELLED,
         INSCHEDULER,
         INQUEUE,
         ERROR_429

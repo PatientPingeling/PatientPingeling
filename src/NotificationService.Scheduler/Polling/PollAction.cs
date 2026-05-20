@@ -1,6 +1,6 @@
 using NotificationService.Application.Abstractions;
 using NotificationService.Application.Factories;
-using NotificationService.Infrastructure.Messaging;
+using NotificationService.Application.Commands;
 using NotificationService.Scheduler.RabbitMQ;
 using NotificationService.Domain.Entities;
 using RabbitMQ.Client.Exceptions;

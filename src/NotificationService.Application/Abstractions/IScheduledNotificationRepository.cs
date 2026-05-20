@@ -8,6 +8,7 @@ namespace NotificationService.Application.Abstractions
     Task<IReadOnlyCollection<ScheduledNotification>> GetPendingAsync(DateTimeOffset before, CancellationToken ct = default);
     Task AddAsync(ScheduledNotification notification, CancellationToken ct = default);
     Task AddRangeAsync(IReadOnlyCollection<ScheduledNotification> notifications, CancellationToken ct = default);
+    Task<IReadOnlyCollection<Guid>> GetPendingIdsByAppointmentIdAsync(int appointmentId, CancellationToken ct = default);
     Task<int> DeletePendingByAppointmentIdAsync(int appointmentId, CancellationToken ct = default);
   }
 }

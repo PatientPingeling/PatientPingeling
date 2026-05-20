@@ -1,4 +1,4 @@
-using NotificationService.Infrastructure.Messaging;
+using NotificationService.Application.Commands;
 using NotificationService.Infrastructure.Options;
 using System.Text.Json;
 using System.Text.Json.Serialization;

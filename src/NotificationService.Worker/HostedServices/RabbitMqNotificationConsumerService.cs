@@ -1,3 +1,8 @@
+using System.Text;
+using System.Text.Json;
+using NotificationService.Application.Abstractions;
+using NotificationService.Application.Commands;
+using NotificationService.Domain.Entities;
 using NotificationService.Infrastructure.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -5,13 +10,15 @@ using RabbitMQ.Client.Events;
 namespace NotificationService.Worker.HostedServices
 {
   public sealed class RabbitMqNotificationConsumerService(
+    IServiceScopeFactory scopeFactory,
     IConnectionFactory connectionFactory,
-    // NotificationCommandMessageHandler messageProcessor,
     ILogger<RabbitMqNotificationConsumerService> logger) : BackgroundService
   {
     private readonly IConnectionFactory _connectionFactory = connectionFactory;
-    // private readonly NotificationCommandMessageHandler _messageProcessor = messageProcessor;
     private readonly ILogger<RabbitMqNotificationConsumerService> _logger = logger;
+    private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+    private static readonly TimeSpan MessageSla = TimeSpan.FromHours(2);
 
     protected override async Task ExecuteAsync(CancellationToken ct)
     {
@@ -36,31 +43,94 @@ namespace NotificationService.Worker.HostedServices
       {
         try
         {
-          // await _messageProcessor.ProcessAsync(ea.Body, ct);
+          await using var scope = _scopeFactory.CreateAsyncScope();
+          var dispatchService = scope.ServiceProvider.GetRequiredService<INotificationDispatchService>();
+          var dispatchLogRepository = scope.ServiceProvider.GetRequiredService<IDispatchLogRepository>();
+          var notificationLogRepository = scope.ServiceProvider.GetRequiredService<INotificationLogRepository>();
+          var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
-          await channel.BasicAckAsync(
-                ea.DeliveryTag,
-                multiple: false,
-                cancellationToken: ct);
+          ct.ThrowIfCancellationRequested();
+
+          var message = Encoding.UTF8.GetString(ea.Body.Span);
+          var command = JsonSerializer.Deserialize<RabbitMQNotificationMessage>(message, JsonOptions)
+            ?? throw new InvalidOperationException("Failed to deserialize RabbitMQ message body.");
+
+          // Staleness check — if message has been in-flight longer than the SLA, discard it
+          if (DateTimeOffset.UtcNow - command.EnqueuedAt > MessageSla)
+          {
+            _logger.LogWarning("Notification {Id} expired (enqueued at {EnqueuedAt}), discarding.", command.ScheduledNotificationId, command.EnqueuedAt);
+
+            await dispatchLogRepository.AddAsync(new DispatchLog
+            {
+              Id = Guid.CreateVersion7(),
+              AttemptedAt = DateTimeOffset.UtcNow,
+              Outcome = Outcome.EXPIRED,
+              ScheduledNotificationId = command.ScheduledNotificationId
+            }, ct);
+
+            await unitOfWork.CommitAsync();
+
+            await channel.BasicAckAsync(ea.DeliveryTag, multiple: false, cancellationToken: ct);
+            return;
+          }
+
+          var result = await dispatchService.DispatchAsync(command, ct);
+
+          if (result.IsFailure)
+          {
+            _logger.LogWarning("Dispatch failed for {Id}: {Error}", command.ScheduledNotificationId, result.Error.Code);
+
+            await dispatchLogRepository.AddAsync(new DispatchLog
+            {
+              Id = Guid.CreateVersion7(),
+              AttemptedAt = DateTimeOffset.UtcNow,
+              Outcome = Outcome.ERROR_429,
+              ScheduledNotificationId = command.ScheduledNotificationId
+            }, ct);
+
+            await unitOfWork.CommitAsync();
+
+            // Permanent failures (bad payload, no contact info) → reject, don't requeue
+            // Transient failures (provider down, 500) → requeue for retry
+            var requeue = result.Error.Type == Domain.ErrorType.Failure;
+
+            await channel.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: requeue, cancellationToken: ct);
+            return;
+          }
+
+          _logger.LogInformation("Dispatched notification {Id}, external message {ExternalId}.", command.ScheduledNotificationId, result.Value);
+
+          await dispatchLogRepository.AddAsync(new DispatchLog
+          {
+            Id = Guid.CreateVersion7(),
+            AttemptedAt = DateTimeOffset.UtcNow,
+            Outcome = Outcome.SUCCESS,
+            ScheduledNotificationId = command.ScheduledNotificationId
+          }, ct);
+
+          await notificationLogRepository.AddAsync(new NotificationLog
+          {
+            Id = Guid.CreateVersion7(),
+            SentAt = DateTimeOffset.UtcNow,
+            Provider = command.Provider,
+            ExternalMessageId = result.Value,
+            Succeeded = true,
+            TenantId = command.TenantId
+          }, ct);
+
+          await unitOfWork.CommitAsync();
+
+          await channel.BasicAckAsync(ea.DeliveryTag, multiple: false, cancellationToken: ct);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
-          _logger.LogInformation(
-                "RabbitMQ consumer stopping while processing {DeliveryTag}.",
-                ea.DeliveryTag);
+          _logger.LogInformation("RabbitMQ consumer stopping while processing {DeliveryTag}.", ea.DeliveryTag);
         }
         catch (Exception ex)
         {
-          _logger.LogError(
-                ex,
-                "Failed to process delivery {DeliveryTag}. Requeueing.",
-                ea.DeliveryTag);
+          _logger.LogError(ex, "Unhandled exception processing delivery {DeliveryTag}. Requeueing.", ea.DeliveryTag);
 
-          await channel.BasicNackAsync(
-                ea.DeliveryTag,
-                multiple: false,
-                requeue: true,
-                cancellationToken: ct);
+          await channel.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: true, cancellationToken: ct);
         }
       };
 

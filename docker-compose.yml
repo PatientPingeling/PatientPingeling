@@ -48,6 +48,7 @@ services:
       - RabbitMQ__Host=${RABBITMQ_HOST}
       - RabbitMQ__Username=${RABBITMQ_USERNAME}
       - RabbitMQ__Password=${RABBITMQ_PASSWORD}
+      - Security__EncryptionKey=${ENCRYPTION_KEY}
       - OpenTelemetry__Endpoint=http://otel-lgtm:4317
       - OpenTelemetry__Environment=${ASPNETCORE_ENVIRONMENT:-Production}
     depends_on:
@@ -69,6 +70,7 @@ services:
       - RabbitMQ__Host=${RABBITMQ_HOST}
       - RabbitMQ__Username=${RABBITMQ_USERNAME}
       - RabbitMQ__Password=${RABBITMQ_PASSWORD}
+      - Security__EncryptionKey=${ENCRYPTION_KEY}
       - OpenTelemetry__Endpoint=http://otel-lgtm:4317
       - OpenTelemetry__Environment=${ASPNETCORE_ENVIRONMENT:-Production}
       - Providers__BaseUrl=http://messageproviders:8080
