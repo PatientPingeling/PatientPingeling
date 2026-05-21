@@ -1,6 +1,6 @@
 using NotificationService.Infrastructure.Extensions;
 using NotificationService.Application.Factories;
-using NotificationService.Infrastructure.Messaging;
+using NotificationService.Application.Services;
 using NotificationService.Scheduler.Cleanup;
 using NotificationService.Scheduler.RabbitMQ;
 using NotificationService.Scheduler.Polling;
