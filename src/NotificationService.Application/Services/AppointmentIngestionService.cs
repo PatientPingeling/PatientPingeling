@@ -262,15 +262,46 @@ namespace NotificationService.Application.Services
     private static ScheduledNotification[] CreateScheduledNotifications(Appointment appointment, DateTimeOffset scheduledAt)
     {
       var now = DateTimeOffset.UtcNow;
+      var untilAppointment = scheduledAt - now;
+      var sendAt24h = scheduledAt.AddHours(-24);
+      var sendAt1h = scheduledAt.AddHours(-1);
+      var immediateVsOneHourMargin = TimeSpan.FromMinutes(30);
+
+      // Far in advance: preserve both reminder moments.
+      if (untilAppointment > TimeSpan.FromHours(24))
+      {
+        return
+        [
+          new() { Id = Guid.CreateVersion7(), SendAt = sendAt24h, Appointment = appointment },
+          new() { Id = Guid.CreateVersion7(), SendAt = sendAt1h, Appointment = appointment }
+        ];
+      }
+
+      // Last hour: only immediate reminder.
+      if (untilAppointment <= TimeSpan.FromHours(1))
+      {
+        return
+        [
+          new() { Id = Guid.CreateVersion7(), SendAt = now, Appointment = appointment }
+        ];
+      }
+
+      // Between 24h and 1h: send now + 1h-before, unless these are too close.
+      var oneHourReminderDelay = sendAt1h - now;
+      if (oneHourReminderDelay <= immediateVsOneHourMargin)
+      {
+        return
+        [
+          new() { Id = Guid.CreateVersion7(), SendAt = sendAt1h, Appointment = appointment }
+        ];
+      }
+
       return
       [
-        new() { Id = Guid.CreateVersion7(), SendAt = Clamp(scheduledAt.AddHours(-24), now), Appointment = appointment },
-        new() { Id = Guid.CreateVersion7(), SendAt = Clamp(scheduledAt.AddHours(-1), now), Appointment = appointment }
+        new() { Id = Guid.CreateVersion7(), SendAt = now, Appointment = appointment },
+        new() { Id = Guid.CreateVersion7(), SendAt = sendAt1h, Appointment = appointment }
       ];
     }
-
-    private static DateTimeOffset Clamp(DateTimeOffset value, DateTimeOffset floor) =>
-      value < floor ? floor : value;
 
     // Wraps repo operations in a transaction — commit is always the last step
     private async Task<Result> ExecuteInTransactionAsync(Func<Task> work, string errorCode, string operationName, CancellationToken ct)
