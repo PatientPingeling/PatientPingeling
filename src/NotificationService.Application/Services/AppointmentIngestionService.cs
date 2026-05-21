@@ -72,6 +72,8 @@ namespace NotificationService.Application.Services
         return Result.Failure(new Error("appointment.duplicate", "Appointment already exists.", ErrorType.Duplicate));
       }
 
+      patient.LastCommunicationAt = DateTimeOffset.UtcNow;
+
       var appointment = new Appointment
       {
         ExternalId = command.Appointment.ExternalId,
@@ -139,6 +141,7 @@ namespace NotificationService.Application.Services
       appointment.Patient.GivenName = command.Patient.GivenName;
       appointment.Patient.Email = command.Patient.Email ?? string.Empty;
       appointment.Patient.PhoneNumber = command.Patient.PhoneNumber ?? string.Empty;
+      appointment.Patient.LastCommunicationAt = DateTimeOffset.UtcNow;
 
       appointment.Reason = command.Appointment.Service ?? string.Empty;
       appointment.Instructions = command.Appointment.Instructions;

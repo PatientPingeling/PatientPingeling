@@ -1,6 +1,7 @@
 using NotificationService.Infrastructure.Extensions;
 using NotificationService.Application.Factories;
 using NotificationService.Infrastructure.Messaging;
+using NotificationService.Scheduler.Cleanup;
 using NotificationService.Scheduler.RabbitMQ;
 using NotificationService.Scheduler.Polling;
 
@@ -18,6 +19,7 @@ builder.Services.AddScoped<RabbitMQEstablisher>();
 builder.Services.AddScoped<INotificationMessageFactory, NotificationMessageFactory>();
 builder.Services.AddScoped<PollAction>();
 builder.Services.AddHostedService<PollerBackgroundService>();
+builder.Services.AddHostedService<PatientDataCleanupService>();
 
 using var host = builder.Build();
 
