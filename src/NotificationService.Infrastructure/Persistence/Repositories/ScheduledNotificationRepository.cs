@@ -88,7 +88,10 @@ namespace NotificationService.Infrastructure.Persistence.Repositories
                             FROM "DispatchLogs" d2
                             WHERE d2."ScheduledNotificationId" = s."Id"
                           )
-                          AND d."Outcome" IN ('NEW', 'EXPIRED', 'ERROR_429')
+                          AND (
+                            d."Outcome" IN ('NEW', 'EXPIRED', 'ERROR_429')
+                            OR (d."Outcome" = 'INSCHEDULER' AND d."AttemptedAt" < NOW() - INTERVAL '5 minutes')
+                          )
                       )
                       ORDER BY s."SendAt"
                       LIMIT 50
