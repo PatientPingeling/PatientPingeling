@@ -3,7 +3,7 @@ using NotificationService.Application.Models;
 using NotificationService.Application.Abstractions;
 using NotificationService.Domain.Entities;
 
-namespace NotificationService.Infrastructure.Messaging;
+namespace NotificationService.Application.Services;
 
 public sealed class NotificationMessageFactory(IScheduledNotificationRepository scheduledNotificationRepository, IDispatchLogRepository dispatchLogRepository) : INotificationMessageFactory
 {
@@ -13,47 +13,45 @@ public sealed class NotificationMessageFactory(IScheduledNotificationRepository 
     public async Task<NotificationMessage[]> CreateAsync(ScheduledNotification[] scheduledNotifications, CancellationToken ct = default)
     {
         if (scheduledNotifications.Length == 0)
-        {
             return [];
-        }
 
-        var messages = new List<NotificationMessage>(scheduledNotifications.Length);
+        var ids = scheduledNotifications.Select(n => n.Id).ToList();
 
-        foreach (var scheduledNotification in scheduledNotifications)
+        // Single batch query replaces N individual dispatch-log lookups (PERF-1).
+        var latestLogs = await _dispatchLogRepository.GetLatestStatusBatchAsync(ids, ct);
+
+        var eligibleIds = ids
+            .Where(id =>
+            {
+                latestLogs.TryGetValue(id, out var log);
+                // No log yet, or latest outcome is NEW → eligible.
+                return log is null || log.Outcome == Outcome.NEW;
+            })
+            .ToList();
+
+        if (eligibleIds.Count == 0)
+            return [];
+
+        var messages = new List<NotificationMessage>(eligibleIds.Count);
+
+        foreach (var id in eligibleIds)
         {
             ct.ThrowIfCancellationRequested();
 
-            var latestDispatchLog = await _dispatchLogRepository
-                .GetLatestStatusByScheduledApointmentIdASync(scheduledNotification.Id, ct);
-
-            // Only create a message when the latest outcome is NEW.
-            // If there's no dispatch log yet, we treat it as still eligible (i.e. not attempted).
-            if (latestDispatchLog is not null && latestDispatchLog.Outcome != Outcome.NEW)
-            {
-                continue;
-            }
-
-            // Fetch the full object graph from the DB:
-            // ScheduledNotification -> Appointment -> Patient + Tenant (+ Credentials)
-            var detailedNotification = await _scheduledNotificationRepository.GetByIdWithDetailsAsync(scheduledNotification.Id, ct);
+            var detailedNotification = await _scheduledNotificationRepository.GetByIdWithDetailsAsync(id, ct);
             if (detailedNotification is null)
-            {
                 continue;
-            }
 
             var appointment = detailedNotification.Appointment;
-            var patient = appointment.Patient;
             var tenant = appointment.Tenant;
-
             var providerCredentials = tenant.Credentials?.ToArray() ?? [];
+
             if (providerCredentials.Length == 0)
-            {
                 continue;
-            }
 
             messages.Add(new NotificationMessage
             {
-                Patient = patient,
+                Patient = appointment.Patient,
                 Appointment = appointment,
                 ProviderCredentials = providerCredentials,
                 Tenant = tenant,
