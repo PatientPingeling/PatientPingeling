@@ -25,8 +25,8 @@ http:
           "phoneNumber": "+31612345678"
         },
         "appointment": {
-          "externalId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-          "scheduledAt": "2026-06-15T09:30:00+02:00",
+          "externalId": "a1b2c3d4-e516-7890-abcd-ef1234567890",
+          "scheduledAt": "2027-06-15T09:30:00+02:00",
           "service": "General Medicine",
           "location": "Cardiologie, Kamer B3",
           "instructions": "Neem uw vorige testresultaten mee"

@@ -1,22 +1,57 @@
+using System.Net.Http.Json;
 using NotificationService.Application.Abstractions;
 using NotificationService.Domain.Enums;
 
 namespace NotificationService.Infrastructure.Providers.AsyncFlow
 {
-    public class AsyncFlowProvider(IHttpClientFactory httpClientFactory) : IMessageProvider
+    public sealed class AsyncFlowProvider(
+        IHttpClientFactory httpClientFactory) : IMessageProvider
     {
-        private readonly HttpClient _client = httpClientFactory.CreateClient("AsyncFlow");
+        private readonly HttpClient _client =
+            httpClientFactory.CreateClient("AsyncFlow");
 
         public IReadOnlySet<MessageFormat> SupportedFormats { get; } =
-            new HashSet<MessageFormat> { MessageFormat.Sms, MessageFormat.Email, MessageFormat.Push };
+            new HashSet<MessageFormat>
+            {
+                MessageFormat.Sms,
+                MessageFormat.Email,
+                MessageFormat.Push
+            };
 
-        public Task<string> SendAsync(MessageFormat format, string message, string recipient, IReadOnlyDictionary<string, string> credentials, CancellationToken ct)
+        public async Task<string> SendAsync(
+            MessageFormat format,
+            string message,
+            string recipient,
+            IReadOnlyDictionary<string, string> credentials,
+            CancellationToken ct)
         {
-            // POST /asyncflow
-            // Header: X-API-KEY from credentials["ApiKey"]
-            // Body: { "destination": recipient, "content": message, "priority": "normal" }
-            // Returns: trackingId from response (format: ASF-...)
-            throw new NotImplementedException();
+            ArgumentException.ThrowIfNullOrWhiteSpace(message);
+            ArgumentException.ThrowIfNullOrWhiteSpace(recipient);
+
+            if (!credentials.TryGetValue("ApiKey", out var apiKey))
+            {
+                throw new ArgumentException("Missing credential: ApiKey");
+            }
+
+            var request = new AsyncFlowRequest(recipient, message, "normal");
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/asyncflow");
+            httpRequest.Headers.Add("X-API-KEY", apiKey);
+            httpRequest.Content = JsonContent.Create(request);
+
+            using var response = await _client.SendAsync(httpRequest, ct);
+            response.EnsureSuccessStatusCode();
+
+            var responseBody = await response.Content.ReadFromJsonAsync<AsyncFlowResponse>(ct) ?? throw new InvalidOperationException("AsyncFlow response was empty.");
+            if (!responseBody.Accepted)
+            {
+                throw new InvalidOperationException("AsyncFlow did not accept the message.");
+            }
+            if (string.IsNullOrWhiteSpace(responseBody.TrackingId))
+            {
+                throw new InvalidOperationException("AsyncFlow response did not contain a tracking ID.");
+            }
+
+            return responseBody.TrackingId;
         }
     }
 }

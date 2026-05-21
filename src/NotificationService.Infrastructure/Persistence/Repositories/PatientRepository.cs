@@ -29,5 +29,24 @@ namespace NotificationService.Infrastructure.Persistence.Repositories
             _dbContext.Patients.Update(patient);
             return Task.CompletedTask;
         }
+
+        public async Task<int> AnonymizeStaleAsync(DateTimeOffset cutoff, CancellationToken ct = default)
+        {
+            var now = DateTimeOffset.UtcNow;
+
+            return await _dbContext.Patients
+                .Where(p => p.LastCommunicationAt < cutoff
+                            && (p.GivenName != string.Empty
+                                || p.Email != string.Empty
+                                || p.PhoneNumber != string.Empty)
+                            && !p.Appointments.Any(a =>
+                                !a.IsCancelled &&
+                                a.ScheduledNotifications.Any(n => n.SendAt > now)))
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(p => p.GivenName, string.Empty)
+                    .SetProperty(p => p.Email, string.Empty)
+                    .SetProperty(p => p.PhoneNumber, string.Empty),
+                    ct);
+        }
     }
 }

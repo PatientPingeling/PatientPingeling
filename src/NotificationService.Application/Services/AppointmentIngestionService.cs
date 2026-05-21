@@ -72,7 +72,7 @@ namespace NotificationService.Application.Services
         return Result.Failure(new Error("appointment.duplicate", "Appointment already exists.", ErrorType.Duplicate));
       }
 
-      // TODO: after AddRangeAsync, write a DispatchLog with Outcome.NEW for each created ScheduledNotification (#56)
+      patient.LastCommunicationAt = DateTimeOffset.UtcNow;
 
       var appointment = new Appointment
       {
@@ -141,6 +141,7 @@ namespace NotificationService.Application.Services
       appointment.Patient.GivenName = command.Patient.GivenName;
       appointment.Patient.Email = command.Patient.Email ?? string.Empty;
       appointment.Patient.PhoneNumber = command.Patient.PhoneNumber ?? string.Empty;
+      appointment.Patient.LastCommunicationAt = DateTimeOffset.UtcNow;
 
       appointment.Reason = command.Appointment.Service ?? string.Empty;
       appointment.Instructions = command.Appointment.Instructions;
@@ -260,10 +261,45 @@ namespace NotificationService.Application.Services
 
     private static ScheduledNotification[] CreateScheduledNotifications(Appointment appointment, DateTimeOffset scheduledAt)
     {
+      var now = DateTimeOffset.UtcNow;
+      var untilAppointment = scheduledAt - now;
+      var sendAt24h = scheduledAt.AddHours(-24);
+      var sendAt1h = scheduledAt.AddHours(-1);
+      var immediateVsOneHourMargin = TimeSpan.FromMinutes(30);
+
+      // Far in advance: preserve both reminder moments.
+      if (untilAppointment > TimeSpan.FromHours(24))
+      {
+        return
+        [
+          new() { Id = Guid.CreateVersion7(), SendAt = sendAt24h, Appointment = appointment },
+          new() { Id = Guid.CreateVersion7(), SendAt = sendAt1h, Appointment = appointment }
+        ];
+      }
+
+      // Last hour: only immediate reminder.
+      if (untilAppointment <= TimeSpan.FromHours(1))
+      {
+        return
+        [
+          new() { Id = Guid.CreateVersion7(), SendAt = now, Appointment = appointment }
+        ];
+      }
+
+      // Between 24h and 1h: send now + 1h-before, unless these are too close.
+      var oneHourReminderDelay = sendAt1h - now;
+      if (oneHourReminderDelay <= immediateVsOneHourMargin)
+      {
+        return
+        [
+          new() { Id = Guid.CreateVersion7(), SendAt = sendAt1h, Appointment = appointment }
+        ];
+      }
+
       return
       [
-        new() { Id = Guid.CreateVersion7(), SendAt = scheduledAt.AddHours(-24), Appointment = appointment },
-        new() { Id = Guid.CreateVersion7(), SendAt = scheduledAt.AddHours(-1), Appointment = appointment }
+        new() { Id = Guid.CreateVersion7(), SendAt = now, Appointment = appointment },
+        new() { Id = Guid.CreateVersion7(), SendAt = sendAt1h, Appointment = appointment }
       ];
     }
 

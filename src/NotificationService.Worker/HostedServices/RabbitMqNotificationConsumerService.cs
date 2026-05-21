@@ -52,8 +52,16 @@ namespace NotificationService.Worker.HostedServices
           ct.ThrowIfCancellationRequested();
 
           var message = Encoding.UTF8.GetString(ea.Body.Span);
-          var command = JsonSerializer.Deserialize<RabbitMQNotificationMessage>(message, JsonOptions)
-            ?? throw new InvalidOperationException("Failed to deserialize RabbitMQ message body.");
+          var command = JsonSerializer.Deserialize<RabbitMQNotificationMessage>(message, JsonOptions) ?? throw new InvalidOperationException("Failed to deserialize RabbitMQ message body.");
+
+          // Idempotency check — if already dispatched successfully, ACK and skip
+          var latestLog = await dispatchLogRepository.GetLatestStatusByScheduledApointmentIdASync(command.ScheduledNotificationId, ct);
+          if (latestLog?.Outcome == Outcome.SUCCESS)
+          {
+            _logger.LogWarning("Notification {Id} already dispatched successfully, skipping duplicate.", command.ScheduledNotificationId);
+            await channel.BasicAckAsync(ea.DeliveryTag, multiple: false, cancellationToken: ct);
+            return;
+          }
 
           // Staleness check — if message has been in-flight longer than the SLA, discard it
           if (DateTimeOffset.UtcNow - command.EnqueuedAt > MessageSla)
@@ -78,23 +86,24 @@ namespace NotificationService.Worker.HostedServices
 
           if (result.IsFailure)
           {
-            _logger.LogWarning("Dispatch failed for {Id}: {Error}", command.ScheduledNotificationId, result.Error.Code);
+            var transient = result.Error.Type == Domain.ErrorType.Failure;
+            var outcome = transient ? Outcome.ERROR_429 : Outcome.ERROR_PERMANENT;
+
+            _logger.LogWarning("Dispatch failed for {Id}: {Error} (outcome: {Outcome})", command.ScheduledNotificationId, result.Error.Code, outcome);
 
             await dispatchLogRepository.AddAsync(new DispatchLog
             {
               Id = Guid.CreateVersion7(),
               AttemptedAt = DateTimeOffset.UtcNow,
-              Outcome = Outcome.ERROR_429,
+              Outcome = outcome,
               ScheduledNotificationId = command.ScheduledNotificationId
             }, ct);
 
             await unitOfWork.CommitAsync();
 
-            // Permanent failures (bad payload, no contact info) → reject, don't requeue
-            // Transient failures (provider down, 500) → requeue for retry
-            var requeue = result.Error.Type == Domain.ErrorType.Failure;
-
-            await channel.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: requeue, cancellationToken: ct);
+            // ERROR_PERMANENT → reject without requeue (bad payload, no contact info)
+            // ERROR_429 → requeue for retry (provider down, transient HTTP failure)
+            await channel.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: transient, cancellationToken: ct);
             return;
           }
 
