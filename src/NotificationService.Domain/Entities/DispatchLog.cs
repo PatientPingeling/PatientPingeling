@@ -19,6 +19,7 @@ namespace NotificationService.Domain.Entities
         CANCELLED,
         INSCHEDULER,
         INQUEUE,
-        ERROR_429
+        ERROR_429,
+        ERROR_PERMANENT
     }
 }
