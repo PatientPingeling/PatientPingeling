@@ -139,15 +139,25 @@ namespace NotificationService.Application.Services
       if (appointment is null)
       {
         _logger.LogWarning("UPDATED webhook for unknown appointment {ExternalId} — upserting as new.", command.Appointment.ExternalId);
+        
         var (patient, isNewPatient) = await ResolvePatientAsync(command, ct);
         if (patient is null)
+        {
           return Result.Failure(new Error("patient.db_error", "Failed to retrieve or create patient.", ErrorType.Failure));
+        }
+
         return await PersistNewAppointmentAsync(command, patient, isNewPatient, ct);
       }
 
       appointment.Patient.GivenName = command.Patient.GivenName;
-      appointment.Patient.Email = command.Patient.Email ?? string.Empty;
-      appointment.Patient.PhoneNumber = command.Patient.PhoneNumber ?? string.Empty;
+      if (command.Patient.Email is not null)
+      {
+        appointment.Patient.Email = command.Patient.Email;
+      }
+      if (command.Patient.PhoneNumber is not null)
+      {
+        appointment.Patient.PhoneNumber = command.Patient.PhoneNumber;
+      }
       appointment.Patient.LastCommunicationAt = DateTimeOffset.UtcNow;
 
       appointment.Reason = command.Appointment.Service ?? string.Empty;
