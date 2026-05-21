@@ -164,28 +164,12 @@ Audit covered all source files across:
 
 ---
 
-#### [STAB-1] Worker crashes on every message — `NullReferenceException` in `UnitOfWork.CommitAsync`
+#### [STAB-1] ✅ FIXED — Worker crashes on every message — `NullReferenceException` in `UnitOfWork.CommitAsync`
 
-- **File:** [src/NotificationService.Worker/HostedServices/RabbitMqNotificationConsumerService.cs:70-73, 83-97, 101-121](src/NotificationService.Worker/HostedServices/RabbitMqNotificationConsumerService.cs#L70-L121), [src/NotificationService.Infrastructure/Persistence/UnitOfWork.cs:18](src/NotificationService.Infrastructure/Persistence/UnitOfWork.cs#L18)
+- **File:** [src/NotificationService.Infrastructure/Persistence/UnitOfWork.cs](src/NotificationService.Infrastructure/Persistence/UnitOfWork.cs)
 - **Severity:** Critical
-- **Description:** Every code path in the Worker (EXPIRED, FAILED, SUCCESS) calls `unitOfWork.CommitAsync()` without a prior `BeginTransactionAsync()`. `UnitOfWork.CommitAsync` does:
-
-  ```csharp
-  await _dbContext.SaveChangesAsync(ct);   // ← succeeds (auto-commit)
-  await _transaction!.CommitAsync(ct);     // ← NullReferenceException (_transaction is null)
-  ```
-
-  The `!` operator does not prevent the null — it only suppresses the compiler warning. The `NullReferenceException` is caught by the outer `catch (Exception ex)` which calls `BasicNackAsync(requeue: true)`.
-
-  **Consequence chain for a SUCCESS dispatch:**
-  1. Notification IS dispatched to provider (HTTP call succeeded)
-  2. `DispatchLog(SUCCESS)` and `NotificationLog` ARE written to DB (via `SaveChangesAsync`)
-  3. Worker crashes on `CommitAsync` → outer catch → message **requeued**
-  4. Worker receives same message again → dispatches again (double-send)
-  5. Repeat until `MessageSla` is exceeded (but the EXPIRED path also crashes and requeues → infinite loop)
-
-- **Impact:** Every notification is dispatched multiple times. Patients receive duplicate SMS/emails indefinitely. The system can never successfully ACK a message. All three dispatch paths (SUCCESS, FAIL, EXPIRED) are broken.
-- **Fix (immediate):** Change `CommitAsync` to skip the transaction commit when no explicit transaction was started:
+- **Status:** Fixed. `CommitAsync` now guards against a null `_transaction`. Worker paths that never call `BeginTransactionAsync` (EXPIRED, FAILED, SUCCESS) now only run `SaveChangesAsync` and ACK correctly. `_transaction` is also nulled after commit and rollback to prevent orphaned transactions (see also CONS-2).
+- **Fix applied:**
   ```csharp
   public async Task CommitAsync(CancellationToken ct = default)
   {
@@ -197,7 +181,6 @@ Audit covered all source files across:
       }
   }
   ```
-  For paths that genuinely need atomicity, call `BeginTransactionAsync` explicitly before writing.
 
 ---
 
@@ -292,18 +275,26 @@ Audit covered all source files across:
 
 ---
 
-#### [CORR-3] Notifications created with past `SendAt` times are dispatched with wrong context
+#### [CORR-3] ✅ FIXED — Notifications created with past `SendAt` times are dispatched with wrong context
 
-- **File:** [src/NotificationService.Application/Services/AppointmentIngestionService.cs:261-267](src/NotificationService.Application/Services/AppointmentIngestionService.cs#L261-L267)
+- **File:** [src/NotificationService.Application/Services/AppointmentIngestionService.cs](src/NotificationService.Application/Services/AppointmentIngestionService.cs)
 - **Severity:** Medium
-- **Description:** `CreateScheduledNotifications` unconditionally creates two reminders at `scheduledAt - 24h` and `scheduledAt - 1h`. If an appointment is scheduled within the next 24 hours (e.g., `ScheduledAt = now + 30 min`), the 24-hour reminder has `SendAt = now - 23.5h` which is already in the past. The Scheduler picks it up immediately (`SendAt <= now`). The Worker's staleness check uses `EnqueuedAt` (set when published, i.e., `now`), not `SendAt`, so the message does **not** expire. The patient receives a "24-hour reminder" after their appointment time.
-- **Impact:** Patients receive contextually incorrect notifications (a "reminder" sent after the appointment). GDPR impact: unnecessary processing of patient data for no purpose.
-- **Fix:** Filter out past-dated notifications in `CreateScheduledNotifications`:
+- **Status:** Fixed. Per team decision: past-dated `SendAt` values are **clamped to `now`** rather than dropped, so patients always receive a notification even when an appointment is rescheduled to within the next hour or day. A stale TODO comment (`#56`) that made the DispatchLog writes appear missing was also removed.
+- **Fix applied:**
   ```csharp
-  var now = DateTimeOffset.UtcNow;
-  return candidates.Where(n => n.SendAt > now).ToArray();
+  private static ScheduledNotification[] CreateScheduledNotifications(Appointment appointment, DateTimeOffset scheduledAt)
+  {
+      var now = DateTimeOffset.UtcNow;
+      return
+      [
+          new() { Id = Guid.CreateVersion7(), SendAt = Clamp(scheduledAt.AddHours(-24), now), Appointment = appointment },
+          new() { Id = Guid.CreateVersion7(), SendAt = Clamp(scheduledAt.AddHours(-1), now), Appointment = appointment }
+      ];
+  }
+
+  private static DateTimeOffset Clamp(DateTimeOffset value, DateTimeOffset floor) =>
+      value < floor ? floor : value;
   ```
-  Optionally also validate at the API level that `ScheduledAt > now + 1h` to prevent ingestion of imminent-past appointments.
 
 ---
 
@@ -349,7 +340,7 @@ Audit covered all source files across:
 | ------ | ----------- | ------------ | --------------------------------------------------------- | ------------------------------------------------------------ |
 | SEC-1  | Security    | **Critical** | RabbitMQNotificationMessage.cs:12                         | Patient PII in plaintext on queue                            |
 | SEC-2  | Security    | **Critical** | NotificationDispatchService.cs:21                         | Provider spoofing via queue message                          |
-| STAB-1 | Stability   | **Critical** | RabbitMqNotificationConsumerService.cs + UnitOfWork.cs:18 | Worker crashes every message → double-dispatch infinite loop |
+| STAB-1 | Stability   | ✅ **Fixed** | UnitOfWork.cs | Worker crashes every message → double-dispatch infinite loop |
 | SEC-3  | Security    | **High**     | RabbitMQNotificationMessage.cs:23                         | EF entity ProviderCredential with DB keys on queue           |
 | SEC-4  | Security    | **High**     | appsettings.json (all 3)                                  | Default credentials committed to git                         |
 | SEC-5  | Security    | **High**     | Sha256HashingService.cs:9                                 | Unsalted SHA-256 for API key hashing                         |
@@ -365,7 +356,7 @@ Audit covered all source files across:
 | STAB-5 | Stability   | **Medium**   | PollAction.cs:68                                          | INSCHEDULER state not in recovery filter → permanent stuck   |
 | STAB-6 | Stability   | **Medium**   | RabbitMqNotificationConsumerService.cs:84                 | All failures mapped to ERROR_429 — permanent errors retried  |
 | CORR-2 | Correctness | **Medium**   | AppointmentIngestionService.cs:141                        | UPDATE nullifies patient contact data when fields omitted    |
-| CORR-3 | Correctness | **Medium**   | AppointmentIngestionService.cs:261                        | Past-dated notifications dispatched without filtering        |
+| CORR-3 | Correctness | ✅ **Fixed** | AppointmentIngestionService.cs | Past-dated `SendAt` clamped to `now` — immediate dispatch    |
 | CORR-5 | Correctness | **Low**      | InfrastructureExtentions.cs:92                            | Encryption key length not validated at startup               |
 | CONS-3 | Consistency | **Low**      | IRabbitMQNoticicationMessageFactory.cs                    | Dead interface with typo; namespace mismatch                 |
 | PERF-3 | Performance | **Low**      | SecurePostProvider.cs:64                                  | Thundering herd double-check in IMemoryCache auth            |
@@ -374,8 +365,9 @@ Audit covered all source files across:
 
 ## TOP PRIORITY FIXES
 
-1. **STAB-1** — Fix `UnitOfWork.CommitAsync` first. This is actively causing double-dispatch of every notification. Single-line fix.
-2. **SEC-1 + SEC-2 + SEC-3** — Redesign `RabbitMQNotificationMessage` to carry only IDs + metadata, strip PII and entity references. These three findings share one root cause.
-3. **CORR-1** — Fix the cascade delete destroying cancellation audit trail (either stop deleting ScheduledNotifications, or change FK to RESTRICT).
-4. **CONS-1** — Fix captive dependency in Scheduler by using `IServiceScopeFactory` per poll cycle.
-5. **STAB-2 + STAB-3** — Enable `AutomaticRecoveryEnabled = true` on `ConnectionFactory` for both services.
+1. ~~**STAB-1** — Fix `UnitOfWork.CommitAsync` first. This is actively causing double-dispatch of every notification.~~ ✅ Fixed
+2. ~~**CORR-3** — Past-dated `SendAt` values dispatched with wrong context.~~ ✅ Fixed — clamped to `now` per team decision
+3. **SEC-1 + SEC-2 + SEC-3** — Redesign `RabbitMQNotificationMessage` to carry only IDs + metadata, strip PII and entity references. These three findings share one root cause.
+4. **CORR-1** — Fix the cascade delete destroying cancellation audit trail (either stop deleting ScheduledNotifications, or change FK to RESTRICT).
+5. **CONS-1** — Fix captive dependency in Scheduler by using `IServiceScopeFactory` per poll cycle.
+6. **STAB-2 + STAB-3** — Enable `AutomaticRecoveryEnabled = true` on `ConnectionFactory` for both services.
