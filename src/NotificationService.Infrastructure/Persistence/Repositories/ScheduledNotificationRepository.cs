@@ -94,8 +94,7 @@ namespace NotificationService.Infrastructure.Persistence.Repositories
                       FOR UPDATE SKIP LOCKED
                       """, before)
         .ToListAsync(ct);
+      // TODO: ADD LIMIT OF 10 OR SOMETHING!
     }
-
-
   }
 }

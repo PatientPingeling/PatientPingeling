@@ -52,12 +52,13 @@ namespace NotificationService.Worker.HostedServices
           ct.ThrowIfCancellationRequested();
 
           var message = Encoding.UTF8.GetString(ea.Body.Span);
-          var command = JsonSerializer.Deserialize<RabbitMQNotificationMessage>(message, JsonOptions)
-            ?? throw new InvalidOperationException("Failed to deserialize RabbitMQ message body.");
+          var command = JsonSerializer.Deserialize<RabbitMQNotificationMessage>(message, JsonOptions) ?? throw new InvalidOperationException("Failed to deserialize RabbitMQ message body.");
 
           // Staleness check — if message has been in-flight longer than the SLA, discard it
           if (DateTimeOffset.UtcNow - command.EnqueuedAt > MessageSla)
           {
+            // TODO: Add idempotency key guid ScheduledNotificationId and check if already done in worker to verify consistency
+
             _logger.LogWarning("Notification {Id} expired (enqueued at {EnqueuedAt}), discarding.", command.ScheduledNotificationId, command.EnqueuedAt);
 
             await dispatchLogRepository.AddAsync(new DispatchLog

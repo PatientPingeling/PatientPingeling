@@ -72,8 +72,6 @@ namespace NotificationService.Application.Services
         return Result.Failure(new Error("appointment.duplicate", "Appointment already exists.", ErrorType.Duplicate));
       }
 
-      // TODO: after AddRangeAsync, write a DispatchLog with Outcome.NEW for each created ScheduledNotification (#56)
-
       var appointment = new Appointment
       {
         ExternalId = command.Appointment.ExternalId,
@@ -260,12 +258,16 @@ namespace NotificationService.Application.Services
 
     private static ScheduledNotification[] CreateScheduledNotifications(Appointment appointment, DateTimeOffset scheduledAt)
     {
+      var now = DateTimeOffset.UtcNow;
       return
       [
-        new() { Id = Guid.CreateVersion7(), SendAt = scheduledAt.AddHours(-24), Appointment = appointment },
-        new() { Id = Guid.CreateVersion7(), SendAt = scheduledAt.AddHours(-1), Appointment = appointment }
+        new() { Id = Guid.CreateVersion7(), SendAt = Clamp(scheduledAt.AddHours(-24), now), Appointment = appointment },
+        new() { Id = Guid.CreateVersion7(), SendAt = Clamp(scheduledAt.AddHours(-1), now), Appointment = appointment }
       ];
     }
+
+    private static DateTimeOffset Clamp(DateTimeOffset value, DateTimeOffset floor) =>
+      value < floor ? floor : value;
 
     // Wraps repo operations in a transaction — commit is always the last step
     private async Task<Result> ExecuteInTransactionAsync(Func<Task> work, string errorCode, string operationName, CancellationToken ct)
