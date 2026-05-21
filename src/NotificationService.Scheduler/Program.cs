@@ -15,7 +15,7 @@ builder.Services
                 serviceName: "NotificationService.Scheduler",
                 enableEntityFrameworkCore: true);
         
-builder.Services.AddScoped<RabbitMQEstablisher>();
+builder.Services.AddSingleton<RabbitMQEstablisher>();
 builder.Services.AddScoped<INotificationMessageFactory, NotificationMessageFactory>();
 builder.Services.AddScoped<PollAction>();
 builder.Services.AddHostedService<PollerBackgroundService>();

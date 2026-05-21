@@ -1,18 +1,21 @@
 using NotificationService.Scheduler.Polling;
 using NotificationService.Scheduler.RabbitMQ;
 using RabbitMQ.Client;
-public class PollerBackgroundService(PollAction pollAction, ILogger<PollerBackgroundService> logger, RabbitMQEstablisher rabbitMQEstablisher) : BackgroundService
+public class PollerBackgroundService(
+    IServiceScopeFactory scopeFactory,
+    RabbitMQEstablisher rabbitMQEstablisher,
+    ILogger<PollerBackgroundService> logger) : BackgroundService
 {
-    private readonly RabbitMQEstablisher _rabbitMQEstablisher = rabbitMQEstablisher;
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        // TODO: MEOWWW Call establish connection        
-        await _rabbitMQEstablisher.EstablishConnection();
+        await rabbitMQEstablisher.EstablishConnection();
 
         while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
+                await using var scope = scopeFactory.CreateAsyncScope();
+                var pollAction = scope.ServiceProvider.GetRequiredService<PollAction>();
                 await pollAction.PollAsync(stoppingToken);
             }
             catch (Exception ex)
