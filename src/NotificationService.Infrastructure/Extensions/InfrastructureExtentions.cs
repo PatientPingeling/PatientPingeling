@@ -147,7 +147,10 @@ namespace NotificationService.Infrastructure.Extensions
             {
                 var key = configuration["Security:EncryptionKey"]
                     ?? throw new InvalidOperationException("Missing required configuration: Security:EncryptionKey.");
-                return new AesGcmEncryptionService(Convert.FromBase64String(key));
+                var keyBytes = Convert.FromBase64String(key);
+                if (keyBytes.Length is not (16 or 24 or 32))
+                    throw new InvalidOperationException($"Security:EncryptionKey must decode to 16, 24, or 32 bytes for AES-GCM; got {keyBytes.Length}.");
+                return new AesGcmEncryptionService(keyBytes);
             });
 
             return services;
