@@ -149,6 +149,10 @@ namespace NotificationService.Application.Services
         return await PersistNewAppointmentAsync(command, patient, isNewPatient, ct);
       }
 
+      var patientChanged = appointment.Patient.GivenName != command.Patient.GivenName
+          || (command.Patient.Email is not null && appointment.Patient.Email != command.Patient.Email)
+          || (command.Patient.PhoneNumber is not null && appointment.Patient.PhoneNumber != command.Patient.PhoneNumber);
+
       appointment.Patient.GivenName = command.Patient.GivenName;
       if (command.Patient.Email is not null)
       {
@@ -166,16 +170,39 @@ namespace NotificationService.Application.Services
 
       var oldScheduledAt = appointment.ScheduledAt;
       appointment.ScheduledAt = command.Appointment.ScheduledAt.ToUniversalTime();
+      var timeChanged = oldScheduledAt != appointment.ScheduledAt;
+
+      // Fetch pending IDs before the transaction so we can write CANCELLED logs inside it.
+      // We intentionally do NOT delete the old ScheduledNotification rows: the FK is CASCADE,
+      // so deleting them would also remove the CANCELLED DispatchLog entries we just wrote.
+      // GetPendingAsync filters by latest dispatch log outcome, so CANCELLED rows are already
+      // invisible to the scheduler without requiring a hard delete.
+      IReadOnlyCollection<Guid> pendingIdsToCancel = timeChanged
+          ? await _scheduledNotificationRepository.GetPendingIdsByAppointmentIdAsync(appointment.Id, ct)
+          : [];
 
       var result = await ExecuteInTransactionAsync(async () =>
       {
-        await _patientRepository.UpdateAsync(appointment.Patient, ct); // TODO: only update if patient fields actually changed
+        if (patientChanged)
+        {
+          await _patientRepository.UpdateAsync(appointment.Patient, ct);
+        }
         await _appointmentRepository.UpdateAsync(appointment, ct);
 
-        if (oldScheduledAt != command.Appointment.ScheduledAt)
+        if (timeChanged)
         {
+          foreach (var id in pendingIdsToCancel)
+          {
+            await _dispatchLogRepository.AddAsync(new DispatchLog
+            {
+              Id = Guid.CreateVersion7(),
+              AttemptedAt = DateTimeOffset.UtcNow,
+              Outcome = Outcome.CANCELLED,
+              ScheduledNotificationId = id
+            }, ct);
+          }
+
           var notifications = CreateScheduledNotifications(appointment, appointment.ScheduledAt);
-          await _scheduledNotificationRepository.DeletePendingByAppointmentIdAsync(appointment.Id, ct);
           await _scheduledNotificationRepository.AddRangeAsync(notifications, ct);
 
           foreach (var n in notifications)
