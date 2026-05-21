@@ -12,6 +12,7 @@ using NotificationService.Infrastructure.Providers.LegacyLink;
 using NotificationService.Infrastructure.Providers.SecurePost;
 using NotificationService.Infrastructure.Providers.SwiftSend;
 using NotificationService.Infrastructure.Security;
+using System.Net;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
@@ -40,7 +41,8 @@ namespace NotificationService.Infrastructure.Extensions
             })
             .AddStandardResilienceHandler(options =>
             {
-                options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(10);
+                options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(20);
+                options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(8);
 
                 options.Retry.MaxRetryAttempts = 3;
                 options.Retry.BackoffType = DelayBackoffType.Exponential;
@@ -61,7 +63,8 @@ namespace NotificationService.Infrastructure.Extensions
             })
             .AddStandardResilienceHandler(options =>
             {
-                options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(10);
+                options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(20);
+                options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(8);
 
                 options.Retry.MaxRetryAttempts = 2;
                 options.Retry.BackoffType = DelayBackoffType.Exponential;
@@ -83,7 +86,9 @@ namespace NotificationService.Infrastructure.Extensions
             })
             .AddStandardResilienceHandler(options =>
             {
-                options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(15);
+                // Submission is async (returns 202 immediately) → shorter timeout budget
+                options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(10);
+                options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(5);
 
                 options.Retry.MaxRetryAttempts = 3;
                 options.Retry.BackoffType = DelayBackoffType.Exponential;
@@ -105,7 +110,9 @@ namespace NotificationService.Infrastructure.Extensions
             })
             .AddStandardResilienceHandler(options =>
             {
-                options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(20);
+                // SOAP with max 3s delay → tighter budget than REST providers
+                options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(12);
+                options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(6);
 
                 options.Retry.MaxRetryAttempts = 5;
                 options.Retry.BackoffType = DelayBackoffType.Exponential;
