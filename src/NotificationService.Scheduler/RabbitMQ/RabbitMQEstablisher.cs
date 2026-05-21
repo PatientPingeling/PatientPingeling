@@ -21,7 +21,11 @@ namespace NotificationService.Scheduler.RabbitMQ
         public async Task EstablishConnection()
         {
             _connection = await _connectionFactory.CreateConnectionAsync();
-            _channel = await _connection.CreateChannelAsync();
+
+            // PublisherConfirmationsEnabled + Tracking: BasicPublishAsync blocks until
+            // the broker sends basic.ack, so silently-lost messages are impossible.
+            _channel = await _connection.CreateChannelAsync(
+                new CreateChannelOptions(publisherConfirmationsEnabled: true, publisherConfirmationTrackingEnabled: true));
 
             await _channel.BasicQosAsync(
                 prefetchSize: 0,
@@ -48,6 +52,7 @@ namespace NotificationService.Scheduler.RabbitMQ
 
             var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message, _jsonOptions));
 
+            // With PublisherConfirmationTrackingEnabled, this awaits the broker's basic.ack.
             await _channel.BasicPublishAsync(
                 exchange: string.Empty,
                 routingKey: RabbitMqOptions.NotificationQueue,
