@@ -225,7 +225,8 @@ namespace NotificationService.Application.Services
           }, ct);
         }
 
-        await _scheduledNotificationRepository.DeletePendingByAppointmentIdAsync(appointment.Id, ct);
+        // ScheduledNotification rows are intentionally kept for audit history.
+        // IsCancelled = true prevents GetPendingAsync from re-queuing them.
         await _appointmentRepository.UpdateAsync(appointment, ct);
       }, "cancel.db_error", "cancel appointment", ct);
 
