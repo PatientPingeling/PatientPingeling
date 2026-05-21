@@ -25,8 +25,6 @@ namespace NotificationService.Scheduler.Polling
 
         public async Task PollAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Polling for scheduled notifications...");
-
             var pending = await _scheduledNotificationRepository.GetPendingAsync(DateTimeOffset.UtcNow, cancellationToken);
 
             var notificationMessages = await _notificationMessageFactory.CreateAsync(pending.ToArray(), cancellationToken);
@@ -36,9 +34,11 @@ namespace NotificationService.Scheduler.Polling
 
             if (!notifications.Any())
             {
-                _logger.LogInformation("No scheduled notifications found, ending polling sequence.");
+                _logger.LogDebug("Poll cycle: no pending notifications.");
                 return;
             }
+
+            _logger.LogInformation("Poll cycle: dispatching {Count} notification(s).", notifications.Length);
 
             foreach (var notification in notifications)
             {
