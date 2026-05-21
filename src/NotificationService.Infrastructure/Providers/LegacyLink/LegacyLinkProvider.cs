@@ -46,7 +46,7 @@ namespace NotificationService.Infrastructure.Providers.LegacyLink
         </SendSmsRequest>
         """;
 
-            using var request = new HttpRequestMessage(HttpMethod.Post, "/SendSms");
+            using var request = new HttpRequestMessage(HttpMethod.Post, "SendSms");
             request.Headers.Authorization = new AuthenticationHeaderValue("Basic", auth);
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/xml"));
             request.Content = new StringContent(xml, Encoding.UTF8, "application/xml");
