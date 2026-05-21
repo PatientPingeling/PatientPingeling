@@ -17,6 +17,7 @@ using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using Polly;
 using RabbitMQ.Client;
 
 namespace NotificationService.Infrastructure.Extensions
@@ -34,34 +35,58 @@ namespace NotificationService.Infrastructure.Extensions
             services.AddKeyedScoped<IMessageProvider, SwiftSendProvider>("SwiftSend");
             services.AddHttpClient("SwiftSend", client =>
             {
-                client.BaseAddress = new Uri(baseUrl + "/swiftsend");
+                client.BaseAddress = new Uri(new Uri(baseUrl), "swiftsend");
                 client.DefaultRequestHeaders.Add("X-STUDENT-GROUP", studentGroup);
+            })
+            .AddStandardResilienceHandler(options =>
+            {
+                options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(10);
+                options.Retry.MaxRetryAttempts = 3;
+                options.Retry.BackoffType = DelayBackoffType.Exponential;
+                options.Retry.UseJitter = true;
             });
 
             // SecurePost
             services.AddKeyedScoped<IMessageProvider, SecurePostProvider>("SecurePost");
             services.AddHttpClient("SecurePost", client =>
             {
-                client.BaseAddress = new Uri(baseUrl + "/securepost/");
+                client.BaseAddress = new Uri(new Uri(baseUrl), "securepost");
                 client.DefaultRequestHeaders.Add("X-STUDENT-GROUP", studentGroup);
+            })
+            .AddStandardResilienceHandler(options =>
+            {
+                options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(10);
+                options.Retry.MaxRetryAttempts = 2;
+                options.Retry.BackoffType = DelayBackoffType.Exponential;
+                options.Retry.UseJitter = true;
             });
-            // TODO: Add .AddStandardResilienceHandler() for retry on 429/503/timeouts (issue #33 acceptance criteria)
-            // Use Microsoft.Extensions.Http.Resilience package — handles exponential backoff out of the box
 
             // AsyncFlow
             services.AddKeyedScoped<IMessageProvider, AsyncFlowProvider>("AsyncFlow");
             services.AddHttpClient("AsyncFlow", client =>
             {
-                client.BaseAddress = new Uri(baseUrl + "/asyncflow");
+                client.BaseAddress = new Uri(new Uri(baseUrl), "asyncflow");
                 client.DefaultRequestHeaders.Add("X-STUDENT-GROUP", studentGroup);
+            }).AddStandardResilienceHandler(options =>
+            {
+                options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(15);
+                options.Retry.MaxRetryAttempts = 3;
+                options.Retry.BackoffType = DelayBackoffType.Exponential;
+                options.Retry.UseJitter = true;
             });
 
             // LegacyLink
             services.AddKeyedScoped<IMessageProvider, LegacyLinkProvider>("LegacyLink");
             services.AddHttpClient("LegacyLink", client =>
             {
-                client.BaseAddress = new Uri(baseUrl + "/legacylink");
+                client.BaseAddress = new Uri(new Uri(baseUrl), "legacylink");
                 client.DefaultRequestHeaders.Add("X-STUDENT-GROUP", studentGroup);
+            }).AddStandardResilienceHandler(options =>
+            {
+                options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(20);
+                options.Retry.MaxRetryAttempts = 5;
+                options.Retry.BackoffType = DelayBackoffType.Exponential;
+                options.Retry.UseJitter = true;
             });
 
             return services;
