@@ -1,0 +1,203 @@
+{
+  "uid": "patientpingeling-runtime",
+  "title": "PatientPingeling — .NET Runtime Deep Dive",
+  "tags": ["patientpingeling", "runtime", "dotnet"],
+  "timezone": "browser",
+  "refresh": "10s",
+  "time": { "from": "now-30m", "to": "now" },
+  "schemaVersion": 39,
+  "panels": [
+    {
+      "type": "row", "title": "Summary", "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 }, "id": 1
+    },
+    {
+      "id": 2, "type": "stat", "title": "API — Requests (5m)",
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 1 },
+      "datasource": { "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "thresholds" }, "thresholds": { "steps": [{ "color": "green", "value": 0 }] } } },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" },
+      "targets": [{ "expr": "round(increase(http_server_request_duration_seconds_count{service_name=\"NotificationService.Api\"}[5m]))", "refId": "A" }]
+    },
+    {
+      "id": 3, "type": "stat", "title": "Worker — Provider Calls (5m)",
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 1 },
+      "datasource": { "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "thresholds" }, "thresholds": { "steps": [{ "color": "green", "value": 0 }] } } },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" },
+      "targets": [{ "expr": "round(increase(http_client_request_duration_seconds_count{service_name=\"NotificationService.Worker\", server_address=\"messageproviders\"}[5m]))", "refId": "A" }]
+    },
+    {
+      "id": 4, "type": "stat", "title": "Exceptions (5m)",
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 1 },
+      "datasource": { "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "thresholds" }, "thresholds": { "steps": [{ "color": "green", "value": 0 }, { "color": "yellow", "value": 1 }, { "color": "red", "value": 10 }] } } },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" },
+      "targets": [{ "expr": "round(increase(dotnet_exceptions_total[5m]))", "refId": "A" }]
+    },
+    {
+      "id": 5, "type": "stat", "title": "GC Allocations / s",
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 1 },
+      "datasource": { "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "Bps", "color": { "mode": "thresholds" }, "thresholds": { "steps": [{ "color": "green", "value": 0 }, { "color": "yellow", "value": 10000000 }, { "color": "red", "value": 50000000 }] } } },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" },
+      "targets": [{ "expr": "sum(rate(dotnet_gc_heap_allocated_bytes_total[1m]))", "refId": "A" }]
+    },
+    {
+      "id": 6, "type": "stat", "title": "Lock Contentions (5m)",
+      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 1 },
+      "datasource": { "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "thresholds" }, "thresholds": { "steps": [{ "color": "green", "value": 0 }, { "color": "yellow", "value": 5 }, { "color": "red", "value": 20 }] } } },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" },
+      "targets": [{ "expr": "round(increase(dotnet_monitor_lock_contentions_total[5m]))", "refId": "A" }]
+    },
+    {
+      "id": 7, "type": "stat", "title": "Active Timers",
+      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 1 },
+      "datasource": { "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "thresholds" }, "thresholds": { "steps": [{ "color": "green", "value": 0 }] } } },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" },
+      "targets": [{ "expr": "sum(dotnet_timer_count)", "refId": "A" }]
+    },
+    {
+      "type": "row", "title": "Garbage Collector", "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 }, "id": 8
+    },
+    {
+      "id": 9, "type": "timeseries", "title": "GC — Heap Size by Generation",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+      "datasource": { "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "bytes", "custom": { "fillOpacity": 10 } } },
+      "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull"] } },
+      "targets": [{ "expr": "dotnet_gc_last_collection_heap_size_bytes", "legendFormat": "{{service_name}} — {{gc_heap_generation}}", "refId": "A" }]
+    },
+    {
+      "id": 10, "type": "timeseries", "title": "GC — Allocation Rate",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+      "datasource": { "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "Bps", "custom": { "fillOpacity": 10 } } },
+      "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull"] } },
+      "targets": [{ "expr": "sum(rate(dotnet_gc_heap_allocated_bytes_total[1m])) by (service_name)", "legendFormat": "{{service_name}}", "refId": "A" }]
+    },
+    {
+      "id": 11, "type": "timeseries", "title": "GC — Collections / sec by Generation",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 14 },
+      "datasource": { "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "ops", "custom": { "fillOpacity": 10 } } },
+      "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull"] } },
+      "targets": [{ "expr": "sum(rate(dotnet_gc_collections_total[1m])) by (service_name, generation)", "legendFormat": "{{service_name}} gen{{generation}}", "refId": "A" }]
+    },
+    {
+      "id": 12, "type": "timeseries", "title": "GC — Pause Time / sec",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 14 },
+      "datasource": { "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "fillOpacity": 10 } } },
+      "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull"] } },
+      "targets": [{ "expr": "sum(rate(dotnet_gc_pause_time_seconds_total[1m])) by (service_name)", "legendFormat": "{{service_name}}", "refId": "A" }]
+    },
+    {
+      "id": 13, "type": "timeseries", "title": "GC — Heap Fragmentation",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 14 },
+      "datasource": { "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "bytes", "custom": { "fillOpacity": 10 } } },
+      "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull"] } },
+      "targets": [{ "expr": "dotnet_gc_last_collection_heap_fragmentation_size_bytes", "legendFormat": "{{service_name}} — {{gc_heap_generation}}", "refId": "A" }]
+    },
+    {
+      "type": "row", "title": "Thread Pool & Concurrency", "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 22 }, "id": 14
+    },
+    {
+      "id": 15, "type": "timeseries", "title": "Thread Pool — Thread Count",
+      "gridPos": { "h": 7, "w": 8, "x": 0, "y": 23 },
+      "datasource": { "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short", "custom": { "fillOpacity": 10 } } },
+      "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [{ "expr": "dotnet_thread_pool_thread_count_total", "legendFormat": "{{service_name}}", "refId": "A" }]
+    },
+    {
+      "id": 16, "type": "timeseries", "title": "Thread Pool — Work Items / sec",
+      "gridPos": { "h": 7, "w": 8, "x": 8, "y": 23 },
+      "datasource": { "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "ops", "custom": { "fillOpacity": 10 } } },
+      "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [{ "expr": "sum(rate(dotnet_thread_pool_work_item_count_total[1m])) by (service_name)", "legendFormat": "{{service_name}}", "refId": "A" }]
+    },
+    {
+      "id": 17, "type": "timeseries", "title": "Monitor Lock Contentions / sec",
+      "gridPos": { "h": 7, "w": 8, "x": 16, "y": 23 },
+      "datasource": { "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "ops", "custom": { "fillOpacity": 10 } } },
+      "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [{ "expr": "sum(rate(dotnet_monitor_lock_contentions_total[1m])) by (service_name)", "legendFormat": "{{service_name}}", "refId": "A" }]
+    },
+    {
+      "type": "row", "title": "Kestrel (API)", "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 30 }, "id": 18
+    },
+    {
+      "id": 19, "type": "timeseries", "title": "Kestrel — Active Connections",
+      "gridPos": { "h": 7, "w": 8, "x": 0, "y": 31 },
+      "datasource": { "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short", "custom": { "fillOpacity": 10 } } },
+      "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [{ "expr": "kestrel_active_connections", "legendFormat": "{{service_name}}", "refId": "A" }]
+    },
+    {
+      "id": 20, "type": "timeseries", "title": "Kestrel — Queued Connections",
+      "gridPos": { "h": 7, "w": 8, "x": 8, "y": 31 },
+      "datasource": { "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short", "custom": { "fillOpacity": 10 } } },
+      "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [{ "expr": "kestrel_queued_connections", "legendFormat": "{{service_name}}", "refId": "A" }]
+    },
+    {
+      "id": 21, "type": "timeseries", "title": "Kestrel — P99 Connection Duration",
+      "gridPos": { "h": 7, "w": 8, "x": 16, "y": 31 },
+      "datasource": { "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "fillOpacity": 10 } } },
+      "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [{ "expr": "histogram_quantile(0.99, sum(rate(kestrel_connection_duration_seconds_bucket[2m])) by (le))", "legendFormat": "p99", "refId": "A" }]
+    },
+    {
+      "type": "row", "title": "JIT Compiler", "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 38 }, "id": 22
+    },
+    {
+      "id": 23, "type": "timeseries", "title": "JIT — Methods Compiled / sec",
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 39 },
+      "datasource": { "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "ops", "custom": { "fillOpacity": 10 } } },
+      "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [{ "expr": "sum(rate(dotnet_jit_compiled_methods_total[1m])) by (service_name)", "legendFormat": "{{service_name}}", "refId": "A" }]
+    },
+    {
+      "id": 24, "type": "timeseries", "title": "JIT — IL Bytes Compiled / sec",
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 39 },
+      "datasource": { "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "Bps", "custom": { "fillOpacity": 10 } } },
+      "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [{ "expr": "sum(rate(dotnet_jit_compiled_il_size_bytes_total[1m])) by (service_name)", "legendFormat": "{{service_name}}", "refId": "A" }]
+    },
+    {
+      "type": "row", "title": "Distributed Traces (Span Metrics)", "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 46 }, "id": 25
+    },
+    {
+      "id": 26, "type": "timeseries", "title": "Span Calls / sec by Operation",
+      "gridPos": { "h": 8, "w": 16, "x": 0, "y": 47 },
+      "datasource": { "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "ops", "custom": { "fillOpacity": 10 } } },
+      "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull"] } },
+      "targets": [{ "expr": "sum(rate(traces_spanmetrics_calls_total{service_name=~\"NotificationService.*\"}[1m])) by (service_name, span_name)", "legendFormat": "{{service_name}} — {{span_name}}", "refId": "A" }]
+    },
+    {
+      "id": 27, "type": "timeseries", "title": "Span P99 Latency by Operation",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 47 },
+      "datasource": { "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "fillOpacity": 10 } } },
+      "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull"] } },
+      "targets": [{ "expr": "histogram_quantile(0.99, sum(rate(traces_spanmetrics_latency_bucket{service_name=~\"NotificationService.*\"}[2m])) by (le, service_name, span_name))", "legendFormat": "{{service_name}} — {{span_name}}", "refId": "A" }]
+    }
+  ]
+}

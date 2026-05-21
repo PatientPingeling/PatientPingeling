@@ -110,10 +110,17 @@ services:
 # ==========================================
   otel-lgtm:
     image: grafana/otel-lgtm:latest
+    environment:
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
     ports:
       - "3000:3000"     # Grafana UI
       - "4317:4317"     # OTLP gRPC receiver
       - "4318:4318"     # OTLP HTTP receiver
+    volumes:
+      - ./config/grafana/dashboards/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml:ro
+      - ./config/grafana/dashboards/definitions:/etc/grafana/provisioning/dashboards/definitions:ro
+      - ./config/grafana/datasources/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
+      - grafana_data:/var/lib/grafana
     restart: unless-stopped
 
   postgres:
@@ -244,3 +251,4 @@ volumes:
   rabbitmq_data:
   openmrs-data:
   db-data:
+  grafana_data:
