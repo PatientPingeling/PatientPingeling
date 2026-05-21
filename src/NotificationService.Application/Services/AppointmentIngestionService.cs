@@ -72,6 +72,11 @@ namespace NotificationService.Application.Services
         return Result.Failure(new Error("appointment.duplicate", "Appointment already exists.", ErrorType.Duplicate));
       }
 
+      return await PersistNewAppointmentAsync(command, patient, isNewPatient, ct);
+    }
+
+    private async Task<Result> PersistNewAppointmentAsync(IngestAppointmentCommand command, Patient patient, bool isNewPatient, CancellationToken ct)
+    {
       patient.LastCommunicationAt = DateTimeOffset.UtcNow;
 
       var appointment = new Appointment
@@ -82,7 +87,6 @@ namespace NotificationService.Application.Services
         Location = command.Appointment.Location,
         ScheduledAt = command.Appointment.ScheduledAt.ToUniversalTime(),
         TenantId = command.TenantId,
-        // If patient is existing (AsNoTracking), use FK only to avoid duplicate insert
         PatientId = isNewPatient ? 0 : patient.Id,
         Patient = isNewPatient ? patient : null!
       };
@@ -134,8 +138,11 @@ namespace NotificationService.Application.Services
 
       if (appointment is null)
       {
-        _logger.LogWarning("Appointment {ExternalId} not found for tenant {TenantId}", command.Appointment.ExternalId, command.TenantId);
-        return Result.Failure(new Error("appointment.not_found", "Appointment not found.", ErrorType.NotFound));
+        _logger.LogWarning("UPDATED webhook for unknown appointment {ExternalId} — upserting as new.", command.Appointment.ExternalId);
+        var (patient, isNewPatient) = await ResolvePatientAsync(command, ct);
+        if (patient is null)
+          return Result.Failure(new Error("patient.db_error", "Failed to retrieve or create patient.", ErrorType.Failure));
+        return await PersistNewAppointmentAsync(command, patient, isNewPatient, ct);
       }
 
       appointment.Patient.GivenName = command.Patient.GivenName;
