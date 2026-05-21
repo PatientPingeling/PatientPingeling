@@ -107,8 +107,15 @@
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 31 }, "id": 14
     },
     {
+      "id": 16, "type": "logs", "title": "Errors & Warnings",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 32 },
+      "datasource": { "uid": "loki" },
+      "options": { "dedupStrategy": "none", "showLabels": true, "wrapLogMessage": true, "enableLogDetails": true, "sortOrder": "Descending" },
+      "targets": [{ "expr": "{service_name=~\"NotificationService.*\"} | severity_number >= `13`", "refId": "A", "legendFormat": "" }]
+    },
+    {
       "id": 15, "type": "logs", "title": "All Service Logs",
-      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 32 },
+      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 40 },
       "datasource": { "uid": "loki" },
       "options": { "dedupStrategy": "none", "showLabels": true, "wrapLogMessage": true, "enableLogDetails": true, "sortOrder": "Descending" },
       "targets": [{ "expr": "{service_name=~\"NotificationService.*\"}", "refId": "A" }]
