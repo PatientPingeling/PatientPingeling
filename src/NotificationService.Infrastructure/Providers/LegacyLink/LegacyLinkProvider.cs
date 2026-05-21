@@ -56,7 +56,6 @@ namespace NotificationService.Infrastructure.Providers.LegacyLink
             response.EnsureSuccessStatusCode();
 
             var document = XDocument.Parse(responseXml);
-            XNamespace ns = "http://legacylink.fakecomworld.com/v1";
 
             var messageReference = document
                 .Descendants(ns + "MessageReference")
