@@ -37,19 +37,19 @@ namespace NotificationService.Infrastructure.Providers.LegacyLink
             }
 
             var auth = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{username}:{password}"));
-            var xml = $"""
-        <?xml version="1.0" encoding="utf-8"?>
-        <SendSmsRequest xmlns="http://legacylink.fakecomworld.com/v1">
-            <PhoneNumber>{recipient}</PhoneNumber>
-            <MessageText>{message}</MessageText>
-            <SenderIdentification>NotificationService</SenderIdentification>
-        </SendSmsRequest>
-        """;
+
+            XNamespace ns = "http://legacylink.fakecomworld.com/v1";
+            var doc = new XDocument(
+                new XDeclaration("1.0", "utf-8", null),
+                new XElement(ns + "SendSmsRequest",
+                    new XElement(ns + "PhoneNumber", recipient),
+                    new XElement(ns + "MessageText", message),
+                    new XElement(ns + "SenderIdentification", "NotificationService")));
 
             using var request = new HttpRequestMessage(HttpMethod.Post, "SendSms");
             request.Headers.Authorization = new AuthenticationHeaderValue("Basic", auth);
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/xml"));
-            request.Content = new StringContent(xml, Encoding.UTF8, "application/xml");
+            request.Content = new StringContent(doc.ToString(), Encoding.UTF8, "application/xml");
 
             using var response = await _client.SendAsync(request, ct);
             var responseXml = await response.Content.ReadAsStringAsync(ct);
