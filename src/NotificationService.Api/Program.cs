@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using FluentValidation;
 using NotificationService.Api.Endpoints;
 using NotificationService.Application.Abstractions;
@@ -44,6 +45,13 @@ builder.Services
         enableEntityFrameworkCore: true);
 
 var app = builder.Build();
+
+// Apply pending migrations on API startup in development to ensure DB schema exists.
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<NotificationService.Infrastructure.Persistence.NotificationDbContext>();
+    db.Database.Migrate();
+}
 
 if (app.Environment.IsDevelopment())
 {
