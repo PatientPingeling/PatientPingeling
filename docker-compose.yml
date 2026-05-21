@@ -98,9 +98,9 @@ services:
       - AsyncFlow__ApiKey=asyncflow-api-key
       - LegacyLink__Username=legacylink-user
       - LegacyLink__Password=legacylink-password
-      - AsyncFlow__FailureRatePercentage=50
-      - SecurePost__FaultInjectionRatePercentage=50
-      - SwiftSend__FaultInjectionRatePercentage=50
+      - AsyncFlow__FailureRatePercentage=${ASYNCFLOW_FAILURE_RATE:-50}
+      - SecurePost__FaultInjectionRatePercentage=${SECUREPOST_FAULT_RATE:-50}
+      - SwiftSend__FaultInjectionRatePercentage=${SWIFTSEND_FAULT_RATE:-50}
     ports:
       - "1337:8080"
     restart: unless-stopped
