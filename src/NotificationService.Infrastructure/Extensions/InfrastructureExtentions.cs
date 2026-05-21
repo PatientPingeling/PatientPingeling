@@ -171,7 +171,9 @@ namespace NotificationService.Infrastructure.Extensions
                     HostName = options.Host,
                     UserName = options.Username,
                     Password = options.Password,
-                    Port = options.Port
+                    Port = options.Port,
+                    AutomaticRecoveryEnabled = true,
+                    NetworkRecoveryInterval = TimeSpan.FromSeconds(5)
                 };
             });
 
