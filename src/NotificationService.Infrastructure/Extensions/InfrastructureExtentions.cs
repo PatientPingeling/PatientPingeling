@@ -41,24 +41,37 @@ namespace NotificationService.Infrastructure.Extensions
             .AddStandardResilienceHandler(options =>
             {
                 options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(10);
+
                 options.Retry.MaxRetryAttempts = 3;
                 options.Retry.BackoffType = DelayBackoffType.Exponential;
                 options.Retry.UseJitter = true;
+
+                options.CircuitBreaker.FailureRatio = 0.5;
+                options.CircuitBreaker.MinimumThroughput = 5;
+                options.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(30);
+                options.CircuitBreaker.BreakDuration = TimeSpan.FromSeconds(15);
             });
 
             // SecurePost
             services.AddKeyedScoped<IMessageProvider, SecurePostProvider>("SecurePost");
             services.AddHttpClient("SecurePost", client =>
             {
-                client.BaseAddress = new Uri(new Uri(baseUrl), "securepost");
+                client.BaseAddress = new Uri(new Uri(baseUrl), "securepost/");
                 client.DefaultRequestHeaders.Add("X-STUDENT-GROUP", studentGroup);
             })
             .AddStandardResilienceHandler(options =>
             {
                 options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(10);
+
                 options.Retry.MaxRetryAttempts = 2;
                 options.Retry.BackoffType = DelayBackoffType.Exponential;
                 options.Retry.UseJitter = true;
+
+                // JWT/auth system → stricter breaker
+                options.CircuitBreaker.FailureRatio = 0.3;
+                options.CircuitBreaker.MinimumThroughput = 5;
+                options.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(20);
+                options.CircuitBreaker.BreakDuration = TimeSpan.FromSeconds(10);
             });
 
             // AsyncFlow
@@ -67,26 +80,42 @@ namespace NotificationService.Infrastructure.Extensions
             {
                 client.BaseAddress = new Uri(new Uri(baseUrl), "asyncflow");
                 client.DefaultRequestHeaders.Add("X-STUDENT-GROUP", studentGroup);
-            }).AddStandardResilienceHandler(options =>
+            })
+            .AddStandardResilienceHandler(options =>
             {
                 options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(15);
+
                 options.Retry.MaxRetryAttempts = 3;
                 options.Retry.BackoffType = DelayBackoffType.Exponential;
                 options.Retry.UseJitter = true;
+
+                // Queue-based system → medium tolerance
+                options.CircuitBreaker.FailureRatio = 0.5;
+                options.CircuitBreaker.MinimumThroughput = 5;
+                options.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(30);
+                options.CircuitBreaker.BreakDuration = TimeSpan.FromSeconds(20);
             });
 
             // LegacyLink
             services.AddKeyedScoped<IMessageProvider, LegacyLinkProvider>("LegacyLink");
             services.AddHttpClient("LegacyLink", client =>
             {
-                client.BaseAddress = new Uri(new Uri(baseUrl), "legacylink");
+                client.BaseAddress = new Uri(new Uri(baseUrl), "LegacyLink/");
                 client.DefaultRequestHeaders.Add("X-STUDENT-GROUP", studentGroup);
-            }).AddStandardResilienceHandler(options =>
+            })
+            .AddStandardResilienceHandler(options =>
             {
                 options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(20);
+
                 options.Retry.MaxRetryAttempts = 5;
                 options.Retry.BackoffType = DelayBackoffType.Exponential;
                 options.Retry.UseJitter = true;
+
+                // Legacy SOAP dinosaur → more forgiving
+                options.CircuitBreaker.FailureRatio = 0.6;
+                options.CircuitBreaker.MinimumThroughput = 5;
+                options.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(45);
+                options.CircuitBreaker.BreakDuration = TimeSpan.FromSeconds(30);
             });
 
             return services;
