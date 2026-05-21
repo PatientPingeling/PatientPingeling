@@ -8,7 +8,7 @@ namespace NotificationService.Infrastructure.Persistence
     public static class DevDataSeeder
     {
         // API key: "test-secret" — SHA-256 hashed
-        private static readonly Guid DevTenantId = new("3fa85f64-5717-4562-b3fc-2c963f66afa6");
+        private static readonly Guid SwiftSendTenantId = new("3fa85f64-5717-4562-b3fc-2c963f66afa6");
         private static readonly Guid SecurePostTenantId = new("4fa85f64-5717-4562-b3fc-2c963f66afa7");
         private static readonly Guid LegacyLinkTenantId = new("5fa85f64-5717-4562-b3fc-2c963f66afa8");
         private static readonly Guid AsyncFlowTenantId = new("6fa85f64-5717-4562-b3fc-2c963f66afa9");
@@ -26,7 +26,7 @@ namespace NotificationService.Infrastructure.Persistence
 
             db.Tenants.Add(new Tenant
             {
-                Id = DevTenantId,
+                Id = SwiftSendTenantId,
                 Name = "Dev Tenant (SwiftSend)",
                 TimeZone = "Europe/Amsterdam",
                 Provider = "SwiftSend",
@@ -37,7 +37,7 @@ namespace NotificationService.Infrastructure.Persistence
                     {
                         Key = "ApiKey",
                         EncryptedValue = encryption.Encrypt("swiftsend-api-key"),
-                        TenantId = DevTenantId
+                        TenantId = SwiftSendTenantId
                     }
                 ]
             });
