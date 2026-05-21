@@ -53,8 +53,9 @@ if (app.Environment.IsDevelopment())
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<NotificationDbContext>();
     var encryption = scope.ServiceProvider.GetRequiredService<IEncryptionService>();
+    var hashing = scope.ServiceProvider.GetRequiredService<IHashingService>();
     var seederLogger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("DevDataSeeder");
-    await DevDataSeeder.SeedAsync(db, encryption, seederLogger);
+    await DevDataSeeder.SeedAsync(db, encryption, hashing, seederLogger);
 
 }
 

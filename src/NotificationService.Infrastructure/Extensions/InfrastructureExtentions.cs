@@ -140,7 +140,7 @@ namespace NotificationService.Infrastructure.Extensions
             services.AddScoped<ITenantRepository, TenantRepository>();
             services.AddScoped<INotificationLogRepository, NotificationLogRepository>();
             services.AddScoped<IProviderCredentialRepository, ProviderCredentialRepository>();
-            services.AddScoped<IHashingService, Sha256HashingService>();
+            services.AddScoped<IHashingService, Pbkdf2HashingService>();
             services.AddScoped<IDispatchLogRepository, DispatchLogRepository>();
             services.AddMemoryCache();
             services.AddSingleton<IEncryptionService>(sp =>
