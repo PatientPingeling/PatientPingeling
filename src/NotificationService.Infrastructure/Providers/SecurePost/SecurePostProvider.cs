@@ -53,32 +53,25 @@ public sealed class SecurePostProvider(IHttpClientFactory httpClientFactory, IMe
     }
 
 
-    // IMemoryCache stores objects directly in memory
-    // Downside: not distributed. If multiple instances run, each has its own cache and will call /auth independently. 
-    // TODO: Switch to IDistributedCache + Redis if we are gonna use multiple instances.
+    // IMemoryCache stores objects directly in memory.
+    // Downside: not distributed — multiple instances each call /auth independently.
+    // TODO: Switch to IDistributedCache + Redis if we ever run multiple Worker instances.
     private async Task<SecurePostAuthResponse> AuthenticateAsync(string clientId, string clientSecret, CancellationToken ct)
     {
         var cacheKey = $"auth_securepost_{clientId}";
-        const int expiresBuffer = 30; // int in seconds buffer
+        const int expiresBuffer = 30;
 
-        //* Cache hit — return early
-        if (_cache.TryGetValue(cacheKey, out SecurePostAuthResponse? cached))
+        return (await _cache.GetOrCreateAsync(cacheKey, async entry =>
         {
-            return cached!;
-        }
+            var response = await _client.PostAsJsonAsync("auth", new SecurePostAuthRequest(clientId, clientSecret), ct);
+            response.EnsureSuccessStatusCode();
 
-        //* Cache miss — call auth
-        var response = await _client.PostAsJsonAsync("auth", new SecurePostAuthRequest(clientId, clientSecret), ct);
-        response.EnsureSuccessStatusCode();
+            var authResult = await response.Content.ReadFromJsonAsync<SecurePostAuthResponse>(ct)
+                ?? throw new InvalidOperationException("SecurePost auth response was empty.");
 
-        var authResult = await response.Content.ReadFromJsonAsync<SecurePostAuthResponse>(ct)
-            ?? throw new InvalidOperationException("SecurePost auth response was empty.");
-
-        var expiresIn = Math.Max(authResult.ExpiresIn - expiresBuffer, 30);
-
-        _cache.Set(cacheKey, authResult, TimeSpan.FromSeconds(expiresIn));
-
-        return authResult;
+            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(Math.Max(authResult.ExpiresIn - expiresBuffer, 30));
+            return authResult;
+        }))!;
     }
 
     private static string MapFormat(MessageFormat format) => format switch
