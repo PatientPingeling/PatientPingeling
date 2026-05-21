@@ -28,6 +28,16 @@ namespace NotificationService.Infrastructure.Persistence
                     .IsRequired();
             });
 
+            modelBuilder.Entity<Patient>(entity =>
+            {
+                entity.HasIndex(e => new { e.ExternalId, e.TenantId });
+            });
+
+            modelBuilder.Entity<Appointment>(entity =>
+            {
+                entity.HasIndex(e => new { e.ExternalId, e.TenantId });
+            });
+
             modelBuilder.Entity<ScheduledNotification>(entity =>
             {
                 entity.HasIndex(e => e.SendAt);
