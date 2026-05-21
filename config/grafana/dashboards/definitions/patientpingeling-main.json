@@ -56,7 +56,7 @@
       "datasource": { "uid": "prometheus" },
       "fieldConfig": { "defaults": { "unit": "reqps", "color": { "mode": "palette-classic" } } },
       "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
-      "targets": [{ "expr": "sum(rate(http_client_request_duration_seconds_count{service_name=\"NotificationService.Worker\"}[1m])) by (http_response_status_code, server_address)", "legendFormat": "{{server_address}} — {{http_response_status_code}}", "refId": "A" }]
+      "targets": [{ "expr": "sum(rate(http_client_request_duration_seconds_count{service_name=\"NotificationService.Worker\", server_address!=\"otel-lgtm\"}[1m])) by (http_response_status_code, server_address)", "legendFormat": "{{server_address}} — {{http_response_status_code}}", "refId": "A" }]
     },
     {
       "type": "row", "title": "Runtime & Resources", "collapsed": false,
@@ -68,7 +68,7 @@
       "datasource": { "uid": "prometheus" },
       "fieldConfig": { "defaults": { "unit": "bytes", "color": { "mode": "palette-classic" } } },
       "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
-      "targets": [{ "expr": "dotnet_process_memory_working_set_bytes", "legendFormat": "{{service_name}}", "refId": "A" }]
+      "targets": [{ "expr": "max by (service_name) (dotnet_process_memory_working_set_bytes)", "legendFormat": "{{service_name}}", "refId": "A" }]
     },
     {
       "id": 10, "type": "timeseries", "title": "CPU Time Rate",
@@ -92,7 +92,7 @@
       "datasource": { "uid": "prometheus" },
       "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "palette-classic" } } },
       "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
-      "targets": [{ "expr": "dotnet_thread_pool_queue_length_total", "legendFormat": "{{service_name}}", "refId": "A" }]
+      "targets": [{ "expr": "max by (service_name) (dotnet_thread_pool_queue_length_total)", "legendFormat": "{{service_name}}", "refId": "A" }]
     },
     {
       "id": 13, "type": "timeseries", "title": "Exceptions / sec",
