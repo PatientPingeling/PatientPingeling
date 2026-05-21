@@ -27,8 +27,8 @@ using var host = builder.Build();
 // Apply any pending EF Core migrations at startup so the scheduler can poll safely.
 using (var scope = host.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<NotificationService.Infrastructure.Persistence.NotificationDbContext>();
-    db.Database.Migrate();
+        var db = scope.ServiceProvider.GetRequiredService<NotificationService.Infrastructure.Persistence.NotificationDbContext>();
+        db.Database.Migrate();
 }
 
 await host.RunAsync();

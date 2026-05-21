@@ -3,14 +3,14 @@ using NotificationService.Domain.Entities;
 
 namespace NotificationService.Infrastructure.Persistence.Repositories
 {
-  public class NotificationLogRepository(NotificationDbContext dbContext) : INotificationLogRepository
-  {
-    private readonly NotificationDbContext _dbContext = dbContext;
-
-    public Task AddAsync(NotificationLog log, CancellationToken ct = default)
+    public class NotificationLogRepository(NotificationDbContext dbContext) : INotificationLogRepository
     {
-      _dbContext.NotificationLogs.Add(log);
-      return Task.CompletedTask;
+        private readonly NotificationDbContext _dbContext = dbContext;
+
+        public Task AddAsync(NotificationLog log, CancellationToken ct = default)
+        {
+            _dbContext.NotificationLogs.Add(log);
+            return Task.CompletedTask;
+        }
     }
-  }
 }
