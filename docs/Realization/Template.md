@@ -14,6 +14,16 @@ In dit logboek wordt beschreven welke tools zijn gebruikt tijdens de ontwikkelin
 ||||
 ||||
 
+## Kosten en Toegevoegde Waarde(s) Overzicht
+| Tool | Kosten | Toegevoegde Waarde(s) |
+|------|--------|-----------|
+
+## Verbeterpunten
+Na het reflecteren op de gebruikte tools, zijn een aantal verbeterpunten naar voren gekomen:
+- bla
+- bla
+- bla
+
 ## Bijdrage aan Project (Commits)
 *Navigeer ook naar https://github.com/orgs/PatientPingeling/projects/2/views/1 en https://github.com/PatientPingeling/PatientPingeling/commits/main/ voor de op GitHub bijgehouden Project en de gehele commit geschiedenis*
 
