@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram name="C4 Component" id="0">
-        <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2700" pageHeight="1620" math="0" shadow="0">
+        <mxGraphModel dx="3180" dy="1877" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2700" pageHeight="1620" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -21,7 +21,7 @@
                     </mxCell>
                 </object>
                 <mxCell id="boundary-api" value="Notification API&lt;br&gt;[Container: C# / .NET Web API]" style="rounded=1;whiteSpace=wrap;html=1;arcSize=3;fillColor=none;strokeColor=#08427B;fontColor=#08427B;fontSize=13;fontStyle=1;dashed=1;verticalAlign=top;align=left;spacing=10;" parent="1" vertex="1">
-                    <mxGeometry x="340" y="160" width="1500" height="270" as="geometry"/>
+                    <mxGeometry x="340" y="160" width="1500" height="280" as="geometry"/>
                 </mxCell>
                 <object placeholders="1" c4Name="Webhook Endpoint" c4Type="Component" c4Technology="ASP.NET Core Minimal API" c4Description="POST /webhooks/appointments. Leest X-Tenant-Id en X-Api-Key headers en mapt request naar IngestAppointmentCommand." label="&lt;font style=&quot;font-size: 13px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%: %c4Technology%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 10px&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="comp-webhook-endpoint">
                     <mxCell style="rounded=1;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#85BBF0;fontColor=#000000;align=center;arcSize=10;strokeColor=#5D82A8;metaEdit=1;resizable=0;points=[[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];" parent="1" vertex="1">
@@ -30,17 +30,17 @@
                 </object>
                 <object placeholders="1" c4Name="Webhook Validator" c4Type="Component" c4Technology="FluentValidation" c4Description="Valideert payload shape: verplichte velden, formats, datums in de toekomst." label="&lt;font style=&quot;font-size: 13px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%: %c4Technology%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 10px&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="comp-webhook-validator">
                     <mxCell style="rounded=1;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#85BBF0;fontColor=#000000;align=center;arcSize=10;strokeColor=#5D82A8;metaEdit=1;resizable=0;points=[[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];" parent="1" vertex="1">
-                        <mxGeometry x="620" y="240" width="210" height="160" as="geometry"/>
+                        <mxGeometry x="690" y="240" width="210" height="160" as="geometry"/>
                     </mxCell>
                 </object>
                 <object placeholders="1" c4Name="Tenant Service" c4Type="Component" c4Technology="Application Service" c4Description="Valideert X-Api-Key tegen opgeslagen credentials via HashingService. Faalt fast bij onbekende of mismatch keys." label="&lt;font style=&quot;font-size: 13px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%: %c4Technology%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 10px&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="comp-tenant-service">
                     <mxCell style="rounded=1;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#85BBF0;fontColor=#000000;align=center;arcSize=10;strokeColor=#5D82A8;metaEdit=1;resizable=0;points=[[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];" parent="1" vertex="1">
-                        <mxGeometry x="850" y="240" width="210" height="160" as="geometry"/>
+                        <mxGeometry x="980" y="240" width="210" height="160" as="geometry"/>
                     </mxCell>
                 </object>
                 <object placeholders="1" c4Name="Appointment Ingestion Service" c4Type="Component" c4Technology="Application Service" c4Description="Verwerkt CREATED / UPDATED / CANCELLED. Schrijft Patient + Appointment + ScheduledNotifications (24h en 1h) atomisch via UnitOfWork." label="&lt;font style=&quot;font-size: 13px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%: %c4Technology%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 10px&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="comp-ingestion-service">
                     <mxCell style="rounded=1;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#85BBF0;fontColor=#000000;align=center;arcSize=10;strokeColor=#5D82A8;metaEdit=1;resizable=0;points=[[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];" parent="1" vertex="1">
-                        <mxGeometry x="1080" y="240" width="260" height="160" as="geometry"/>
+                        <mxGeometry x="1270" y="240" width="260" height="160" as="geometry"/>
                     </mxCell>
                 </object>
                 <mxCell id="boundary-scheduler" value="Scheduler&lt;br&gt;[Container: C# / .NET Background Service]" style="rounded=1;whiteSpace=wrap;html=1;arcSize=3;fillColor=none;strokeColor=#08427B;fontColor=#08427B;fontSize=13;fontStyle=1;dashed=1;verticalAlign=top;align=left;spacing=10;" parent="1" vertex="1">
@@ -53,17 +53,17 @@
                 </object>
                 <object placeholders="1" c4Name="Poll Action" c4Type="Component" c4Technology="Application Service" c4Description="Orchestreert per cycle: GetPending → CreateMessage → Publish. Schrijft INSCHEDULER / INQUEUE en bij faal NEW (rollback) dispatch logs." label="&lt;font style=&quot;font-size: 13px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%: %c4Technology%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 10px&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="comp-poll-action">
                     <mxCell style="rounded=1;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#85BBF0;fontColor=#000000;align=center;arcSize=10;strokeColor=#5D82A8;metaEdit=1;resizable=0;points=[[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];" parent="1" vertex="1">
-                        <mxGeometry x="590" y="550" width="210" height="160" as="geometry"/>
+                        <mxGeometry x="650" y="550" width="210" height="160" as="geometry"/>
                     </mxCell>
                 </object>
                 <object placeholders="1" c4Name="Notification Message Factory" c4Type="Component" c4Technology="Application Service" c4Description="Verrijkt ScheduledNotifications met Patient, Tenant en Provider Credentials. Bouwt RabbitMQNotificationMessage DTOs." label="&lt;font style=&quot;font-size: 13px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%: %c4Technology%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 10px&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="comp-message-factory">
                     <mxCell style="rounded=1;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#85BBF0;fontColor=#000000;align=center;arcSize=10;strokeColor=#5D82A8;metaEdit=1;resizable=0;points=[[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];" parent="1" vertex="1">
-                        <mxGeometry x="820" y="550" width="220" height="160" as="geometry"/>
+                        <mxGeometry x="970" y="550" width="220" height="160" as="geometry"/>
                     </mxCell>
                 </object>
                 <object placeholders="1" c4Name="RabbitMQ Publisher" c4Type="Component" c4Technology="RabbitMQ.Client (AMQP)" c4Description="Connection + channel met publisher confirms. PublishAsync naar notification queue (durable)." label="&lt;font style=&quot;font-size: 13px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%: %c4Technology%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 10px&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="comp-rabbitmq-publisher">
                     <mxCell style="rounded=1;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#85BBF0;fontColor=#000000;align=center;arcSize=10;strokeColor=#5D82A8;metaEdit=1;resizable=0;points=[[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];" parent="1" vertex="1">
-                        <mxGeometry x="1060" y="550" width="220" height="160" as="geometry"/>
+                        <mxGeometry x="1270" y="550" width="220" height="160" as="geometry"/>
                     </mxCell>
                 </object>
                 <object placeholders="1" c4Name="AsyncFlow Polling Service" c4Type="Component" c4Technology="BackgroundService" c4Description="Pollt elke 30s pending AsyncFlow notificaties via Status Client. Schrijft definitieve SUCCESS / EXPIRED dispatch logs." label="&lt;font style=&quot;font-size: 13px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%: %c4Technology%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 10px&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="comp-asyncflow-polling">
@@ -86,12 +86,12 @@
                 </object>
                 <object placeholders="1" c4Name="Notification Dispatch Service" c4Type="Component" c4Technology="Application Service" c4Description="Decrypteert provider credentials. Kiest format (Email / SMS / Push) op basis van patient contact en provider support. Bouwt bericht en roept provider aan." label="&lt;font style=&quot;font-size: 13px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%: %c4Technology%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 10px&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="comp-dispatch-service">
                     <mxCell style="rounded=1;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#85BBF0;fontColor=#000000;align=center;arcSize=10;strokeColor=#5D82A8;metaEdit=1;resizable=0;points=[[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];" parent="1" vertex="1">
-                        <mxGeometry x="630" y="1040" width="240" height="170" as="geometry"/>
+                        <mxGeometry x="710" y="1040" width="240" height="170" as="geometry"/>
                     </mxCell>
                 </object>
                 <object placeholders="1" c4Name="Message Provider Factory" c4Type="Component" c4Technology="Keyed DI" c4Description="Selecteert juiste IMessageProvider implementatie op basis van provider naam in het command." label="&lt;font style=&quot;font-size: 13px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%: %c4Technology%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 10px&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="comp-provider-factory">
                     <mxCell style="rounded=1;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#85BBF0;fontColor=#000000;align=center;arcSize=10;strokeColor=#5D82A8;metaEdit=1;resizable=0;points=[[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];" parent="1" vertex="1">
-                        <mxGeometry x="890" y="1040" width="240" height="170" as="geometry"/>
+                        <mxGeometry x="1060" y="1040" width="240" height="170" as="geometry"/>
                     </mxCell>
                 </object>
                 <object placeholders="1" c4Name="SwiftSend Provider" c4Type="Component" c4Technology="HttpClient + Polly" c4Description="REST / JSON met X-API-KEY header. Email + SMS." label="&lt;font style=&quot;font-size: 12px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%: %c4Technology%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 10px&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="comp-swiftsend">
@@ -115,7 +115,7 @@
                     </mxCell>
                 </object>
                 <mxCell id="boundary-shared" value="Shared Infrastructure&lt;br&gt;[geladen in elk container-proces]" style="rounded=1;whiteSpace=wrap;html=1;arcSize=3;fillColor=none;strokeColor=#08427B;fontColor=#08427B;fontSize=13;fontStyle=1;dashed=1;verticalAlign=top;align=left;spacing=10;" parent="1" vertex="1">
-                    <mxGeometry x="1880" y="160" width="460" height="940" as="geometry"/>
+                    <mxGeometry x="1880" y="160" width="460" height="810" as="geometry"/>
                 </mxCell>
                 <object placeholders="1" c4Name="NotificationDbContext" c4Type="Component" c4Technology="EF Core / Npgsql" c4Description="DbSet configuratie en SaveChanges naar PostgreSQL." label="&lt;font style=&quot;font-size: 12px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%: %c4Technology%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 10px&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="comp-dbcontext">
                     <mxCell style="rounded=1;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#85BBF0;fontColor=#000000;align=center;arcSize=10;strokeColor=#5D82A8;metaEdit=1;resizable=0;points=[[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];" parent="1" vertex="1">
@@ -184,48 +184,69 @@
                 </object>
                 <object placeholders="1" c4Type="Relationship" c4Technology="HTTPS / HTTP POST (Webhook)" c4Description="Verstuurt appointment event" label="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;%c4Description%&lt;/b&gt;&lt;br&gt;[%c4Technology%]&lt;/div&gt;" id="rel-openmrs-endpoint">
                     <mxCell style="endArrow=blockThin;html=1;fontSize=10;fontColor=#404040;strokeWidth=1;endFill=1;strokeColor=#828282;metaEdit=1;endSize=14;startSize=14;rounded=0;edgeStyle=orthogonalEdgeStyle;" parent="1" source="ext-openmrs" target="comp-webhook-endpoint" edge="1">
-                        <mxGeometry relative="1" as="geometry"/>
+                        <mxGeometry x="0.201" y="-67" relative="1" as="geometry">
+                            <mxPoint x="-30" y="-7" as="offset"/>
+                        </mxGeometry>
                     </mxCell>
                 </object>
                 <object placeholders="1" c4Type="Relationship" c4Technology="C# call" c4Description="Valideert payload" label="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;%c4Description%&lt;/b&gt;&lt;br&gt;[%c4Technology%]&lt;/div&gt;" id="rel-endpoint-validator">
                     <mxCell style="endArrow=blockThin;html=1;fontSize=10;fontColor=#404040;strokeWidth=1;endFill=1;strokeColor=#828282;metaEdit=1;endSize=14;startSize=14;rounded=0;edgeStyle=orthogonalEdgeStyle;" parent="1" source="comp-webhook-endpoint" target="comp-webhook-validator" edge="1">
-                        <mxGeometry relative="1" as="geometry"/>
+                        <mxGeometry x="-0.1111" y="20" relative="1" as="geometry">
+                            <mxPoint as="offset"/>
+                        </mxGeometry>
                     </mxCell>
                 </object>
                 <object placeholders="1" c4Type="Relationship" c4Technology="C# call" c4Description="Auth via X-Api-Key" label="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;%c4Description%&lt;/b&gt;&lt;br&gt;[%c4Technology%]&lt;/div&gt;" id="rel-endpoint-tenant">
                     <mxCell style="endArrow=blockThin;html=1;fontSize=10;fontColor=#404040;strokeWidth=1;endFill=1;strokeColor=#828282;metaEdit=1;endSize=14;startSize=14;rounded=0;edgeStyle=orthogonalEdgeStyle;" parent="1" source="comp-webhook-endpoint" target="comp-tenant-service" edge="1">
-                        <mxGeometry relative="1" as="geometry"/>
+                        <mxGeometry relative="1" as="geometry">
+                            <Array as="points">
+                                <mxPoint x="485" y="210"/>
+                                <mxPoint x="955" y="210"/>
+                            </Array>
+                        </mxGeometry>
                     </mxCell>
                 </object>
                 <object placeholders="1" c4Type="Relationship" c4Technology="C# call" c4Description="Ingest command" label="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;%c4Description%&lt;/b&gt;&lt;br&gt;[%c4Technology%]&lt;/div&gt;" id="rel-endpoint-ingestion">
                     <mxCell style="endArrow=blockThin;html=1;fontSize=10;fontColor=#404040;strokeWidth=1;endFill=1;strokeColor=#828282;metaEdit=1;endSize=14;startSize=14;rounded=0;edgeStyle=orthogonalEdgeStyle;" parent="1" source="comp-webhook-endpoint" target="comp-ingestion-service" edge="1">
-                        <mxGeometry relative="1" as="geometry"/>
+                        <mxGeometry relative="1" as="geometry">
+                            <Array as="points">
+                                <mxPoint x="485" y="420"/>
+                                <mxPoint x="1210" y="420"/>
+                            </Array>
+                        </mxGeometry>
                     </mxCell>
                 </object>
                 <object placeholders="1" c4Type="Relationship" c4Technology="C# call" c4Description="Hash &amp; vergelijk" label="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;%c4Description%&lt;/b&gt;&lt;br&gt;[%c4Technology%]&lt;/div&gt;" id="rel-tenant-hashing">
-                    <mxCell style="endArrow=blockThin;html=1;fontSize=10;fontColor=#404040;strokeWidth=1;endFill=1;strokeColor=#828282;metaEdit=1;endSize=14;startSize=14;rounded=0;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="comp-tenant-service" target="comp-hashing" edge="1">
+                    <mxCell style="endArrow=blockThin;html=1;fontSize=10;fontColor=#404040;strokeWidth=1;endFill=1;strokeColor=#828282;metaEdit=1;endSize=14;startSize=14;rounded=0;edgeStyle=orthogonalEdgeStyle;exitX=0.954;exitY=0.99;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitPerimeter=0;" parent="1" edge="1">
                         <mxGeometry relative="1" as="geometry">
                             <Array as="points">
-                                <mxPoint x="1130" y="320"/>
-                                <mxPoint x="1130" y="740"/>
-                                <mxPoint x="2050" y="740"/>
+                                <mxPoint x="1220" y="410"/>
+                                <mxPoint x="1220" y="752"/>
                             </Array>
+                            <mxPoint x="1210.31" y="410" as="sourcePoint"/>
+                            <mxPoint x="2159.97" y="751.6" as="targetPoint"/>
                         </mxGeometry>
                     </mxCell>
                 </object>
                 <object placeholders="1" c4Type="Relationship" c4Technology="EF Core" c4Description="Persist Patient + Appointment + ScheduledNotifications (UoW)" label="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;%c4Description%&lt;/b&gt;&lt;br&gt;[%c4Technology%]&lt;/div&gt;" id="rel-ingestion-repos">
                     <mxCell style="endArrow=blockThin;html=1;fontSize=10;fontColor=#404040;strokeWidth=1;endFill=1;strokeColor=#828282;metaEdit=1;endSize=14;startSize=14;rounded=0;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="comp-ingestion-service" target="comp-repos-patient" edge="1">
-                        <mxGeometry relative="1" as="geometry"/>
+                        <mxGeometry x="-0.406" y="20" relative="1" as="geometry">
+                            <mxPoint as="offset"/>
+                        </mxGeometry>
                     </mxCell>
                 </object>
                 <object placeholders="1" c4Type="Relationship" c4Technology="C# call" c4Description="Invoke per tick" label="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;%c4Description%&lt;/b&gt;&lt;br&gt;[%c4Technology%]&lt;/div&gt;" id="rel-pollbg-pollaction">
                     <mxCell style="endArrow=blockThin;html=1;fontSize=10;fontColor=#404040;strokeWidth=1;endFill=1;strokeColor=#828282;metaEdit=1;endSize=14;startSize=14;rounded=0;edgeStyle=orthogonalEdgeStyle;" parent="1" source="comp-poll-bg" target="comp-poll-action" edge="1">
-                        <mxGeometry relative="1" as="geometry"/>
+                        <mxGeometry y="20" relative="1" as="geometry">
+                            <mxPoint as="offset"/>
+                        </mxGeometry>
                     </mxCell>
                 </object>
                 <object placeholders="1" c4Type="Relationship" c4Technology="C# call" c4Description="CreateAsync (verrijking)" label="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;%c4Description%&lt;/b&gt;&lt;br&gt;[%c4Technology%]&lt;/div&gt;" id="rel-pollaction-factory">
                     <mxCell style="endArrow=blockThin;html=1;fontSize=10;fontColor=#404040;strokeWidth=1;endFill=1;strokeColor=#828282;metaEdit=1;endSize=14;startSize=14;rounded=0;edgeStyle=orthogonalEdgeStyle;" parent="1" source="comp-poll-action" target="comp-message-factory" edge="1">
-                        <mxGeometry relative="1" as="geometry"/>
+                        <mxGeometry x="0.0909" y="20" relative="1" as="geometry">
+                            <mxPoint as="offset"/>
+                        </mxGeometry>
                     </mxCell>
                 </object>
                 <object placeholders="1" c4Type="Relationship" c4Technology="C# call" c4Description="PublishAsync" label="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;%c4Description%&lt;/b&gt;&lt;br&gt;[%c4Technology%]&lt;/div&gt;" id="rel-pollaction-rmq">
@@ -233,38 +254,49 @@
                         <mxGeometry relative="1" as="geometry">
                             <Array as="points">
                                 <mxPoint x="695" y="730"/>
-                                <mxPoint x="1170" y="730"/>
+                                <mxPoint x="1240" y="730"/>
+                                <mxPoint x="1240" y="630"/>
                             </Array>
                         </mxGeometry>
                     </mxCell>
                 </object>
                 <object placeholders="1" c4Type="Relationship" c4Technology="EF Core" c4Description="GetPending + DispatchLogs" label="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;%c4Description%&lt;/b&gt;&lt;br&gt;[%c4Technology%]&lt;/div&gt;" id="rel-pollaction-repos">
-                    <mxCell style="endArrow=blockThin;html=1;fontSize=10;fontColor=#404040;strokeWidth=1;endFill=1;strokeColor=#828282;metaEdit=1;endSize=14;startSize=14;rounded=0;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="comp-poll-action" target="comp-repos-scheduled" edge="1">
+                    <mxCell style="endArrow=blockThin;html=1;fontSize=10;fontColor=#404040;strokeWidth=1;endFill=1;strokeColor=#828282;metaEdit=1;endSize=14;startSize=14;rounded=0;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.038;entryY=0.017;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="comp-poll-action" target="comp-repos-scheduled" edge="1">
                         <mxGeometry relative="1" as="geometry">
                             <Array as="points">
-                                <mxPoint x="1820" y="630"/>
-                                <mxPoint x="1820" y="445"/>
+                                <mxPoint x="860" y="720"/>
+                                <mxPoint x="1820" y="720"/>
+                                <mxPoint x="1820" y="370"/>
+                                <mxPoint x="2130" y="370"/>
+                                <mxPoint x="2130" y="382"/>
                             </Array>
                         </mxGeometry>
                     </mxCell>
                 </object>
                 <object placeholders="1" c4Type="Relationship" c4Technology="EF Core" c4Description="Reads Patient + Tenant + Credentials" label="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;%c4Description%&lt;/b&gt;&lt;br&gt;[%c4Technology%]&lt;/div&gt;" id="rel-factory-repos">
-                    <mxCell style="endArrow=blockThin;html=1;fontSize=10;fontColor=#404040;strokeWidth=1;endFill=1;strokeColor=#828282;metaEdit=1;endSize=14;startSize=14;rounded=0;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="comp-message-factory" target="comp-repos-tenant" edge="1">
+                    <mxCell style="endArrow=blockThin;html=1;fontSize=10;fontColor=#404040;strokeWidth=1;endFill=1;strokeColor=#828282;metaEdit=1;endSize=14;startSize=14;rounded=0;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="comp-message-factory" edge="1">
                         <mxGeometry relative="1" as="geometry">
                             <Array as="points">
-                                <mxPoint x="1850" y="630"/>
-                                <mxPoint x="1850" y="595"/>
+                                <mxPoint x="1200" y="630"/>
+                                <mxPoint x="1200" y="530"/>
+                                <mxPoint x="1850" y="530"/>
+                                <mxPoint x="1850" y="520"/>
+                                <mxPoint x="2130" y="520"/>
                             </Array>
+                            <mxPoint x="2130" y="540" as="targetPoint"/>
                         </mxGeometry>
                     </mxCell>
                 </object>
                 <object placeholders="1" c4Type="Relationship" c4Technology="AMQP" c4Description="Publiceert send-command" label="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;%c4Description%&lt;/b&gt;&lt;br&gt;[%c4Technology%]&lt;/div&gt;" id="rel-rmqpub-broker">
-                    <mxCell style="endArrow=blockThin;html=1;fontSize=10;fontColor=#404040;strokeWidth=1;endFill=1;strokeColor=#828282;metaEdit=1;endSize=14;startSize=14;rounded=0;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="comp-rabbitmq-publisher" target="ext-rabbitmq" edge="1">
-                        <mxGeometry relative="1" as="geometry">
+                    <mxCell style="endArrow=blockThin;html=1;fontSize=10;fontColor=#404040;strokeWidth=1;endFill=1;strokeColor=#828282;metaEdit=1;endSize=14;startSize=14;rounded=0;edgeStyle=orthogonalEdgeStyle;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" target="ext-rabbitmq" edge="1">
+                        <mxGeometry x="-0.7736" relative="1" as="geometry">
                             <Array as="points">
-                                <mxPoint x="2380" y="630"/>
-                                <mxPoint x="2380" y="780"/>
+                                <mxPoint x="2380" y="670"/>
+                                <mxPoint x="2380" y="680"/>
+                                <mxPoint x="2520" y="680"/>
                             </Array>
+                            <mxPoint x="1490" y="670" as="sourcePoint"/>
+                            <mxPoint as="offset"/>
                         </mxGeometry>
                     </mxCell>
                 </object>
@@ -279,12 +311,15 @@
                     </mxCell>
                 </object>
                 <object placeholders="1" c4Type="Relationship" c4Technology="HTTP / Polly" c4Description="GET status" label="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;%c4Description%&lt;/b&gt;&lt;br&gt;[%c4Technology%]&lt;/div&gt;" id="rel-asyncpoll-client">
-                    <mxCell style="endArrow=blockThin;html=1;fontSize=10;fontColor=#404040;strokeWidth=1;endFill=1;strokeColor=#828282;metaEdit=1;endSize=14;startSize=14;rounded=0;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="comp-asyncflow-polling" target="comp-asyncflow-client" edge="1">
+                    <mxCell style="endArrow=blockThin;html=1;fontSize=10;fontColor=#404040;strokeWidth=1;endFill=1;strokeColor=#828282;metaEdit=1;endSize=14;startSize=14;rounded=0;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1">
                         <mxGeometry relative="1" as="geometry">
                             <Array as="points">
-                                <mxPoint x="1770" y="880"/>
-                                <mxPoint x="1770" y="880"/>
+                                <mxPoint x="610" y="910"/>
+                                <mxPoint x="1770" y="910"/>
+                                <mxPoint x="1770" y="940"/>
                             </Array>
+                            <mxPoint x="610" y="879.95" as="sourcePoint"/>
+                            <mxPoint x="1910" y="939.95" as="targetPoint"/>
                         </mxGeometry>
                     </mxCell>
                 </object>
@@ -292,33 +327,44 @@
                     <mxCell style="endArrow=blockThin;html=1;fontSize=10;fontColor=#404040;strokeWidth=1;endFill=1;strokeColor=#828282;metaEdit=1;endSize=14;startSize=14;rounded=0;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="comp-data-retention" target="comp-repos-patient" edge="1">
                         <mxGeometry relative="1" as="geometry">
                             <Array as="points">
-                                <mxPoint x="1760" y="820"/>
+                                <mxPoint x="870" y="850"/>
+                                <mxPoint x="1760" y="850"/>
                                 <mxPoint x="1760" y="445"/>
                             </Array>
                         </mxGeometry>
                     </mxCell>
                 </object>
                 <object placeholders="1" c4Type="Relationship" c4Technology="AMQP" c4Description="Consumeert send-command" label="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;%c4Description%&lt;/b&gt;&lt;br&gt;[%c4Technology%]&lt;/div&gt;" id="rel-broker-consumer">
-                    <mxCell style="endArrow=blockThin;html=1;fontSize=10;fontColor=#404040;strokeWidth=1;endFill=1;strokeColor=#828282;metaEdit=1;endSize=14;startSize=14;rounded=0;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="ext-rabbitmq" target="comp-rabbitmq-consumer" edge="1">
+                    <mxCell style="endArrow=blockThin;html=1;fontSize=10;fontColor=#404040;strokeWidth=1;endFill=1;strokeColor=#828282;metaEdit=1;endSize=14;startSize=14;rounded=0;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="ext-rabbitmq" edge="1">
                         <mxGeometry relative="1" as="geometry">
                             <Array as="points">
-                                <mxPoint x="2380" y="780"/>
-                                <mxPoint x="2380" y="1125"/>
-                                <mxPoint x="640" y="1125"/>
+                                <mxPoint x="2520" y="680"/>
+                                <mxPoint x="2380" y="680"/>
+                                <mxPoint x="2380" y="1030"/>
+                                <mxPoint x="640" y="1030"/>
+                                <mxPoint x="640" y="1190"/>
                             </Array>
+                            <mxPoint x="610" y="1190" as="targetPoint"/>
                         </mxGeometry>
                     </mxCell>
                 </object>
                 <object placeholders="1" c4Type="Relationship" c4Technology="C# call" c4Description="DispatchAsync" label="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;%c4Description%&lt;/b&gt;&lt;br&gt;[%c4Technology%]&lt;/div&gt;" id="rel-consumer-dispatch">
                     <mxCell style="endArrow=blockThin;html=1;fontSize=10;fontColor=#404040;strokeWidth=1;endFill=1;strokeColor=#828282;metaEdit=1;endSize=14;startSize=14;rounded=0;edgeStyle=orthogonalEdgeStyle;" parent="1" source="comp-rabbitmq-consumer" target="comp-dispatch-service" edge="1">
-                        <mxGeometry relative="1" as="geometry"/>
+                        <mxGeometry y="-20" relative="1" as="geometry">
+                            <Array as="points">
+                                <mxPoint x="670" y="1100"/>
+                                <mxPoint x="670" y="1100"/>
+                            </Array>
+                            <mxPoint as="offset"/>
+                        </mxGeometry>
                     </mxCell>
                 </object>
                 <object placeholders="1" c4Type="Relationship" c4Technology="EF Core" c4Description="Idempotency check + dispatch logs" label="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;%c4Description%&lt;/b&gt;&lt;br&gt;[%c4Technology%]&lt;/div&gt;" id="rel-consumer-logs">
-                    <mxCell style="endArrow=blockThin;html=1;fontSize=10;fontColor=#404040;strokeWidth=1;endFill=1;strokeColor=#828282;metaEdit=1;endSize=14;startSize=14;rounded=0;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="comp-rabbitmq-consumer" target="comp-repos-logs" edge="1">
+                    <mxCell style="endArrow=blockThin;html=1;fontSize=10;fontColor=#404040;strokeWidth=1;endFill=1;strokeColor=#828282;metaEdit=1;endSize=14;startSize=14;rounded=0;edgeStyle=orthogonalEdgeStyle;exitX=0.997;exitY=0.064;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitPerimeter=0;" parent="1" source="comp-rabbitmq-consumer" target="comp-repos-logs" edge="1">
                         <mxGeometry relative="1" as="geometry">
                             <Array as="points">
-                                <mxPoint x="1740" y="1125"/>
+                                <mxPoint x="609" y="1010"/>
+                                <mxPoint x="1740" y="1010"/>
                                 <mxPoint x="1740" y="595"/>
                             </Array>
                         </mxGeometry>
@@ -328,7 +374,8 @@
                     <mxCell style="endArrow=blockThin;html=1;fontSize=10;fontColor=#404040;strokeWidth=1;endFill=1;strokeColor=#828282;metaEdit=1;endSize=14;startSize=14;rounded=0;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="comp-dispatch-service" target="comp-encryption" edge="1">
                         <mxGeometry relative="1" as="geometry">
                             <Array as="points">
-                                <mxPoint x="1720" y="1125"/>
+                                <mxPoint x="870" y="980"/>
+                                <mxPoint x="1720" y="980"/>
                                 <mxPoint x="1720" y="740"/>
                             </Array>
                         </mxGeometry>
@@ -365,18 +412,24 @@
                     </mxCell>
                 </object>
                 <object placeholders="1" c4Type="Relationship" c4Technology="" c4Description="Levert bericht af" label="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;%c4Description%&lt;/b&gt;&lt;/div&gt;" id="rel-providers-patient">
-                    <mxCell style="endArrow=blockThin;html=1;fontSize=10;fontColor=#404040;strokeWidth=1;endFill=1;strokeColor=#828282;metaEdit=1;endSize=14;startSize=14;rounded=0;edgeStyle=orthogonalEdgeStyle;" parent="1" source="ext-providers" target="ext-patient" edge="1">
+                    <mxCell style="endArrow=blockThin;html=1;fontSize=10;fontColor=#404040;strokeWidth=1;endFill=1;strokeColor=#828282;metaEdit=1;endSize=14;startSize=14;rounded=0;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="ext-rabbitmq" target="ext-patient" edge="1">
                         <mxGeometry relative="1" as="geometry">
                             <Array as="points">
-                                <mxPoint x="2520" y="1460"/>
-                                <mxPoint x="170" y="1460"/>
+                                <mxPoint x="2520" y="1530"/>
                             </Array>
                         </mxGeometry>
                     </mxCell>
                 </object>
                 <object placeholders="1" c4Type="Relationship" c4Technology="SQL" c4Description="Reads / Writes" label="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;%c4Description%&lt;/b&gt;&lt;br&gt;[%c4Technology%]&lt;/div&gt;" id="rel-dbcontext-postgres">
-                    <mxCell style="endArrow=blockThin;html=1;fontSize=10;fontColor=#404040;strokeWidth=1;endFill=1;strokeColor=#828282;metaEdit=1;endSize=14;startSize=14;rounded=0;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="comp-dbcontext" target="ext-postgres" edge="1">
-                        <mxGeometry relative="1" as="geometry"/>
+                    <mxCell style="endArrow=blockThin;html=1;fontSize=10;fontColor=#404040;strokeWidth=1;endFill=1;strokeColor=#828282;metaEdit=1;endSize=14;startSize=14;rounded=0;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitPerimeter=0;" parent="1" source="comp-dbcontext" target="ext-postgres" edge="1">
+                        <mxGeometry x="0.3437" y="20" relative="1" as="geometry">
+                            <Array as="points">
+                                <mxPoint x="2010" y="210"/>
+                                <mxPoint x="2370" y="210"/>
+                                <mxPoint x="2370" y="460"/>
+                            </Array>
+                            <mxPoint as="offset"/>
+                        </mxGeometry>
                     </mxCell>
                 </object>
                 <object placeholders="1" c4Type="Relationship" c4Technology="EF Core" c4Description="" label="" id="rel-repos-dbcontext-1">
