@@ -440,3 +440,219 @@ Audit covered all source files across:
 24. ~~**CORR-5** — Encryption key length not validated at startup.~~ ✅ Fixed — validated at registration; fails fast on boot
 25. ~~**CONS-3** — Dead interface with typo; namespace mismatch.~~ ✅ Fixed — file renamed, namespace corrected
 26. ~~**PERF-3** — Thundering-herd double-check in `SecurePostProvider`.~~ ✅ Fixed — `GetOrCreateAsync` replaces `TryGetValue` + `Set`
+
+---
+
+## OPDRACHT COMPLIANCE
+
+Compliance check against the full assignment description (functionele en niet-functionele eisen).
+
+---
+
+### Functionele Eisen
+
+---
+
+#### F1 — Patiënt ontvangt bericht met afspraakdetails (24u + 1u van tevoren)
+
+**Status: PARTIAL**
+
+- ✅ 24u en 1u notificaties worden aangemaakt in `CreateScheduledNotifications` ([AppointmentIngestionService.cs](src/NotificationService.Application/Services/AppointmentIngestionService.cs))
+- ✅ Berichtinhoud bevat datum/tijd, locatie en instructies (opgebouwd in `NotificationDispatchService`)
+- ✅ Afspraken die al begonnen zijn krijgen geen onnodige toekomstige notificaties — `SendAt` wordt geclampt naar `now` bij pastdatums
+- ✅ Annuleringen stoppen verdere verzending — `IsCancelled = true` filtert de afspraak uit `GetPendingAsync`
+- ✅ Wijzigingen passen notificatietijden aan — `HandleUpdateAsync` schrijft `CANCELLED` logs voor oude notificaties en maakt nieuwe aan
+- ⚠️ **Bekend probleem:** een notificatie die al `INQUEUE` staat op het moment van annulering kan nog worden uitgevoerd door de Worker (race condition). Gedocumenteerd als known limitation.
+
+---
+
+#### F2 — Vastleggen of notificatie succesvol is verzonden (per organisatie, per provider)
+
+**Status: COMPLIANT**
+
+- ✅ `NotificationLog` slaat op: `SentAt`, `Provider`, `ExternalMessageId`, `Succeeded`, `TenantId` ([NotificationLog.cs](src/NotificationService.Domain/Entities/NotificationLog.cs))
+- ✅ `DispatchLog` logt elke poging met `Outcome` (SUCCESS, ERROR_TRANSIENT, ERROR_PERMANENT, EXPIRED, CANCELLED, PENDING_ASYNC)
+- ✅ AsyncFlow: `NotificationLog` wordt pas geschreven na bevestiging via `AsyncFlowPollingService`
+- ✅ Factuurcontrole mogelijk: per tenant en provider zijn alle verzonden berichten traceerbaar
+
+---
+
+#### F3 — Organisatie gebruikt één van de ondersteunde messaging providers
+
+**Status: PARTIAL**
+
+- ✅ Alle 4 providers ondersteund: SwiftSend, LegacyLink, AsyncFlow, SecurePost
+- ✅ Provider wordt per tenant geconfigureerd via `Tenant.Provider`
+- ⚠️ `Tenant.Provider` en `Tenant.Credentials` kunnen in theorie niet overeenkomen — geen validatie bij verzending (TODO #56 in codebase)
+
+---
+
+### Niet-Functionele Eisen
+
+---
+
+#### NFE-1 — Zelfstandig functioneren, integreerbaar met meerdere OpenMRS-instanties
+
+**Status: COMPLIANT**
+
+- ✅ Volledige multi-tenant architectuur: alle data gescoopt op `TenantId`
+- ✅ Webhook authenticatie via `X-Tenant-Id` + `X-Api-Key` headers
+- ✅ Elke organisatie heeft eigen versleutelde `ProviderCredentials` in de database
+
+---
+
+#### NFE-2 — Integratie gedocumenteerd en beveiligd
+
+**Status: PARTIAL**
+
+- ✅ Webhook API gedocumenteerd in README en ADRs
+- ✅ API key hashing via PBKDF2-HMAC-SHA256 met random salt (SEC-5 fixed)
+- ✅ HTTPS redirect ingeschakeld
+- ⚠️ Geen HMAC webhook signature validatie — alleen statische API key
+- ⚠️ TLS tussen interne services niet expliciet afgedwongen in Docker Compose
+
+---
+
+#### NFE-3 — Alle 4 messaging providers ondersteund
+
+**Status: COMPLIANT**
+
+- ✅ SwiftSend ([SwiftSendProvider.cs](src/NotificationService.Infrastructure/Providers/SwiftSend/SwiftSendProvider.cs))
+- ✅ LegacyLink ([LegacyLinkProvider.cs](src/NotificationService.Infrastructure/Providers/LegacyLink/LegacyLinkProvider.cs)) — SOAP/XML, XML injection gefixed (SEC-7)
+- ✅ AsyncFlow ([AsyncFlowProvider.cs](src/NotificationService.Infrastructure/Providers/AsyncFlow/AsyncFlowProvider.cs)) — async met statuspolling
+- ✅ SecurePost ([SecurePostProvider.cs](src/NotificationService.Infrastructure/Providers/SecurePost/SecurePostProvider.cs)) — JWT auth met caching
+
+---
+
+#### NFE-4 — Koppelbaar aan OpenMRS platform vanaf versie 2.7.x
+
+**Status: MISSING**
+
+- ⚠️ Webhook payload is **geen FHIR-formaat** — eigen JSON contract in [WebhookContracts.cs](src/NotificationService.Api/Contracts/WebhookContracts.cs)
+- ⚠️ OpenMRS plugin gebruikt reflectie op `AppointmentService` — kwetsbaar bij versiewisselingen
+- ℹ️ **ADR aanbevolen:** documenteer de keuze voor custom JSON boven FHIR, inclusief trade-offs (zie sectie FHIR hieronder)
+
+---
+
+#### NFE-5 — Gevoelige informatie veilig opgeslagen (AES-256, geen credentials in code/logs)
+
+**Status: MOSTLY COMPLIANT**
+
+- ✅ AES-256-GCM encryptie via `AesGcmEncryptionService` — sleutellengte gevalideerd bij startup (CORR-5 fixed)
+- ✅ Geen credentials in code — alleen via environment variables
+- ✅ Geen PII in logs — `DispatchLog` en `NotificationLog` bevatten geen naam, e-mail of telefoon
+- ✅ API key hashing met PBKDF2 (SEC-5 fixed)
+- ⚠️ Interne services communiceren via HTTP op het Docker-netwerk — geen TLS tussen containers
+
+---
+
+#### NFE-6 — HL7/FHIR standaarden (validatie, ACK, logging, retry)
+
+**Status: PARTIAL**
+
+- ✅ Berichtvalidatie via FluentValidation op webhook payload
+- ✅ Logging en tracking: elke poging gelogd in `DispatchLog`, succesvolle verzendingen in `NotificationLog`
+- ✅ Retry-mechanismen: Polly exponential backoff + circuit breakers op alle providers; RabbitMQ requeue bij transient errors
+- ❌ Webhook payload is **geen FHIR Appointment resource** — custom JSON formaat
+- ⚠️ Geen HL7 ACK teruggestuurd naar OpenMRS na aanmaken notificatie
+
+**Toelichting FHIR keuze:** Een FHIR-compliant Appointment resource vereist een sterk afwijkend berichtformaat (`resourceType`, `participant[]`, `actor.reference`, etc.) en is aanzienlijk complexer te verwerken. Voor dit project is gekozen voor een pragmatisch custom formaat dat alle benodigde velden dekt. Een ADR legt deze keuze vast.
+
+---
+
+#### NFE-7 — Zelfstandig en veerkrachtig (fallback bij uitval providers of OpenMRS)
+
+**Status: COMPLIANT**
+
+- ✅ RabbitMQ buffert notificaties bij Worker-uitval
+- ✅ Polly circuit breakers stoppen requests naar falende providers
+- ✅ `AutomaticRecoveryEnabled` op RabbitMQ verbinding (STAB-2/3 fixed)
+- ✅ Publisher confirms voorkomen silent message loss (STAB-7 fixed)
+- ✅ Idempotency check in Worker voorkomt dubbele verzending
+- ✅ Berichten ouder dan 2 uur worden als `EXPIRED` gemarkeerd en weggegooid
+
+---
+
+#### NFE-8 — Ondersteuning voor diverse karaktersets
+
+**Status: COMPLIANT**
+
+- ✅ PostgreSQL gebruikt standaard UTF-8
+- ✅ OpenMRS MariaDB geconfigureerd met `utf8mb4` + `utf8mb4_general_ci`
+- ✅ .NET strings zijn intern UTF-16; JSON serialisatie gebruikt UTF-8
+
+---
+
+#### NFE-9 — Volledig inzichtelijk via monitoring (OpenTelemetry, real-time dashboard)
+
+**Status: COMPLIANT**
+
+- ✅ OpenTelemetry traces, metrics en logs geconfigureerd voor alle 3 services ([InfrastructureExtentions.cs](src/NotificationService.Infrastructure/Extensions/InfrastructureExtentions.cs))
+- ✅ Grafana dashboard met Tempo (traces), Prometheus (metrics) en Loki (logs) in Docker Compose
+- ✅ `DispatchLog` toont elke toestandsovergang (NEW → INSCHEDULER → INQUEUE → SUCCESS/ERROR)
+
+---
+
+#### NFE-10 — Patiënt- en gerelateerde gegevens verwijderd binnen 14 dagen na afhandeling
+
+**Status: COMPLIANT**
+
+- ✅ `DataRetentionService` draait elke 24 uur ([DataRetentionService.cs](src/NotificationService.Scheduler/Cleanup/DataRetentionService.cs))
+- ✅ Patiënt wordt **verwijderd** (niet geanonimiseerd) na 14 dagen inactiviteit
+- ✅ Cascade delete verwijdert ook gekoppelde Appointments, ScheduledNotifications en DispatchLogs
+- ✅ `LastCommunicationAt` wordt bijgewerkt op het moment van bevestigde verzending (niet bij aanmaken afspraak)
+- ✅ Patiënten met toekomstige actieve afspraken worden niet verwijderd
+
+---
+
+#### NFE-11 — Maximaal 1 jaar meta-informatie van verstuurde berichten bewaren
+
+**Status: COMPLIANT**
+
+- ✅ `NotificationLog` bevat geen PII — alleen `SentAt`, `Provider`, `ExternalMessageId`, `Succeeded`, `TenantId`
+- ✅ `DataRetentionService` verwijdert `NotificationLog` entries ouder dan 365 dagen
+- ✅ Voldoende informatie voor factuurcontrole per provider en organisatie
+
+---
+
+#### NFE-12 — Uitbreidbaar voor andere functionele OpenMRS modules
+
+**Status: PARTIAL**
+
+- ✅ Webhook endpoint is HTTP-gebaseerd — elke module kan `POST /webhooks/appointments` aanroepen
+- ✅ Nieuwe messaging providers toevoegen vereist alleen een nieuwe `IMessageProvider` implementatie en DI-registratie
+- ⚠️ Webhook contract is gekoppeld aan het afspraakdomein — andere modules vereisen aanpassing van het contract of een nieuw endpoint
+
+---
+
+#### NFE-13 — Tijdzone-ondersteuning
+
+**Status: PARTIAL**
+
+- ✅ Alle timestamps zijn `DateTimeOffset` — tijdzone-informatie is aanwezig
+- ✅ `Tenant.TimeZone` veld aanwezig in de database (bijv. `"Europe/Amsterdam"`)
+- ⚠️ `Tenant.TimeZone` wordt **niet gebruikt** bij berekening van `SendAt` — alles wordt in UTC berekend
+- ⚠️ OpenMRS plugin heeft `ZoneId.of("Europe/Amsterdam")` hardcoded in `EventEnricher.java`
+
+---
+
+### Compliance Samenvatting
+
+| Eis | Status | Toelichting |
+|---|---|---|
+| F1 — Notificaties 24u/1u | PARTIAL | Race condition bij annulering na INQUEUE |
+| F2 — Logging per tenant/provider | ✅ COMPLIANT | NotificationLog + DispatchLog volledig |
+| F3 — Één provider per organisatie | PARTIAL | Provider/credentials kunnen afwijken |
+| NFE-1 — Multi-tenant | ✅ COMPLIANT | Volledige tenant-isolatie |
+| NFE-2 — Integratie gedocumenteerd | PARTIAL | Geen HMAC, geen interne TLS |
+| NFE-3 — Alle 4 providers | ✅ COMPLIANT | Alle geïmplementeerd |
+| NFE-4 — OpenMRS 2.7.x / FHIR | MISSING | Custom JSON, geen FHIR |
+| NFE-5 — Beveiliging | MOSTLY COMPLIANT | AES-256 aanwezig; interne TLS ontbreekt |
+| NFE-6 — HL7/FHIR | PARTIAL | Retry/logging aanwezig; geen FHIR formaat |
+| NFE-7 — Veerkracht | ✅ COMPLIANT | Polly, circuit breakers, publisher confirms |
+| NFE-8 — Karaktersets | ✅ COMPLIANT | UTF-8/utf8mb4 geconfigureerd |
+| NFE-9 — Observability | ✅ COMPLIANT | OpenTelemetry + Grafana volledig |
+| NFE-10 — 14-daagse verwijdering | ✅ COMPLIANT | Hard delete met cascade |
+| NFE-11 — 1 jaar meta-informatie | ✅ COMPLIANT | NotificationLog zonder PII, 365 dagen |
+| NFE-12 — Uitbreidbaarheid | PARTIAL | Providers uitbreidbaar; webhook contract vast |
+| NFE-13 — Tijdzones | PARTIAL | DateTimeOffset aanwezig; Tenant.TimeZone niet gebruikt |
