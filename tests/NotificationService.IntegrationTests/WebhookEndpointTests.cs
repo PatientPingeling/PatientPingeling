@@ -21,14 +21,18 @@ public sealed class WebhookEndpointTests
     [ClassInitialize]
     public static async Task ClassInit(TestContext _)
     {
+#pragma warning disable CS0618
         _postgres = new PostgreSqlBuilder()
+#pragma warning restore CS0618
             .WithImage("postgres:18-alpine")
             .WithDatabase("notificationdb_test")
             .WithUsername("postgres")
             .WithPassword("postgres")
             .Build();
 
+#pragma warning disable CS0618
         _rabbitmq = new RabbitMqBuilder()
+#pragma warning restore CS0618
             .WithImage("rabbitmq:4-management-alpine")
             .Build();
 
@@ -57,7 +61,7 @@ public sealed class WebhookEndpointTests
     [TestCategory("Integration")]
     public async Task Placeholder_ContainersStartSuccessfully()
     {
-        Assert.IsNotNull(_postgres.ConnectionString);
+        Assert.IsNotNull(_postgres.GetConnectionString());
         Assert.IsNotNull(_rabbitmq.GetConnectionString());
         await Task.CompletedTask;
     }
