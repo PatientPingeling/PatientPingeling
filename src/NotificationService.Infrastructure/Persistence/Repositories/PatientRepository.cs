@@ -30,23 +30,25 @@ namespace NotificationService.Infrastructure.Persistence.Repositories
             return Task.CompletedTask;
         }
 
-        public async Task<int> AnonymizeStaleAsync(DateTimeOffset cutoff, CancellationToken ct = default)
+        public async Task UpdateLastCommunicationAsync(Guid scheduledNotificationId, CancellationToken ct = default)
+        {
+            await _dbContext.Patients
+                .Where(p => p.Appointments.Any(a =>
+                    a.ScheduledNotifications.Any(n => n.Id == scheduledNotificationId)))
+                .ExecuteUpdateAsync(s =>
+                    s.SetProperty(p => p.LastCommunicationAt, DateTimeOffset.UtcNow), ct);
+        }
+
+        public async Task<int> DeleteStaleAsync(DateTimeOffset cutoff, CancellationToken ct = default)
         {
             var now = DateTimeOffset.UtcNow;
 
             return await _dbContext.Patients
                 .Where(p => p.LastCommunicationAt < cutoff
-                            && (p.GivenName != string.Empty
-                                || p.Email != string.Empty
-                                || p.PhoneNumber != string.Empty)
                             && !p.Appointments.Any(a =>
                                 !a.IsCancelled &&
                                 a.ScheduledNotifications.Any(n => n.SendAt > now)))
-                .ExecuteUpdateAsync(s => s
-                    .SetProperty(p => p.GivenName, string.Empty)
-                    .SetProperty(p => p.Email, string.Empty)
-                    .SetProperty(p => p.PhoneNumber, string.Empty),
-                    ct);
+                .ExecuteDeleteAsync(ct);
         }
     }
 }
