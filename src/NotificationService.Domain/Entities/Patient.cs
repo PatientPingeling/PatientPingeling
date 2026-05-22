@@ -14,7 +14,6 @@ namespace NotificationService.Domain.Entities
         public ICollection<Appointment> Appointments { get; set; } = [];
 
 
-        // TODO: Fix this!
-        public DateTimeOffset LastCommunicationAt { get; set; }
+        public DateTimeOffset LastCommunicationAt { get; set; } = DateTimeOffset.UtcNow;
     }
 }

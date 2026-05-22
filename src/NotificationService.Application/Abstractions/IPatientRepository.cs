@@ -8,6 +8,7 @@ namespace NotificationService.Application.Abstractions
         Task<Patient?> GetByExternalIdAsync(string externalId, Guid tenantId, CancellationToken ct = default);
         Task AddAsync(Patient patient, CancellationToken ct = default);
         Task UpdateAsync(Patient patient, CancellationToken ct = default);
-        Task<int> AnonymizeStaleAsync(DateTimeOffset cutoff, CancellationToken ct = default);
+        Task<int> DeleteStaleAsync(DateTimeOffset cutoff, CancellationToken ct = default);
+        Task UpdateLastCommunicationAsync(Guid scheduledNotificationId, CancellationToken ct = default);
     }
 }

@@ -12,6 +12,7 @@ using NotificationService.Infrastructure.Providers.LegacyLink;
 using NotificationService.Infrastructure.Providers.SecurePost;
 using NotificationService.Infrastructure.Providers.SwiftSend;
 using NotificationService.Infrastructure.Security;
+using System.Net;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
@@ -40,7 +41,8 @@ namespace NotificationService.Infrastructure.Extensions
             })
             .AddStandardResilienceHandler(options =>
             {
-                options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(10);
+                options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(20);
+                options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(8);
 
                 options.Retry.MaxRetryAttempts = 3;
                 options.Retry.BackoffType = DelayBackoffType.Exponential;
@@ -61,7 +63,8 @@ namespace NotificationService.Infrastructure.Extensions
             })
             .AddStandardResilienceHandler(options =>
             {
-                options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(10);
+                options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(20);
+                options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(8);
 
                 options.Retry.MaxRetryAttempts = 2;
                 options.Retry.BackoffType = DelayBackoffType.Exponential;
@@ -83,7 +86,9 @@ namespace NotificationService.Infrastructure.Extensions
             })
             .AddStandardResilienceHandler(options =>
             {
-                options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(15);
+                // Submission is async (returns 202 immediately) → shorter timeout budget
+                options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(10);
+                options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(5);
 
                 options.Retry.MaxRetryAttempts = 3;
                 options.Retry.BackoffType = DelayBackoffType.Exponential;
@@ -105,7 +110,9 @@ namespace NotificationService.Infrastructure.Extensions
             })
             .AddStandardResilienceHandler(options =>
             {
-                options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(20);
+                // SOAP with max 3s delay → tighter budget than REST providers
+                options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(12);
+                options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(6);
 
                 options.Retry.MaxRetryAttempts = 5;
                 options.Retry.BackoffType = DelayBackoffType.Exponential;
@@ -116,6 +123,21 @@ namespace NotificationService.Infrastructure.Extensions
                 options.CircuitBreaker.MinimumThroughput = 5;
                 options.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(45);
                 options.CircuitBreaker.BreakDuration = TimeSpan.FromSeconds(30);
+            });
+
+            return services;
+        }
+
+        public static IServiceCollection AddAsyncFlowStatusPolling(this IServiceCollection services, IConfiguration configuration)
+        {
+            var baseUrl = configuration["Providers:BaseUrl"] ?? throw new InvalidOperationException("Missing required configuration: Providers:BaseUrl.");
+            var studentGroup = configuration["Providers:StudentGroup"] ?? throw new InvalidOperationException("Missing required configuration: Providers:StudentGroup.");
+
+            services.AddScoped<IAsyncFlowStatusClient, AsyncFlowStatusClient>();
+            services.AddHttpClient("AsyncFlowStatus", client =>
+            {
+                client.BaseAddress = new Uri(baseUrl.TrimEnd('/') + "/");
+                client.DefaultRequestHeaders.Add("X-STUDENT-GROUP", studentGroup);
             });
 
             return services;
@@ -140,14 +162,17 @@ namespace NotificationService.Infrastructure.Extensions
             services.AddScoped<ITenantRepository, TenantRepository>();
             services.AddScoped<INotificationLogRepository, NotificationLogRepository>();
             services.AddScoped<IProviderCredentialRepository, ProviderCredentialRepository>();
-            services.AddScoped<IHashingService, Sha256HashingService>();
+            services.AddScoped<IHashingService, Pbkdf2HashingService>();
             services.AddScoped<IDispatchLogRepository, DispatchLogRepository>();
             services.AddMemoryCache();
             services.AddSingleton<IEncryptionService>(sp =>
             {
                 var key = configuration["Security:EncryptionKey"]
                     ?? throw new InvalidOperationException("Missing required configuration: Security:EncryptionKey.");
-                return new AesGcmEncryptionService(Convert.FromBase64String(key));
+                var keyBytes = Convert.FromBase64String(key);
+                if (keyBytes.Length is not (16 or 24 or 32))
+                    throw new InvalidOperationException($"Security:EncryptionKey must decode to 16, 24, or 32 bytes for AES-GCM; got {keyBytes.Length}.");
+                return new AesGcmEncryptionService(keyBytes);
             });
 
             return services;
@@ -171,7 +196,9 @@ namespace NotificationService.Infrastructure.Extensions
                     HostName = options.Host,
                     UserName = options.Username,
                     Password = options.Password,
-                    Port = options.Port
+                    Port = options.Port,
+                    AutomaticRecoveryEnabled = true,
+                    NetworkRecoveryInterval = TimeSpan.FromSeconds(5)
                 };
             });
 

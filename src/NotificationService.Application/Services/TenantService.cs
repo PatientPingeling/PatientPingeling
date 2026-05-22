@@ -5,42 +5,42 @@ using NotificationService.Domain.Entities;
 
 namespace NotificationService.Application.Services
 {
-  public class TenantService(ITenantRepository tenantRepository, IHashingService hashingService, ILogger<TenantService> logger) : ITenantService
-  {
-    private readonly ITenantRepository _tenantRepository = tenantRepository;
-    private readonly IHashingService _hashingService = hashingService;
-    private readonly ILogger<TenantService> _logger = logger;
-
-    public async Task<Result> ValidateApiKeyAsync(Guid tenantId, string apiKey, CancellationToken ct = default)
+    public class TenantService(ITenantRepository tenantRepository, IHashingService hashingService, ILogger<TenantService> logger) : ITenantService
     {
-      if (tenantId == Guid.Empty || string.IsNullOrWhiteSpace(apiKey))
-      {
-        return Result.Failure(new Error("tenant.invalid_request", "Tenant ID or API key is missing.", ErrorType.Validation));
-      }
+        private readonly ITenantRepository _tenantRepository = tenantRepository;
+        private readonly IHashingService _hashingService = hashingService;
+        private readonly ILogger<TenantService> _logger = logger;
 
-      Tenant? tenant;
-      try
-      {
-        tenant = await _tenantRepository.GetByIdAsync(tenantId, ct);
-      }
-      catch (Exception ex)
-      {
-        _logger.LogError(ex, "Failed to retrieve tenant {TenantId}", tenantId);
-        return Result.Failure(new Error("tenant.db_error", "Failed to retrieve tenant.", ErrorType.Failure));
-      }
+        public async Task<Result> ValidateApiKeyAsync(Guid tenantId, string apiKey, CancellationToken ct = default)
+        {
+            if (tenantId == Guid.Empty || string.IsNullOrWhiteSpace(apiKey))
+            {
+                return Result.Failure(new Error("tenant.invalid_request", "Tenant ID or API key is missing.", ErrorType.Validation));
+            }
 
-      if (tenant is null)
-      {
-        return Result.Failure(new Error("tenant.not_found", "Tenant not found.", ErrorType.NotFound));
-      }
+            Tenant? tenant;
+            try
+            {
+                tenant = await _tenantRepository.GetByIdAsync(tenantId, ct);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to retrieve tenant {TenantId}", tenantId);
+                return Result.Failure(new Error("tenant.db_error", "Failed to retrieve tenant.", ErrorType.Failure));
+            }
 
-      var isMatch = _hashingService.Validate(hashedValue: tenant.ApiKeyHash, plainText: apiKey);
-      if (isMatch is false)
-      {
-        return Result.Failure(new Error("tenant.invalid_api_key", "API key does not match.", ErrorType.Unauthorized));
-      }
+            if (tenant is null)
+            {
+                return Result.Failure(new Error("tenant.not_found", "Tenant not found.", ErrorType.NotFound));
+            }
 
-      return Result.Success();
+            var isMatch = _hashingService.Validate(hashedValue: tenant.ApiKeyHash, plainText: apiKey);
+            if (isMatch is false)
+            {
+                return Result.Failure(new Error("tenant.invalid_api_key", "API key does not match.", ErrorType.Unauthorized));
+            }
+
+            return Result.Success();
+        }
     }
-  }
 }

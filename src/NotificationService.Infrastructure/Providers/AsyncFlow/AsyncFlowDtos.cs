@@ -12,4 +12,10 @@ namespace NotificationService.Infrastructure.Providers.AsyncFlow
         string TrackingId,
         string Message,
         DateTime SubmittedAt);
+
+    internal sealed record AsyncFlowStatusResponse(
+        string TrackingId,
+        string Status,
+        DateTime? ProcessedAt,
+        string? ErrorDetails);
 }

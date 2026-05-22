@@ -10,6 +10,9 @@ namespace NotificationService.Infrastructure.Persistence
 
         public async Task BeginTransactionAsync(CancellationToken ct = default)
         {
+            if (_transaction is not null)
+                throw new InvalidOperationException("A transaction is already active. Commit or roll back the existing transaction before starting a new one.");
+
             _transaction = await _dbContext.Database.BeginTransactionAsync(ct);
         }
 

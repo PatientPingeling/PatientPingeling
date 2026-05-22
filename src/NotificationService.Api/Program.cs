@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using FluentValidation;
 using NotificationService.Api.Endpoints;
 using NotificationService.Application.Abstractions;
@@ -45,6 +46,13 @@ builder.Services
 
 var app = builder.Build();
 
+// Apply pending migrations on API startup in development to ensure DB schema exists.
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<NotificationService.Infrastructure.Persistence.NotificationDbContext>();
+    db.Database.Migrate();
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -53,8 +61,9 @@ if (app.Environment.IsDevelopment())
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<NotificationDbContext>();
     var encryption = scope.ServiceProvider.GetRequiredService<IEncryptionService>();
+    var hashing = scope.ServiceProvider.GetRequiredService<IHashingService>();
     var seederLogger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("DevDataSeeder");
-    await DevDataSeeder.SeedAsync(db, encryption, seederLogger);
+    await DevDataSeeder.SeedAsync(db, encryption, hashing, seederLogger);
 
 }
 
