@@ -128,6 +128,21 @@ namespace NotificationService.Infrastructure.Extensions
             return services;
         }
 
+        public static IServiceCollection AddAsyncFlowStatusPolling(this IServiceCollection services, IConfiguration configuration)
+        {
+            var baseUrl = configuration["Providers:BaseUrl"] ?? throw new InvalidOperationException("Missing required configuration: Providers:BaseUrl.");
+            var studentGroup = configuration["Providers:StudentGroup"] ?? throw new InvalidOperationException("Missing required configuration: Providers:StudentGroup.");
+
+            services.AddScoped<IAsyncFlowStatusClient, AsyncFlowStatusClient>();
+            services.AddHttpClient("AsyncFlowStatus", client =>
+            {
+                client.BaseAddress = new Uri(baseUrl.TrimEnd('/') + "/");
+                client.DefaultRequestHeaders.Add("X-STUDENT-GROUP", studentGroup);
+            });
+
+            return services;
+        }
+
         public static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration)
         {
             var connectionString = configuration.GetConnectionString("Postgres")
