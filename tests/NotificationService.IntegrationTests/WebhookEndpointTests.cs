@@ -9,14 +9,14 @@ namespace NotificationService.IntegrationTests;
 /// and hit the actual HTTP endpoints. This verifies the full stack — routing,
 /// validation, EF Core persistence and RabbitMQ messaging — without mocks.
 ///
-/// Run with: dotnet test tests/NotificationService.IntegrationTests
-/// Requires Docker to be running on the host machine.
+/// Prerequisites: Docker must be running on the host machine.
+/// Run with: dotnet test tests/NotificationService.IntegrationTests --filter "TestCategory=Integration"
 /// </summary>
 [TestClass]
 public sealed class WebhookEndpointTests
 {
-    private static PostgreSqlContainer _postgres = null!;
-    private static RabbitMqContainer _rabbitmq = null!;
+    private static PostgreSqlContainer? _postgres;
+    private static RabbitMqContainer? _rabbitmq;
 
     [ClassInitialize]
     public static async Task ClassInit(TestContext _)
@@ -42,13 +42,14 @@ public sealed class WebhookEndpointTests
     [ClassCleanup]
     public static async Task ClassCleanup()
     {
-        await Task.WhenAll(_postgres.DisposeAsync().AsTask(), _rabbitmq.DisposeAsync().AsTask());
+        var tasks = new List<Task>();
+        if (_postgres is not null) tasks.Add(_postgres.DisposeAsync().AsTask());
+        if (_rabbitmq is not null) tasks.Add(_rabbitmq.DisposeAsync().AsTask());
+        await Task.WhenAll(tasks);
     }
 
     // ── Placeholder tests ──────────────────────────────────────────────────────
-    // These tests are intentionally left as stubs. The Testcontainers setup
-    // above shows the pattern; fill in the actual HTTP calls once the
-    // WebApplicationFactory wiring is complete.
+    // Remove [Ignore] and implement the test body once Docker is available.
     //
     // Typical integration test shape:
     //   1. Build WebApplication with container connection strings via env vars.
@@ -59,10 +60,11 @@ public sealed class WebhookEndpointTests
 
     [TestMethod]
     [TestCategory("Integration")]
+    [Ignore("Requires Docker. Start Docker Desktop and remove [Ignore] to run.")]
     public async Task Placeholder_ContainersStartSuccessfully()
     {
-        Assert.IsNotNull(_postgres.GetConnectionString());
-        Assert.IsNotNull(_rabbitmq.GetConnectionString());
+        Assert.IsNotNull(_postgres!.GetConnectionString());
+        Assert.IsNotNull(_rabbitmq!.GetConnectionString());
         await Task.CompletedTask;
     }
 }
