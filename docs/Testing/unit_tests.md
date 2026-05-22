@@ -1,47 +1,63 @@
 # Unit Testen
 
 ## Inleiding
-Beschrijf hier kort waarom unit testen belangrijk zijn voor PatientPingeling en wat het doel is van de testen binnen dit project.s
+
+Hoe worden de gegevens van een patient verwerkt en worden de afspraken correct in het systeem gezet? Met deze testen controleren we de `AppointmentIngestionService` met het gebruik van **Moq**.
 
 ## Automatisch uitvoeren bij build
 
-De unit testen worden automatisch getriggerd bij elke build van het project. Dit gebeurt via ... (bijv. `dotnet test` in de CI/CD pipeline, GitHub Actions, etc.). Hierdoor worden fouten vroeg opgespoord zonder dat een ontwikkelaar de testen handmatig hoeft uit te voeren.
+De unit testen worden automatisch getriggerd bij elke build van het project. Dit gebeurt via `dotnet test` in de CI/CD pipeline en GitHub Actions. Hierdoor worden fouten vroeg opgespoord zonder dat een ontwikkelaar de testen handmatig hoeft uit te voeren.
 
 ## Overzicht van de unit testen
 
-### Test 1 — [Naam van de test]
+### Test 1 — Stop verwerking als patiënt niet bestaat
 
-| Veld | Beschrijving |
-|------|-------------|
-| **Klasse/component** | Welke klasse of component wordt getest? |
-| **Wat wordt getest** | Beschrijf wat de test controleert |
-| **Waarom** | Waarom is deze test belangrijk voor het systeem? |
-| **Verwacht resultaat** | Wat is de verwachte uitkomst bij een geslaagde test? |
-| **Triggered door** | Automatisch bij `dotnet build` / GitHub Actions / etc. |
+| Veld                   | Beschrijving                                                                                             |
+| ---------------------- | -------------------------------------------------------------------------------------------------------- |
+| **Klasse/component**   | `AppointmentIngestionService`                                                                            |
+| **Wat wordt getest**   | Of de service direct stopt met de verwerking wanneer een patiënt-ID niet wordt gevonden in de database.  |
+| **Waarom**             | Dit voorkomt dat het systeem foutieve afspraken of notificaties gaat inplannen voor onbekende patiënten. |
+| **Verwacht resultaat** | De service zoekt via `GetByIdAsync` en merkt op dat de patiënt `null` is                                 |
+| **Triggered door**     | Automatisch bij het bouwen (`dotnet build`) of testen (`dotnet test`).                                   |
 
 #### Screenshot
-> Voeg hier een screenshot in van de geslaagde testuitvoering ter validatie.
 
-![Test 1 resultaat](./screenshots/test1.png)
+![Test 1 resultaat](./screenshots/test1Unittests.png)
 
 ---
 
-### Test 2 — [Naam van de test]
+### Test 2 — Succesvolle verwerking bij geldige data
 
-| Veld | Beschrijving |
-|------|-------------|
-| **Klasse/component** | |
-| **Wat wordt getest** | |
-| **Waarom** | |
-| **Verwacht resultaat** | |
-| **Triggered door** | |
+| Veld                   | Beschrijving                                                                                                  |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------- |
+| **Klasse/component**   | `AppointmentIngestionService`                                                                                 |
+| **Wat wordt getest**   | Of de service een binnenkomende afspraak succesvol verwerkt wanneer de data klopt en de patiënt bestaat.      |
+| **Waarom**             | Dit is het bewijst dat de functionaliteiten van de afspraakverwerking werkt.                                  |
+| **Verwacht resultaat** | De service doorloopt het hele proces zonder foutmeldingen en de command-data is na afloop succesvol verwerkt. |
+| **Triggered door**     | Automatisch bij het bouwen (`dotnet build`) of testen (`dotnet test`).                                        |
 
 #### Screenshot
-> Voeg hier een screenshot in van de geslaagde testuitvoering ter validatie.
 
-![Test 2 resultaat](./screenshots/test2.png)
+![Test 2 resultaat](./screenshots/test2Unittests.png)
 
-Hieronder een afbeelding van het uitvoeren van alle unit tests.
+---
+
+### Test 3 — Lege invoer controleren
+
+| Veld                   | Beschrijving                                                                                                 |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------ |
+| **Klasse/component**   | `IngestAppointmentCommand`                                                                                   |
+| **Wat wordt getest**   | Of het systeem correct omgaat met een **null** waarde.                                                       |
+| **Waarom**             | Dit is een controle om te bewijzen dat het testsysteem stabiel blijft wanneer er geen data wordt meegegeven. |
+| **Verwacht resultaat** | De test ziet netjes dat de waarde inderdaad **null** is (`Assert.IsNull`).                                   |
+| **Triggered door**     | Automatisch bij het bouwen (`dotnet build`) of testen (`dotnet test`).                                       |
+
+#### Screenshot
+
+![Test 3 resultaat](./screenshots/test3Unittests.png)
+
+---
 
 #### Screenshot - Gehele Unit Tests
-> Voeg hier een screenshot in van de uitvoering van alle unit tests
+
+![Gehele Unit Tests resultaat](./screenshots/testAllUnittests.png)
