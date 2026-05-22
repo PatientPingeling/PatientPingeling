@@ -1,0 +1,227 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Pagina-1" id="PszNrH6J41se5pjpAWo_">
+    <mxGraphModel dx="1030" dy="527" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" value="OpenMRS" vertex="1">
+          <mxGeometry height="80" width="120" x="20" y="240" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" value="Enricher" vertex="1">
+          <mxGeometry height="80" width="120" x="20" y="360" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="NotificationAPI" vertex="1">
+          <mxGeometry height="280" width="120" x="20" y="480" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="PostgreSQL" vertex="1">
+          <mxGeometry height="80" width="120" x="20" y="800" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-13" edge="1" parent="1" source="Ensp_o0Md5o7W4oZn2Bi-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="Ensp_o0Md5o7W4oZn2Bi-6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" value="Stuurt appointment event" vertex="1">
+          <mxGeometry height="60" width="160" x="257.5" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-14" edge="1" parent="1" source="Ensp_o0Md5o7W4oZn2Bi-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="Ensp_o0Md5o7W4oZn2Bi-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" value="Verrijkt event, HTTP POST webhook" vertex="1">
+          <mxGeometry height="60" width="160" x="257.5" y="370" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-15" edge="1" parent="1" source="Ensp_o0Md5o7W4oZn2Bi-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="Ensp_o0Md5o7W4oZn2Bi-8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;b&gt;WebhookEndpoints&lt;/b&gt;&lt;div&gt;Valideert tenant + API key&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="160" x="257.5" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-17" edge="1" parent="1" source="Ensp_o0Md5o7W4oZn2Bi-8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.75;entryY=0;entryDx=0;entryDy=0;dashed=1;" target="Ensp_o0Md5o7W4oZn2Bi-9">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="550" y="570" />
+              <mxPoint x="396" y="570" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-18" connectable="0" parent="Ensp_o0Md5o7W4oZn2Bi-17" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="geldig" vertex="1">
+          <mxGeometry relative="1" x="0.0113" y="2" as="geometry">
+            <mxPoint y="-2" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-8" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;b&gt;TenantService&lt;/b&gt;&lt;div&gt;Hash vergelijken&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="487.5" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-19" edge="1" parent="1" source="Ensp_o0Md5o7W4oZn2Bi-9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="Ensp_o0Md5o7W4oZn2Bi-10">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-21" edge="1" parent="1" source="Ensp_o0Md5o7W4oZn2Bi-9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="Ensp_o0Md5o7W4oZn2Bi-12">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-9" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;b&gt;AppointmentIngestionService&lt;/b&gt;&lt;div&gt;CREATE / UPDATED / CANCELLED&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="185" x="257.5" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-20" edge="1" parent="1" source="Ensp_o0Md5o7W4oZn2Bi-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="Ensp_o0Md5o7W4oZn2Bi-11">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="548" y="780" />
+              <mxPoint x="350" y="780" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-10" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;b&gt;UnitOfWork&lt;/b&gt;&lt;div&gt;Begin -&amp;gt; commit&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="487.5" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-11" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="Appointment + Patient + ScheduledNotification (24u + 1u) + DispatchLog" vertex="1">
+          <mxGeometry height="60" width="260" x="220" y="810" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-22" edge="1" parent="1" source="Ensp_o0Md5o7W4oZn2Bi-12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;dashed=1;" target="Ensp_o0Md5o7W4oZn2Bi-6">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="230" y="720" />
+              <mxPoint x="230" y="400" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-12" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" value="201 Created -&amp;gt; Enricher" vertex="1">
+          <mxGeometry height="40" width="150" x="275" y="700" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-16" edge="1" parent="1" source="Ensp_o0Md5o7W4oZn2Bi-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.435;entryY=-0.007;entryDx=0;entryDy=0;entryPerimeter=0;" target="Ensp_o0Md5o7W4oZn2Bi-9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-23" edge="1" parent="1" style="endArrow=none;html=1;rounded=0;dashed=1;dashPattern=1 2;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="40" y="340" as="sourcePoint" />
+            <mxPoint x="640" y="340" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-24" edge="1" parent="1" style="endArrow=none;html=1;rounded=0;dashed=1;dashPattern=1 2;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="40" y="460" as="sourcePoint" />
+            <mxPoint x="640" y="460" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-25" edge="1" parent="1" style="endArrow=none;html=1;rounded=0;dashed=1;dashPattern=1 2;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="40" y="780" as="sourcePoint" />
+            <mxPoint x="640" y="780" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-26" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;b&gt;Webhook ontvangen +opslaan&lt;/b&gt;" vertex="1">
+          <mxGeometry height="30" width="190" x="20" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-44" edge="1" parent="1" source="Ensp_o0Md5o7W4oZn2Bi-27" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="Ensp_o0Md5o7W4oZn2Bi-28">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-27" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="&lt;b&gt;PollerBackgroundService&lt;/b&gt;&lt;div&gt;Elke 60 seconden&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="170" x="1010" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-45" edge="1" parent="1" source="Ensp_o0Md5o7W4oZn2Bi-28" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="Ensp_o0Md5o7W4oZn2Bi-30">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-46" edge="1" parent="1" source="Ensp_o0Md5o7W4oZn2Bi-28" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="Ensp_o0Md5o7W4oZn2Bi-29">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-28" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="&lt;b&gt;PollAction&lt;/b&gt;&lt;div&gt;GetPendingAsync (SKIP LOCKED)&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="170" x="1010" y="350" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-48" edge="1" parent="1" source="Ensp_o0Md5o7W4oZn2Bi-29" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="Ensp_o0Md5o7W4oZn2Bi-31">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-29" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="&lt;b&gt;DispatchLog:INSCHEDULER&lt;/b&gt;&lt;div&gt;Schrijft status naar Db&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="170" x="1010" y="450" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-30" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="&lt;b&gt;NotificationMessageFactory&lt;/b&gt;&lt;div&gt;Verrijkt met Tenant + Credentials&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="170" x="1250" y="350" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-49" edge="1" parent="1" source="Ensp_o0Md5o7W4oZn2Bi-31" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="Ensp_o0Md5o7W4oZn2Bi-33">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-31" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" value="RabbitMQNotificationMessage gepubliceerd" vertex="1">
+          <mxGeometry height="60" width="210" x="1000" y="570" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-32" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="DispatchLog: INQUEUE" vertex="1">
+          <mxGeometry height="60" width="120" x="1275" y="570" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-50" edge="1" parent="1" source="Ensp_o0Md5o7W4oZn2Bi-33" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="Ensp_o0Md5o7W4oZn2Bi-34">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-33" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" value="&lt;b&gt;ConsumerService&lt;/b&gt;&lt;div&gt;Ontvangt bericht, staleness check&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="170" x="1020" y="690" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-51" edge="1" parent="1" source="Ensp_o0Md5o7W4oZn2Bi-34" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="Ensp_o0Md5o7W4oZn2Bi-35">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-53" edge="1" parent="1" source="Ensp_o0Md5o7W4oZn2Bi-34" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="Ensp_o0Md5o7W4oZn2Bi-36">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-34" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" value="&lt;b&gt;NotificationDispatchService&lt;/b&gt;&lt;div&gt;Decrypteert, bouwt bericht op&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="170" x="1020" y="790" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-52" edge="1" parent="1" source="Ensp_o0Md5o7W4oZn2Bi-35" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="Ensp_o0Md5o7W4oZn2Bi-39">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-35" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" value="&lt;b&gt;BasicAck + Logs schrijven&lt;/b&gt;&lt;div&gt;DispatchLog: SUCCES + NotificationLog&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="170" x="1020" y="890" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-54" edge="1" parent="1" source="Ensp_o0Md5o7W4oZn2Bi-36" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="Ensp_o0Md5o7W4oZn2Bi-37">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-36" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" value="&lt;b&gt;MessageProviderFactory&lt;/b&gt;&lt;div&gt;Keyed DI op providernaam&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="160" x="1240" y="790" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-55" edge="1" parent="1" source="Ensp_o0Md5o7W4oZn2Bi-37" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.75;entryDx=0;entryDy=0;dashed=1;" target="Ensp_o0Md5o7W4oZn2Bi-34">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-56" edge="1" parent="1" source="Ensp_o0Md5o7W4oZn2Bi-37" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="Ensp_o0Md5o7W4oZn2Bi-38">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-37" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" value="&lt;b&gt;Provider adapter&lt;/b&gt;&lt;div&gt;SendAsync via HTTP + Polly&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="160" x="1240" y="890" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-38" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="&lt;b&gt;Provider&lt;/b&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="1500" y="890" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-39" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="DispatchLog (SUCCES) + NotificationLog opgeslagen" vertex="1">
+          <mxGeometry height="60" width="170" x="1020" y="1010" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-40" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="Scheduler" vertex="1">
+          <mxGeometry height="280" width="120" x="770" y="240" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-41" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" value="RabbitMQ" vertex="1">
+          <mxGeometry height="80" width="120" x="770" y="560" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-42" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" value="Worker" vertex="1">
+          <mxGeometry height="280" width="120" x="770" y="680" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-43" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="PostgreSQL" vertex="1">
+          <mxGeometry height="80" width="120" x="770" y="1000" as="geometry" />
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-47" edge="1" parent="1" source="Ensp_o0Md5o7W4oZn2Bi-30" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.626;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;dashed=1;" target="Ensp_o0Md5o7W4oZn2Bi-29">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1335" y="430" />
+              <mxPoint x="1116" y="430" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-57" edge="1" parent="1" style="endArrow=none;html=1;rounded=0;dashed=1;dashPattern=1 2;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="827" y="540" as="sourcePoint" />
+            <mxPoint x="1427" y="540" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-58" edge="1" parent="1" style="endArrow=none;html=1;rounded=0;dashed=1;dashPattern=1 2;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="827" y="659" as="sourcePoint" />
+            <mxPoint x="1427" y="659" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Ensp_o0Md5o7W4oZn2Bi-59" edge="1" parent="1" style="endArrow=none;html=1;rounded=0;dashed=1;dashPattern=1 2;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="827" y="980" as="sourcePoint" />
+            <mxPoint x="1427" y="980" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
