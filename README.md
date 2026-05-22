@@ -100,6 +100,7 @@ Expected response: `201 Created`
 > Tenant ID: `3fa85f64-5717-4562-b3fc-2c963f66afa6`, API key: `test-secret`
 
 To reset test data:
+
 ```bash
 ./scripts/reset-dev-db.sh   # macOS/Linux
 ./scripts/reset-dev-db.ps1  # Windows
@@ -112,21 +113,53 @@ To reset test data:
 Copy `.env.example` to `.env` and fill in the values:
 
 ```env
+# --- PatientPingeling (OpenMRS plugin) ---
+# --- General ---
 ASPNETCORE_ENVIRONMENT=Development
 
-# PostgreSQL
+# --- Notification Service (Postgres) ---
 POSTGRES_HOST=postgres
 POSTGRES_DB=notificationservice
 POSTGRES_USER=postgres
-POSTGRES_PASSWORD=yourpassword
+POSTGRES_PASSWORD=your_secure_password_here
 
-# RabbitMQ
+# --- Message Broker (RabbitMQ) ---
 RABBITMQ_HOST=rabbitmq
 RABBITMQ_USERNAME=guest
 RABBITMQ_PASSWORD=guest
 
-# Messaging providers
+# --- OpenMRS (MariaDB) ---
+OMRS_DB_USER=openmrs
+OMRS_DB_PASSWORD=openmrs_secure_password
+MYSQL_ROOT_PASSWORD=root_secure_password
+
+# --- OpenMRS image tag (qa = latest stable, nightly = bleeding edge) ---
+OPENMRS_TAG=qa
+
+# --- Security ---
+# Generate with: openssl rand -base64 32
+ENCRYPTION_KEY=your-32-byte-base64-encoded-key-here
+
+# --- Messaging Providers (FakeComWorld) ---
 STUDENT_GROUP=PatientPingeling
+
+# --- Observability ---
+# Grafana UI is available at http://localhost:3000 after docker compose up (no login required)
+# No variables needed — the endpoint is hardcoded to the internal docker network (http://otel-lgtm:4317)
+
+# Webhook target inside docker network:
+PP_WEBHOOK_URL=http://api:8000/webhooks/appointments
+
+# Option 1: provide API key + tenant via env vars
+PP_API_KEY=fill_me
+PP_TENANT_KEY=fill_me
+
+# Option 2: provide secrets via JSON file (mounted in container)
+# PP_SECRETS_FILE=/run/secrets/pp-secrets.json
+
+# Service account used by the plugin to authenticate inside OpenMRS
+PP_SERVICE_USER=fill_me
+PP_SERVICE_PASSWORD=fill_me
 ```
 
 Provider credentials (API keys, JWT secrets etc.) are stored **encrypted in the database**, never in config files or environment variables.
