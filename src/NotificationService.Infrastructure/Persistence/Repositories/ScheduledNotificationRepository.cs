@@ -89,7 +89,7 @@ namespace NotificationService.Infrastructure.Persistence.Repositories
                             WHERE d2."ScheduledNotificationId" = s."Id"
                           )
                           AND (
-                            d."Outcome" IN ('NEW', 'EXPIRED', 'ERROR_429')
+                            d."Outcome" IN ('NEW', 'EXPIRED', 'ERROR_TRANSIENT')
                             OR (d."Outcome" = 'INSCHEDULER' AND d."AttemptedAt" < NOW() - INTERVAL '5 minutes')
                           )
                       )

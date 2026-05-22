@@ -47,6 +47,7 @@ namespace NotificationService.Worker.HostedServices
                     var dispatchService = scope.ServiceProvider.GetRequiredService<INotificationDispatchService>();
                     var dispatchLogRepository = scope.ServiceProvider.GetRequiredService<IDispatchLogRepository>();
                     var notificationLogRepository = scope.ServiceProvider.GetRequiredService<INotificationLogRepository>();
+                    var patientRepository = scope.ServiceProvider.GetRequiredService<IPatientRepository>();
                     var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
                     ct.ThrowIfCancellationRequested();
@@ -87,7 +88,7 @@ namespace NotificationService.Worker.HostedServices
                     if (result.IsFailure)
                     {
                         var transient = result.Error.Type == Domain.ErrorType.Failure;
-                        var outcome = transient ? Outcome.ERROR_429 : Outcome.ERROR_PERMANENT;
+                        var outcome = transient ? Outcome.ERROR_TRANSIENT : Outcome.ERROR_PERMANENT;
 
                         _logger.LogWarning("Dispatch failed for {Id}: {Error} (outcome: {Outcome})", command.ScheduledNotificationId, result.Error.Code, outcome);
 
@@ -102,8 +103,28 @@ namespace NotificationService.Worker.HostedServices
                         await unitOfWork.CommitAsync();
 
                         // ERROR_PERMANENT → reject without requeue (bad payload, no contact info)
-                        // ERROR_429 → requeue for retry (provider down, transient HTTP failure)
+                        // ERROR_TRANSIENT → requeue for retry (provider down, transient HTTP failure)
                         await channel.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: transient, cancellationToken: ct);
+                        return;
+                    }
+
+                    // AsyncFlow is async — 202 means queued, not delivered.
+                    // The scheduler polls for final status and writes the NotificationLog on confirmation.
+                    if (command.Provider == "AsyncFlow")
+                    {
+                        _logger.LogInformation("AsyncFlow notification {Id} queued with tracking ID {TrackingId}.", command.ScheduledNotificationId, result.Value);
+
+                        await dispatchLogRepository.AddAsync(new DispatchLog
+                        {
+                            Id = Guid.CreateVersion7(),
+                            AttemptedAt = DateTimeOffset.UtcNow,
+                            Outcome = Outcome.PENDING_ASYNC,
+                            ExternalTrackingId = result.Value,
+                            ScheduledNotificationId = command.ScheduledNotificationId
+                        }, ct);
+
+                        await unitOfWork.CommitAsync();
+                        await channel.BasicAckAsync(ea.DeliveryTag, multiple: false, cancellationToken: ct);
                         return;
                     }
 
@@ -127,6 +148,7 @@ namespace NotificationService.Worker.HostedServices
                         TenantId = command.TenantId
                     }, ct);
 
+                    await patientRepository.UpdateLastCommunicationAsync(command.ScheduledNotificationId, ct);
                     await unitOfWork.CommitAsync();
 
                     await channel.BasicAckAsync(ea.DeliveryTag, multiple: false, cancellationToken: ct);
