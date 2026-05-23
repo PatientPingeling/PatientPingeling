@@ -60,5 +60,16 @@ namespace NotificationService.Infrastructure.Persistence.Repositories
                         a.TenantId))
                 .ToListAsync(ct);
         }
+
+        public async Task UpdateOutcomeAsync(Guid dispatchLogId, Outcome outcome, CancellationToken ct = default)
+        {
+            var log = await _dbContext.DispatchLogs.FindAsync([dispatchLogId], cancellationToken: ct);
+            if (log is null)
+            {
+                return;
+            }
+
+            log.Outcome = outcome;
+        }
     }
 }

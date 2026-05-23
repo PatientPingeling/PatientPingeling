@@ -23,7 +23,7 @@ public class PollerBackgroundService(
                 logger.LogError(ex, "Error occurred during polling.");
             }
 
-            await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+            await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
         }
     }
 }

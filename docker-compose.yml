@@ -53,6 +53,7 @@ services:
       - OpenTelemetry__Environment=${ASPNETCORE_ENVIRONMENT:-Production}
       - Providers__BaseUrl=http://messageproviders:8080
       - Providers__StudentGroup=${STUDENT_GROUP:-PatientPingeling}
+      - Providers__AsyncFlowApiKey=${ASYNCFLOW_API_KEY:-asyncflow-api-key}
     depends_on:
       postgres:
         condition: service_healthy
@@ -100,9 +101,9 @@ services:
       - AsyncFlow__ApiKey=asyncflow-api-key
       - LegacyLink__Username=legacylink-user
       - LegacyLink__Password=legacylink-password
-      - AsyncFlow__FailureRatePercentage=${ASYNCFLOW_FAILURE_RATE:-50}
-      - SecurePost__FaultInjectionRatePercentage=${SECUREPOST_FAULT_RATE:-50}
-      - SwiftSend__FaultInjectionRatePercentage=${SWIFTSEND_FAULT_RATE:-50}
+      - AsyncFlow__FailureRatePercentage=${ASYNCFLOW_FAILURE_RATE:-10}
+      - SecurePost__FaultInjectionRatePercentage=${SECUREPOST_FAULT_RATE:-10}
+      - SwiftSend__FaultInjectionRatePercentage=${SWIFTSEND_FAULT_RATE:-10}
     ports:
       - "1337:8080"
     restart: unless-stopped

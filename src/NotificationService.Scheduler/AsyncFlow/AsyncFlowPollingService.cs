@@ -56,6 +56,8 @@ namespace NotificationService.Scheduler.AsyncFlow
 
                 if (status?.Status == "Completed")
                 {
+                    await dispatchLogRepo.UpdateOutcomeAsync(item.DispatchLogId, Outcome.SUCCESS, ct);
+
                     await dispatchLogRepo.AddAsync(new DispatchLog
                     {
                         Id = Guid.CreateVersion7(),
@@ -82,6 +84,8 @@ namespace NotificationService.Scheduler.AsyncFlow
                 else if (status?.Status == "Failed" || (timedOut && status?.Status is "Queued" or "Processing" or null))
                 {
                     var reason = timedOut && status?.Status is not "Failed" ? "timeout" : status?.ErrorDetails ?? "provider failure";
+
+                    await dispatchLogRepo.UpdateOutcomeAsync(item.DispatchLogId, Outcome.ERROR_TRANSIENT, ct);
 
                     await dispatchLogRepo.AddAsync(new DispatchLog
                     {

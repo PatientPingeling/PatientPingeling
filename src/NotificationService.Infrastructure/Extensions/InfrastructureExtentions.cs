@@ -133,12 +133,14 @@ namespace NotificationService.Infrastructure.Extensions
         {
             var baseUrl = configuration["Providers:BaseUrl"] ?? throw new InvalidOperationException("Missing required configuration: Providers:BaseUrl.");
             var studentGroup = configuration["Providers:StudentGroup"] ?? throw new InvalidOperationException("Missing required configuration: Providers:StudentGroup.");
+            var asyncFlowApiKey = configuration["Providers:AsyncFlowApiKey"] ?? throw new InvalidOperationException("Missing required configuration: Providers:AsyncFlowApiKey.");
 
             services.AddScoped<IAsyncFlowStatusClient, AsyncFlowStatusClient>();
             services.AddHttpClient("AsyncFlowStatus", client =>
             {
                 client.BaseAddress = new Uri(baseUrl.TrimEnd('/') + "/");
                 client.DefaultRequestHeaders.Add("X-STUDENT-GROUP", studentGroup);
+                client.DefaultRequestHeaders.Add("X-API-KEY", asyncFlowApiKey);
             });
 
             return services;
