@@ -195,9 +195,9 @@
       "id": 27, "type": "timeseries", "title": "Span P99 Latency by Operation",
       "gridPos": { "h": 8, "w": 8, "x": 16, "y": 47 },
       "datasource": { "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "s", "custom": { "fillOpacity": 10 } } },
+      "fieldConfig": { "defaults": { "unit": "ms", "custom": { "fillOpacity": 10 } } },
       "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull"] } },
-      "targets": [{ "expr": "histogram_quantile(0.99, sum(rate(traces_spanmetrics_latency_bucket{service_name=~\"NotificationService.*\"}[2m])) by (le, service_name, span_name))", "legendFormat": "{{service_name}} — {{span_name}}", "refId": "A" }]
+      "targets": [{ "expr": "histogram_quantile(0.99, sum(rate(traces_spanmetrics_duration_milliseconds_bucket{service_name=~\"NotificationService.*\"}[2m])) by (le, service_name, span_name))", "legendFormat": "{{service_name}} — {{span_name}}", "refId": "A" }]
     }
   ]
 }

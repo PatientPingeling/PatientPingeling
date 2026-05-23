@@ -55,8 +55,8 @@ def short_id() -> str:
 
 
 def scheduled_at_soon() -> str:
-    """30 min from now — both reminders (24h and 1h) clamp to now and dispatch immediately."""
-    dt = datetime.now(timezone.utc) + timedelta(minutes=30)
+    """1 min from now — the 1h reminder clamps SendAt to now so the worker dispatches almost immediately during a demo."""
+    dt = datetime.now(timezone.utc) + timedelta(minutes=1)
     return dt.strftime("%Y-%m-%dT%H:%M:%S+00:00")
 
 

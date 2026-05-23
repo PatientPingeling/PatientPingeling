@@ -1,0 +1,89 @@
+# Custom OpenTelemetry Collector config for grafana/otel-lgtm.
+# Overrides /otel-lgtm/otelcol-config.yaml inside the container.
+#
+# Diff vs upstream default:
+#   - Adds the `spanmetrics` connector so the dashboard's
+#     `traces_spanmetrics_*` panels actually have data.
+#   - Connector reads from the traces pipeline and feeds derived
+#     metrics into the metrics pipeline.
+# All other receivers/exporters/endpoints match the bundled default
+# so Tempo / Loki / Mimir export behavior stays identical.
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+        cors:
+          allowed_origins:
+            - http://*
+  prometheus/collector:
+    config:
+      scrape_configs:
+        - job_name: "opentelemetry-collector"
+          scrape_interval: 1s
+          static_configs:
+            - targets: ["127.0.0.1:8888"]
+
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+    path: "/ready"
+
+processors:
+  batch:
+
+connectors:
+  spanmetrics:
+    # Emit metric names prefixed with `traces.spanmetrics.`
+    # → Prometheus: traces_spanmetrics_calls_total / traces_spanmetrics_duration_milliseconds_*
+    namespace: traces.spanmetrics
+    histogram:
+      explicit:
+        buckets: [2ms, 5ms, 10ms, 50ms, 100ms, 200ms, 500ms, 1s, 2s, 5s, 10s]
+    dimensions:
+      - name: http.request.method
+      - name: http.response.status_code
+      - name: http.route
+    metrics_flush_interval: 15s
+    exemplars:
+      enabled: true
+
+exporters:
+  otlp_http/metrics:
+    endpoint: http://127.0.0.1:9090/api/v1/otlp
+    tls:
+      insecure: true
+  otlp_http/traces:
+    endpoint: http://127.0.0.1:4418
+    tls:
+      insecure: true
+  otlp_http/logs:
+    endpoint: http://127.0.0.1:3100/otlp
+    tls:
+      insecure: true
+  otlp/profiles:
+    endpoint: http://127.0.0.1:4040
+    tls:
+      insecure: true
+
+service:
+  extensions: [health_check]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp_http/traces, spanmetrics]
+    metrics:
+      receivers: [otlp, prometheus/collector, spanmetrics]
+      processors: [batch]
+      exporters: [otlp_http/metrics]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp_http/logs]
+    profiles:
+      receivers: [otlp]
+      exporters: [otlp/profiles]
