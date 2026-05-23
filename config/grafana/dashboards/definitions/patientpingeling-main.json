@@ -12,12 +12,12 @@
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 }, "id": 1
     },
     {
-      "id": 2, "type": "timeseries", "title": "API — Request Rate",
+      "id": 2, "type": "timeseries", "title": "API — Requests / min",
       "gridPos": { "h": 7, "w": 8, "x": 0, "y": 1 },
       "datasource": { "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "reqps", "color": { "mode": "palette-classic" } } },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "palette-classic" } } },
       "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
-      "targets": [{ "expr": "sum(rate(http_server_request_duration_seconds_count{service_name=\"NotificationService.Api\"}[1m])) by (http_route, http_request_method)", "legendFormat": "{{http_request_method}} {{http_route}}", "refId": "A" }]
+      "targets": [{ "expr": "sum(increase(http_server_request_duration_seconds_count{service_name=\"NotificationService.Api\"}[1m])) by (http_route, http_request_method)", "legendFormat": "{{http_request_method}} {{http_route}}", "refId": "A" }]
     },
     {
       "id": 3, "type": "timeseries", "title": "API — P99 Latency",
@@ -43,20 +43,20 @@
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 8 }, "id": 5
     },
     {
-      "id": 6, "type": "timeseries", "title": "Provider — Call Rate",
+      "id": 6, "type": "timeseries", "title": "Provider — Calls / min",
       "gridPos": { "h": 7, "w": 12, "x": 0, "y": 9 },
       "datasource": { "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "reqps", "color": { "mode": "palette-classic" } } },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "palette-classic" } } },
       "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
-      "targets": [{ "expr": "sum(rate(http_client_request_duration_seconds_count{service_name=\"NotificationService.Worker\", server_address=\"messageproviders\"}[1m])) by (server_address, url_path)", "legendFormat": "{{url_path}}", "refId": "A" }]
+      "targets": [{ "expr": "sum(increase(http_client_request_duration_seconds_count{service_name=~\"NotificationService.(Worker|Scheduler)\", server_address=\"messageproviders\"}[1m])) by (service_name, http_request_method)", "legendFormat": "{{service_name}} {{http_request_method}}", "refId": "A" }]
     },
     {
-      "id": 7, "type": "timeseries", "title": "Provider — Response Status Codes",
+      "id": 7, "type": "timeseries", "title": "Provider — Response Status Codes / min",
       "gridPos": { "h": 7, "w": 12, "x": 12, "y": 9 },
       "datasource": { "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "reqps", "color": { "mode": "palette-classic" } } },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "palette-classic" } } },
       "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
-      "targets": [{ "expr": "sum(rate(http_client_request_duration_seconds_count{service_name=\"NotificationService.Worker\", server_address!=\"otel-lgtm\"}[1m])) by (http_response_status_code, server_address)", "legendFormat": "{{server_address}} — {{http_response_status_code}}", "refId": "A" }]
+      "targets": [{ "expr": "sum(increase(http_client_request_duration_seconds_count{service_name=~\"NotificationService.(Worker|Scheduler)\", server_address=\"messageproviders\"}[1m])) by (service_name, http_response_status_code)", "legendFormat": "{{service_name}} — {{http_response_status_code}}", "refId": "A" }]
     },
     {
       "type": "row", "title": "Runtime & Resources", "collapsed": false,

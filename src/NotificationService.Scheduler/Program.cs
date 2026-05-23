@@ -16,6 +16,7 @@ builder.Services
         .AddOpenTelemetry(
                 builder.Configuration,
                 serviceName: "NotificationService.Scheduler",
+                enableHttpClient: true,
                 enableEntityFrameworkCore: true);
 
 builder.Services.AddSingleton<RabbitMQEstablisher>();
