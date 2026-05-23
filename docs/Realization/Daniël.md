@@ -19,10 +19,32 @@ In dit logboek wordt beschreven welke tools zijn gebruikt tijdens de ontwikkelin
 
 ## Gebruikte AI tools
 
-| Tool        | Waarom                                                                                                                                                  | Reflectie                                                                                                                                                                                                                                                                                                |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Claude Code | Architectuur uitdenken, sparren over ontwerpkeuzes, code generatie, en repetitieve taken (bestandsnamen, klassenamen, OTel-setup, Docker Compose setup) | In het begin veel waarde gehaald uit het sparren: architectuurvragen doordenken en concepten leren begrijpen. Naarmate de deadline naderde meer ingezet voor directe code generatie. Eerlijk gezegd soms te snel gegenereerde code overgenomen zonder het volledig te doorgronden — dat is een leerpunt. |
-| Codex       | Codebase auditen op correctheid — als tweede mening naast Claude                                                                                        | Nuttig als aanvullende check; Claude en Codex gaven soms andere invalshoeken op dezelfde code, wat hielp om blinde vlekken te spotten.                                                                                                                                                                   |
+| Tool        | Waarom                                                                                                                                            | Reflectie                                                                                                                                                                                                                                                                                                |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Claude Code | Architectuur fix, sparren over ontwerpkeuzes, code generatie, en repetitieve taken (bestandsnamen, klassenamen, OTel-setup, Docker Compose setup) | In het begin veel waarde gehaald uit het sparren: architectuurvragen doordenken en concepten leren begrijpen. Naarmate de deadline naderde meer ingezet voor directe code generatie. Eerlijk gezegd soms te snel gegenereerde code overgenomen zonder het volledig te doorgronden — dat is een leerpunt. |
+| Codex       | Codebase auditen op correctheid — als tweede mening naast Claude                                                                                  | Nuttig als aanvullende check; Claude en Codex gaven soms andere invalshoeken op dezelfde code, wat hielp om blinde vlekken te spotten.                                                                                                                                                                   |
+
+## Kosten en Toegevoegde Waarde AI-Tools
+
+| Tool          | Kosten                                     | Toegevoegde Waarde(s)                                                                                                                                                    |
+| ------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Claude (Code) | ~€21,97/maand (Pro abonnement)             | Tijdsbesparing op repetitieve taken (bestandsnamen, klassen verplaatsen, CI/CD); hulp bij onbekende concepten (.NET RabbitMQ-connectie, OTEL, HTTP resilience via Polly) |
+| Codex         | Eenmalig gebruikt (inbegrepen bij ChatGPT) | Als tweede mening naast Claude                                                                                                                                           |
+
+## Voorbeelden AI-tooling gebruik
+
+- CI/CD pipelines consolideren: drie identieke workflows samengevoegd tot één, met uitleg over waarom de tests drie keer draaiden
+- RabbitMQ .NET-connectie opzetten: concept uitgelegd gekregen (exchange, queue, binding) voordat de implementatie werd geschreven
+- HTTP resilience pipeline (Polly): exponential backoff, jitter en circuit breaker uitgelegd en geconfigureerd voor de message providers
+- Repetitieve taken zoals bestandsnamen aanpassen, klassen naar de juiste laag verplaatsen en boilerplate aanvullen
+
+## Verbeterpunten
+
+Na het reflecteren op de gebruikte tools, zijn een aantal verbeterpunten naar voren gekomen:
+
+- Gegenereerde code vaker eerst doorgronden voordat je het overneemt — zeker onder tijdsdruk was de neiging groot om snel te accepteren
+- AI eerder inzetten om een concept te _begrijpen_, en daarna pas om het te implementeren; niet andersom
+- Bij twijfel over gegenereerde code: zelf een minitest schrijven om te verifiëren dat het doet wat je denkt
 
 ## Bijdrage aan Project (Commits)
 
