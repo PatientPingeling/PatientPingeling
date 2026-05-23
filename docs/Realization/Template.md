@@ -14,9 +14,14 @@ In dit logboek wordt beschreven welke tools zijn gebruikt tijdens de ontwikkelin
 ||||
 ||||
 
-## Kosten en Toegevoegde Waarde(s) Overzicht
+## Kosten en Toegevoegde Waarde AI-Tools
 | Tool | Kosten | Toegevoegde Waarde(s) |
 |------|--------|-----------|
+
+## Voorbeelden AI-tooling gebruik
+- bla
+- bla
+- bla
 
 ## Verbeterpunten
 Na het reflecteren op de gebruikte tools, zijn een aantal verbeterpunten naar voren gekomen:
