@@ -18,7 +18,7 @@ namespace NotificationService.Worker.HostedServices
         private readonly ILogger<RabbitMqNotificationConsumerService> _logger = logger;
         private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
         private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
-        private static readonly TimeSpan MessageSla = TimeSpan.FromHours(2);
+        private static readonly TimeSpan MessageSla = TimeSpan.FromMinutes(10);
 
         protected override async Task ExecuteAsync(CancellationToken ct)
         {
