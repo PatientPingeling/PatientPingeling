@@ -74,3 +74,6 @@ app.UseHttpsRedirection();
 app.MapWebhookEndpoints();
 
 app.Run();
+
+// Required so WebApplicationFactory<Program> can reference this assembly in integration tests
+public partial class Program { }

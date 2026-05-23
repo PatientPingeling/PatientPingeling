@@ -129,17 +129,17 @@ public sealed class NotificationDispatchServiceTests
     private static RabbitMQNotificationMessage BuildMessage(
         string email = "jan@test.nl",
         string phone = "+31612345678") => new()
-    {
-        ScheduledNotificationId = Guid.NewGuid(),
-        SendAt = DateTimeOffset.UtcNow.AddHours(1),
-        PatientName = "Jan Jansen",
-        PatientEmail = email,
-        PatientPhone = phone,
-        AppointmentReason = "Controle",
-        AppointmentLocation = "Polikliniek",
-        AppointmentScheduledAt = DateTimeOffset.UtcNow.AddDays(1),
-        TenantId = Guid.NewGuid(),
-        Provider = "SwiftSend",
-        ProviderCredentials = [new ProviderCredential { Key = "api_key", EncryptedValue = "enc-val" }]
-    };
+        {
+            ScheduledNotificationId = Guid.NewGuid(),
+            SendAt = DateTimeOffset.UtcNow.AddHours(1),
+            PatientName = "Jan Jansen",
+            PatientEmail = email,
+            PatientPhone = phone,
+            AppointmentReason = "Controle",
+            AppointmentLocation = "Polikliniek",
+            AppointmentScheduledAt = DateTimeOffset.UtcNow.AddDays(1),
+            TenantId = Guid.NewGuid(),
+            Provider = "SwiftSend",
+            ProviderCredentials = [new ProviderCredential { Key = "api_key", EncryptedValue = "enc-val" }]
+        };
 }
