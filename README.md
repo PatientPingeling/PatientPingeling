@@ -73,7 +73,7 @@ docker compose up --build
 
 ### Test the webhook
 
-Open the Bruno workspace in [`bruno/`](bruno/), select the `docker` environment, and run the **Integration Tests** collection in order:
+Open the Bruno workspace in [`bruno/`](bruno/), select the `docker` environment, and run the **System Tests** collection in order:
 
 1. `webhook CREATED` — creates patient + appointment + 2 scheduled notifications
 2. `webhook UPDATED` — updates appointment and regenerates notifications if time changed
@@ -211,8 +211,20 @@ Install via **OpenMRS Administration → Manage Modules**, or drop the `.omod` i
 ## Running tests
 
 ```bash
-# .NET
+# Unit tests — isolated, no Docker needed (~59 tests, milliseconds)
+dotnet test tests/NotificationService.UnitTests
+
+# Architecture tests — enforce Clean Architecture rules, no Docker needed (~9 tests, milliseconds)
+dotnet test tests/NotificationService.ArchTests
+
+# Integration tests — real PostgreSQL + RabbitMQ via Testcontainers, Docker required (~12 tests)
+dotnet test tests/NotificationService.IntegrationTests
+
+# All .NET tests
 dotnet test
+
+# System tests (manual) — run Bruno against the full docker compose stack
+# Open bruno/ in Bruno app, select 'docker' environment, run 'System Tests' collection
 
 # Java plugin
 cd plugins/OpenMRS.PatientPingeling

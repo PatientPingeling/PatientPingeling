@@ -33,5 +33,11 @@ jobs:
       - name: Build
         run: dotnet build --no-restore --configuration Release
 
-      - name: Test
-        run: dotnet test --no-build --configuration Release --verbosity normal
+      - name: Unit Tests
+        run: dotnet test tests/NotificationService.UnitTests --no-build --configuration Release --verbosity normal
+
+      - name: Architecture Tests
+        run: dotnet test tests/NotificationService.ArchTests --no-build --configuration Release --verbosity normal
+
+      - name: Integration Tests
+        run: dotnet test tests/NotificationService.IntegrationTests --no-build --configuration Release --verbosity normal

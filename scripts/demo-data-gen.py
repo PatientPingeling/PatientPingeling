@@ -8,6 +8,7 @@ panels fill up during a live demo.
 Usage:
     python3 scripts/demo-data-gen.py
     python3 scripts/demo-data-gen.py --interval 10 --url http://localhost:8000
+    python3 scripts/demo-data-gen.py --interval dynamic   # random 1-10s per request
 """
 
 import argparse
@@ -182,12 +183,15 @@ def send_cancelled(base_url: str, appt: dict, counter: int) -> None:
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--url",      default="http://localhost:8000")
-    parser.add_argument("--interval", type=float, default=15, help="Seconds between requests")
+    parser.add_argument("--interval", default="15", help="Seconds between requests, or 'dynamic' for random 1-10s")
     args = parser.parse_args()
+
+    dynamic = args.interval.lower() == "dynamic"
+    fixed_interval = None if dynamic else float(args.interval)
 
     print(f"\033[1mPatientPingeling Demo Generator\033[0m")
     print(f"  API:      {args.url}")
-    print(f"  Interval: {args.interval}s")
+    print(f"  Interval: {'random 1–10s (dynamic)' if dynamic else f'{fixed_interval}s'}")
     print(f"  Tenants:  {', '.join(t['name'] for t in TENANTS)}")
     print(f"  Ctrl+C to stop\n")
 
@@ -218,7 +222,9 @@ def main():
                 if len(created_appointments) > 50:
                     created_appointments.pop(0)
 
-        time.sleep(args.interval)
+        wait = random.uniform(1, 10) if dynamic else fixed_interval
+        print(f"         ⏱  next in {wait:.1f}s")
+        time.sleep(wait)
 
 
 if __name__ == "__main__":
