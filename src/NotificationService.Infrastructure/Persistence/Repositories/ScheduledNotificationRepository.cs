@@ -45,22 +45,11 @@ namespace NotificationService.Infrastructure.Persistence.Repositories
 
         public async Task<int> DeletePendingByAppointmentIdAsync(int appointmentId, CancellationToken ct = default)
         {
-            // SELECT FOR UPDATE SKIP LOCKED — locks rows so the Scheduler cannot concurrently
-            // pick them for dispatch between our read and the SaveChanges commit.
             var toDelete = await _dbContext.ScheduledNotifications
-              .FromSqlRaw("""
-                      SELECT *
-                      FROM "ScheduledNotifications" s
-                      WHERE s."AppointmentId" = {0}
-                      AND NOT EXISTS (
-                        SELECT 1
-                        FROM "DispatchLogs" d
-                        WHERE d."ScheduledNotificationId" = s."Id"
-                        AND d."Outcome" = 'SUCCESS'
-                      )
-                      FOR UPDATE SKIP LOCKED
-                      """, appointmentId)
-              .ToListAsync(ct);
+                .Where(s => s.AppointmentId == appointmentId)
+                .Where(s => !_dbContext.DispatchLogs.Any(d =>
+                    d.ScheduledNotificationId == s.Id && d.Outcome == Outcome.SUCCESS))
+                .ToListAsync(ct);
 
             _dbContext.ScheduledNotifications.RemoveRange(toDelete);
             return toDelete.Count;
@@ -69,35 +58,30 @@ namespace NotificationService.Infrastructure.Persistence.Repositories
         public async Task<IReadOnlyCollection<ScheduledNotification>> GetPendingAsync(DateTimeOffset before, CancellationToken ct = default)
         {
             return await _dbContext.ScheduledNotifications
-              .FromSqlRaw("""
-                      SELECT *
-                      FROM "ScheduledNotifications" s
-                      WHERE s."SendAt" <= {0}
-                      AND EXISTS (
-                        SELECT 1
-                        FROM "Appointments" a
-                        WHERE a."Id" = s."AppointmentId"
-                        AND a."IsCancelled" = FALSE
-                      )
-                      AND EXISTS (
-                        SELECT 1
-                        FROM "DispatchLogs" d
-                        WHERE d."ScheduledNotificationId" = s."Id"
-                          AND d."AttemptedAt" = (
-                            SELECT MAX(d2."AttemptedAt")
-                            FROM "DispatchLogs" d2
-                            WHERE d2."ScheduledNotificationId" = s."Id"
-                          )
-                          AND (
-                            d."Outcome" IN ('NEW', 'EXPIRED', 'ERROR_TRANSIENT')
-                            OR (d."Outcome" = 'INSCHEDULER' AND d."AttemptedAt" < NOW() - INTERVAL '5 minutes')
-                          )
-                      )
-                      ORDER BY s."SendAt"
-                      LIMIT 50
-                      FOR UPDATE SKIP LOCKED
-                      """, before)
-              .ToListAsync(ct);
+                .AsNoTracking()
+                .Where(s => s.SendAt <= before)
+                .Where(s => !s.Appointment.IsCancelled)
+                .Where(s => _dbContext.DispatchLogs.Any(d => d.ScheduledNotificationId == s.Id))
+                .Where(s =>
+                    _dbContext.DispatchLogs
+                        .Where(d => d.ScheduledNotificationId == s.Id)
+                        .OrderByDescending(d => d.AttemptedAt)
+                        .Select(d => d.Outcome)
+                        .FirstOrDefault() is Outcome.NEW or Outcome.EXPIRED or Outcome.ERROR_TRANSIENT
+                    || (
+                        _dbContext.DispatchLogs
+                            .Where(d => d.ScheduledNotificationId == s.Id)
+                            .OrderByDescending(d => d.AttemptedAt)
+                            .Select(d => d.Outcome)
+                            .FirstOrDefault() == Outcome.INSCHEDULER &&
+                        _dbContext.DispatchLogs
+                            .Where(d => d.ScheduledNotificationId == s.Id)
+                            .OrderByDescending(d => d.AttemptedAt)
+                            .Select(d => d.AttemptedAt)
+                            .FirstOrDefault() < DateTimeOffset.UtcNow.AddMinutes(-5)))
+                .OrderBy(s => s.SendAt)
+                .Take(50)
+                .ToListAsync(ct);
         }
     }
 }
