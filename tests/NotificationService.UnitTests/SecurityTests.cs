@@ -163,6 +163,7 @@ public sealed class SecurityTests
             AppointmentLocation = "Kliniek",
             AppointmentScheduledAt = DateTimeOffset.UtcNow.AddDays(1),
             TenantId = Guid.NewGuid(),
+            TenantTimeZone = "Europe/Amsterdam",
             Provider = "SwiftSend",
             ProviderCredentials = [new ProviderCredential { Key = "api_key", EncryptedValue = "encrypted-secret" }]
         };
@@ -204,6 +205,7 @@ public sealed class SecurityTests
             AppointmentLocation = "Kliniek",
             AppointmentScheduledAt = DateTimeOffset.UtcNow.AddDays(1),
             TenantId = Guid.NewGuid(),
+            TenantTimeZone = "Europe/Amsterdam",
             Provider = "SwiftSend",
             ProviderCredentials = [new ProviderCredential { Key = "api_key", EncryptedValue = "corrupt" }]
         };

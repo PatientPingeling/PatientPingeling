@@ -84,10 +84,11 @@ namespace NotificationService.Application.Services
 
         private static string BuildEmailMessage(RabbitMQNotificationMessage msg)
         {
+            var localAppointmentTime = ToTenantLocalTime(msg.AppointmentScheduledAt, msg.TenantTimeZone);
             return $"""
             Beste {msg.PatientName},
 
-            U heeft op {msg.AppointmentScheduledAt:dddd d MMMM yyyy} om {msg.AppointmentScheduledAt:HH:mm} een afspraak bij {msg.AppointmentLocation}. {msg.AppointmentInstructions}
+            U heeft op {localAppointmentTime:dddd d MMMM yyyy} om {localAppointmentTime:HH:mm} een afspraak bij {msg.AppointmentLocation}. {msg.AppointmentInstructions}
 
             Met vriendelijke groet,
             {msg.Provider}
@@ -97,12 +98,36 @@ namespace NotificationService.Application.Services
 
         private static string BuildSmsMessage(RabbitMQNotificationMessage msg)
         {
-            return $"Beste {msg.PatientName}, u heeft op {msg.AppointmentScheduledAt:d MMMM} om {msg.AppointmentScheduledAt:HH:mm} een afspraak bij {msg.AppointmentLocation}. {msg.AppointmentInstructions}";
+            var localAppointmentTime = ToTenantLocalTime(msg.AppointmentScheduledAt, msg.TenantTimeZone);
+            return $"Beste {msg.PatientName}, u heeft op {localAppointmentTime:d MMMM} om {localAppointmentTime:HH:mm} een afspraak bij {msg.AppointmentLocation}. {msg.AppointmentInstructions}";
         }
 
         private static string BuildPushMessage(RabbitMQNotificationMessage msg)
         {
-            return $"Afspraak herinnering: {msg.AppointmentScheduledAt:d MMM} {msg.AppointmentScheduledAt:HH:mm} - {msg.AppointmentLocation}";
+            var localAppointmentTime = ToTenantLocalTime(msg.AppointmentScheduledAt, msg.TenantTimeZone);
+            return $"Afspraak herinnering: {localAppointmentTime:d MMM} {localAppointmentTime:HH:mm} - {msg.AppointmentLocation}";
+        }
+
+        // Converts the absolute appointment time to the tenant's local wall-clock time so
+        // patients read "14:00" in their own timezone instead of the UTC moment.
+        // Falls back to UTC if the tenant's TimeZone is missing or unknown on this host.
+        private static DateTimeOffset ToTenantLocalTime(DateTimeOffset utcMoment, string tenantTimeZone)
+        {
+            if (string.IsNullOrWhiteSpace(tenantTimeZone)) return utcMoment;
+
+            try
+            {
+                var tz = TimeZoneInfo.FindSystemTimeZoneById(tenantTimeZone);
+                return TimeZoneInfo.ConvertTime(utcMoment, tz);
+            }
+            catch (TimeZoneNotFoundException)
+            {
+                return utcMoment;
+            }
+            catch (InvalidTimeZoneException)
+            {
+                return utcMoment;
+            }
         }
     }
 }

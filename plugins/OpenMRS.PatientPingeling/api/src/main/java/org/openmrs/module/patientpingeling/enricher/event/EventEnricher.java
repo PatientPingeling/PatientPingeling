@@ -9,7 +9,7 @@ import org.openmrs.module.patientpingeling.enricher.Model.EnrichedEvent.Appointm
 
 import java.time.format.DateTimeFormatter;
 import java.lang.reflect.Method;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.Date;
 
 public class EventEnricher {
@@ -78,9 +78,10 @@ public class EventEnricher {
 				log.debug("PP_ENRICHER: Could not extract service name");
 			}
 			
-			// 3. Scheduled date with timezone offset
+			// 3. Scheduled date — emit as UTC (ISO-8601 with +00:00 offset).
+			// The notification service converts to the tenant's local timezone for patient-facing messages.
 			Date startDate = (Date) appointment.getClass().getMethod("getStartDateTime").invoke(appointment);
-			String scheduledAt = startDate != null ? startDate.toInstant().atZone(ZoneId.of("Europe/Amsterdam"))
+			String scheduledAt = startDate != null ? startDate.toInstant().atOffset(ZoneOffset.UTC)
 			        .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME) : null;
 			
 			// 4. Location & instructions

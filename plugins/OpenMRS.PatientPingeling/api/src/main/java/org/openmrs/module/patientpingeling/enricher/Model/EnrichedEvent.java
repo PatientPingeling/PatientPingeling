@@ -77,7 +77,7 @@ public class EnrichedEvent {
 		
 		private String externalId;
 		
-		private String scheduledAt; // ISO-8601 with offset e.g. "2026-06-01T10:00:00+02:00"
+		private String scheduledAt; // ISO-8601 in UTC e.g. "2026-06-01T08:00:00+00:00" — server converts to tenant timezone for patient messages.
 		
 		private String service;
 		
