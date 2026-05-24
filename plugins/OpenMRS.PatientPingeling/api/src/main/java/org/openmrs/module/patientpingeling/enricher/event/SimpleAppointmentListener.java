@@ -1,6 +1,8 @@
 package org.openmrs.module.patientpingeling.enricher.event;
 
 import org.openmrs.module.patientpingeling.enricher.Model.EnrichedEvent;
+import org.openmrs.module.patientpingeling.enricher.RetryQueueService;
+import org.openmrs.module.patientpingeling.enricher.RetryWorker;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.context.Context;
@@ -216,7 +218,7 @@ public class SimpleAppointmentListener {
 											    log.error("PP_WEBHOOK: URL=" + WEBHOOK_URL + " TENANT_NULL="
 											            + (secrets.tenantId == null) + " API_KEY_NULL="
 											            + (secrets.apiKey == null));
-											    webHookCaller(json);
+											    webHookCaller(json, uuid, action);
 										    }
 									    }
 									    catch (Exception e) {
@@ -239,13 +241,15 @@ public class SimpleAppointmentListener {
 		    });
 	}
 	
-	private static void webHookCaller(String jsonPayload) {
+	public static boolean webHookCaller(String jsonPayload, String uuid, String action) {
+		return webHookCaller(jsonPayload, uuid, action, true);
+	}
+	
+	public static boolean webHookCaller(String jsonPayload, String uuid, String action, boolean persistOnFailure) {
 		log.error("PP_WEBHOOK: Starting caller. URL is: " + WEBHOOK_URL);
-		int maxRetries = 3;
-		int waitTime = 10000;
+		int maxRetries = 4;
+		int[] waitTimes = { 2000, 4000, 16000, 16000 };
 		Secrets secrets = getSecrets();
-		log.error("PP_WEBHOOK: Secrets to be applied. source=" + secrets.source + " apiKey=" + maskSecret(secrets.apiKey)
-		        + " tenantId=" + maskSecret(secrets.tenantId));
 		
 		for (int i = 1; i <= maxRetries; i++) {
 			HttpURLConnection conn = null;
@@ -257,8 +261,6 @@ public class SimpleAppointmentListener {
 				conn = (HttpURLConnection) url.openConnection();
 				conn.setRequestMethod("POST");
 				conn.setRequestProperty("Content-Type", "application/json; utf-8");
-				log.error("PP_WEBHOOK: Setting headers X-Api-Key and X-Tenant-Id (masked). apiKey="
-				        + maskSecret(secrets.apiKey) + " tenantId=" + maskSecret(secrets.tenantId));
 				conn.setRequestProperty("X-Api-Key", secrets.apiKey);
 				conn.setRequestProperty("X-Tenant-Id", secrets.tenantId);
 				conn.setDoOutput(true);
@@ -274,7 +276,10 @@ public class SimpleAppointmentListener {
 				int code = conn.getResponseCode();
 				if (code >= 200 && code < 300) {
 					log.error("PP_WEBHOOK: Success! Status code: " + code);
-					return;
+					return true;
+				} else if (code >= 400 && code < 500) {
+					log.error("PP_WEBHOOK: Client error " + code + " for uuid=" + uuid + ", not retrying.");
+					return true; // treated as "done" so DB row gets cleaned up
 				} else {
 					throw new Exception("HTTP error code: " + code);
 				}
@@ -284,15 +289,24 @@ public class SimpleAppointmentListener {
 				
 				if (i < maxRetries) {
 					try {
-						log.error("PP_WEBHOOK: Waiting 10 seconds before retry...");
-						Thread.sleep(waitTime);
+						int wait = waitTimes[i - 1];
+						log.error("PP_WEBHOOK: Waiting " + (wait / 1000) + " seconds before retry...");
+						Thread.sleep(wait);
 					}
 					catch (InterruptedException ie) {
 						Thread.currentThread().interrupt();
-						return;
+						return false;
 					}
 				} else {
-					log.error("PP_WEBHOOK: Max retries reached. Giving up.");
+					log.error("PP_WEBHOOK: Max retries reached for uuid=" + uuid + " action=" + action
+					        + " persistOnFailure=" + persistOnFailure);
+					if (persistOnFailure) {
+						Long id = RetryQueueService.insert(uuid, action, jsonPayload);
+						if (id != null) {
+							RetryWorker.enqueue(id);
+						}
+					}
+					return false;
 				}
 			}
 			finally {
@@ -307,5 +321,6 @@ public class SimpleAppointmentListener {
 				}
 			}
 		}
+		return false;
 	}
 }

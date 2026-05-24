@@ -7,6 +7,8 @@ import org.openmrs.api.AdministrationService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.BaseModuleActivator;
 import org.openmrs.module.patientpingeling.enricher.event.EventSubscriber;
+import org.openmrs.module.patientpingeling.enricher.RetryQueueService;
+import org.openmrs.module.patientpingeling.enricher.RetryWorker;
 
 public class PatientpingelingenricherActivator extends BaseModuleActivator {
 	
@@ -21,6 +23,9 @@ public class PatientpingelingenricherActivator extends BaseModuleActivator {
 		log.error("PP_ENRICHER: Module gestart. Subscribing...");
 		try {
 			ensureGlobalPropertiesExist();
+			RetryQueueService.ensureTableExists();
+			RetryWorker.start();
+			RetryWorker.loadFromDatabase(); // pick up any events that survived a restart
 			EventSubscriber.subscribe();
 			log.error("PP_ENRICHER: Subscribe voltooid.");
 		}
@@ -59,6 +64,7 @@ public class PatientpingelingenricherActivator extends BaseModuleActivator {
 		log.error("PP_ENRICHER: Module gestopt.");
 		try {
 			EventSubscriber.unsubscribe();
+			RetryWorker.stop();
 		}
 		catch (Exception e) {
 			log.error("PP_ENRICHER: Unsubscribe mislukt", e);
