@@ -1,4 +1,4 @@
-# Realisatie Logboek van [NAAM]
+# Realisatie Logboek van Wouter
 In dit logboek wordt beschreven welke tools zijn gebruikt tijdens de ontwikkeling van het systeem, waarom deze zijn gebruikt en wordt er gereflecteerd op de toegevoegde waarde & kosten van deze tools.
 
 ## Gebruikte ontwikkeltools (IDE's)
