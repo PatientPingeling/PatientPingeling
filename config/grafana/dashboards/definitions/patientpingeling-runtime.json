@@ -41,7 +41,7 @@
       "datasource": { "uid": "prometheus" },
       "fieldConfig": { "defaults": { "unit": "Bps", "color": { "mode": "thresholds" }, "thresholds": { "steps": [{ "color": "green", "value": 0 }, { "color": "yellow", "value": 10000000 }, { "color": "red", "value": 50000000 }] } } },
       "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" },
-      "targets": [{ "expr": "sum(rate(dotnet_gc_heap_allocated_bytes_total[1m]))", "refId": "A" }]
+      "targets": [{ "expr": "sum(rate(dotnet_gc_heap_allocated_bytes_total[2m]))", "refId": "A" }]
     },
     {
       "id": 6, "type": "stat", "title": "Lock Contentions (5m)",
@@ -77,7 +77,7 @@
       "datasource": { "uid": "prometheus" },
       "fieldConfig": { "defaults": { "unit": "Bps", "custom": { "fillOpacity": 10 } } },
       "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull"] } },
-      "targets": [{ "expr": "sum(rate(dotnet_gc_heap_allocated_bytes_total[1m])) by (service_name)", "legendFormat": "{{service_name}}", "refId": "A" }]
+      "targets": [{ "expr": "sum(rate(dotnet_gc_heap_allocated_bytes_total[2m])) by (service_name)", "legendFormat": "{{service_name}}", "refId": "A" }]
     },
     {
       "id": 11, "type": "timeseries", "title": "GC — Collections / sec by Generation",
@@ -85,7 +85,7 @@
       "datasource": { "uid": "prometheus" },
       "fieldConfig": { "defaults": { "unit": "ops", "custom": { "fillOpacity": 10 } } },
       "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull"] } },
-      "targets": [{ "expr": "sum(rate(dotnet_gc_collections_total[1m])) by (service_name, generation)", "legendFormat": "{{service_name}} gen{{generation}}", "refId": "A" }]
+      "targets": [{ "expr": "sum(rate(dotnet_gc_collections_total[2m])) by (service_name, generation)", "legendFormat": "{{service_name}} gen{{generation}}", "refId": "A" }]
     },
     {
       "id": 12, "type": "timeseries", "title": "GC — Pause Time / sec",
@@ -93,7 +93,7 @@
       "datasource": { "uid": "prometheus" },
       "fieldConfig": { "defaults": { "unit": "s", "custom": { "fillOpacity": 10 } } },
       "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull"] } },
-      "targets": [{ "expr": "sum(rate(dotnet_gc_pause_time_seconds_total[1m])) by (service_name)", "legendFormat": "{{service_name}}", "refId": "A" }]
+      "targets": [{ "expr": "sum(rate(dotnet_gc_pause_time_seconds_total[2m])) by (service_name)", "legendFormat": "{{service_name}}", "refId": "A" }]
     },
     {
       "id": 13, "type": "timeseries", "title": "GC — Heap Fragmentation",
@@ -121,7 +121,7 @@
       "datasource": { "uid": "prometheus" },
       "fieldConfig": { "defaults": { "unit": "ops", "custom": { "fillOpacity": 10 } } },
       "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
-      "targets": [{ "expr": "sum(rate(dotnet_thread_pool_work_item_count_total[1m])) by (service_name)", "legendFormat": "{{service_name}}", "refId": "A" }]
+      "targets": [{ "expr": "sum(rate(dotnet_thread_pool_work_item_count_total[2m])) by (service_name)", "legendFormat": "{{service_name}}", "refId": "A" }]
     },
     {
       "id": 17, "type": "timeseries", "title": "Monitor Lock Contentions / sec",
@@ -129,7 +129,7 @@
       "datasource": { "uid": "prometheus" },
       "fieldConfig": { "defaults": { "unit": "ops", "custom": { "fillOpacity": 10 } } },
       "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
-      "targets": [{ "expr": "sum(rate(dotnet_monitor_lock_contentions_total[1m])) by (service_name)", "legendFormat": "{{service_name}}", "refId": "A" }]
+      "targets": [{ "expr": "sum(rate(dotnet_monitor_lock_contentions_total[2m])) by (service_name)", "legendFormat": "{{service_name}}", "refId": "A" }]
     },
     {
       "type": "row", "title": "Kestrel (API)", "collapsed": false,
@@ -169,7 +169,7 @@
       "datasource": { "uid": "prometheus" },
       "fieldConfig": { "defaults": { "unit": "ops", "custom": { "fillOpacity": 10 } } },
       "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
-      "targets": [{ "expr": "sum(rate(dotnet_jit_compiled_methods_total[1m])) by (service_name)", "legendFormat": "{{service_name}}", "refId": "A" }]
+      "targets": [{ "expr": "sum(rate(dotnet_jit_compiled_methods_total[2m])) by (service_name)", "legendFormat": "{{service_name}}", "refId": "A" }]
     },
     {
       "id": 24, "type": "timeseries", "title": "JIT — IL Bytes Compiled / sec",
@@ -177,7 +177,7 @@
       "datasource": { "uid": "prometheus" },
       "fieldConfig": { "defaults": { "unit": "Bps", "custom": { "fillOpacity": 10 } } },
       "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
-      "targets": [{ "expr": "sum(rate(dotnet_jit_compiled_il_size_bytes_total[1m])) by (service_name)", "legendFormat": "{{service_name}}", "refId": "A" }]
+      "targets": [{ "expr": "sum(rate(dotnet_jit_compiled_il_size_bytes_total[2m])) by (service_name)", "legendFormat": "{{service_name}}", "refId": "A" }]
     },
     {
       "type": "row", "title": "Distributed Traces (Span Metrics)", "collapsed": false,
@@ -189,7 +189,7 @@
       "datasource": { "uid": "prometheus" },
       "fieldConfig": { "defaults": { "unit": "ops", "custom": { "fillOpacity": 10 } } },
       "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull"] } },
-      "targets": [{ "expr": "sum(rate(traces_spanmetrics_calls_total{service_name=~\"NotificationService.*\"}[1m])) by (service_name, span_name)", "legendFormat": "{{service_name}} — {{span_name}}", "refId": "A" }]
+      "targets": [{ "expr": "sum(rate(traces_spanmetrics_calls_total{service_name=~\"NotificationService.*\"}[2m])) by (service_name, span_name)", "legendFormat": "{{service_name}} — {{span_name}}", "refId": "A" }]
     },
     {
       "id": 27, "type": "timeseries", "title": "Span P99 Latency by Operation",

@@ -3,7 +3,7 @@ variables:
   - name: baseUrl
     value: http://localhost:8000
   - name: tenantId
-    value: 5fa85f64-5717-4562-b3fc-2c963f66afa8
+    value: 5fa85f64-5717-4562-b3fc-2c963f66afad
   - name: providersBaseUrl
     value: http://localhost:1337
   - name: studentGroup
