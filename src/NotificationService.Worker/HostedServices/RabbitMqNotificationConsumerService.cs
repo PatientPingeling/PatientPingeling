@@ -64,6 +64,25 @@ namespace NotificationService.Worker.HostedServices
                         return;
                     }
 
+                    // Appointment already started — don't notify a patient about an appointment in the past.
+                    if (command.AppointmentScheduledAt <= DateTimeOffset.UtcNow)
+                    {
+                        _logger.LogWarning("Notification {Id} skipped: appointment already started at {AppointmentScheduledAt}.", command.ScheduledNotificationId, command.AppointmentScheduledAt);
+
+                        await dispatchLogRepository.AddAsync(new DispatchLog
+                        {
+                            Id = Guid.CreateVersion7(),
+                            AttemptedAt = DateTimeOffset.UtcNow,
+                            Outcome = Outcome.EXPIRED,
+                            ScheduledNotificationId = command.ScheduledNotificationId
+                        }, ct);
+
+                        await unitOfWork.CommitAsync();
+
+                        await channel.BasicAckAsync(ea.DeliveryTag, multiple: false, cancellationToken: ct);
+                        return;
+                    }
+
                     // Staleness check — if message has been in-flight longer than the SLA, discard it
                     if (DateTimeOffset.UtcNow - command.EnqueuedAt > MessageSla)
                     {

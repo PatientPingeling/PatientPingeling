@@ -48,6 +48,11 @@ namespace NotificationService.Api.Validators
             RuleFor(x => x.ScheduledAt)
                 .GreaterThan(DateTimeOffset.UnixEpoch)
                 .WithMessage("Date is too far in the past.");
+
+            // Reject appointments that have already started — no notifications can usefully be scheduled for them.
+            RuleFor(x => x.ScheduledAt)
+                .GreaterThan(_ => DateTimeOffset.UtcNow)
+                .WithMessage("Appointment has already started; no notifications will be scheduled.");
         }
     }
 }
