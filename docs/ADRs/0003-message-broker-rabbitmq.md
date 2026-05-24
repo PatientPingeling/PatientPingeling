@@ -35,8 +35,9 @@ De vraag is welke message-broker we gebruiken en hoe deze is ingericht.
    b. **Competing Consumers (Worker Queues)**: Een enkele queue en één of meerdere consumers. Verhoogt de schaalbaarheid.
    c. **Publish/Subscribe**: Een producer publiceert een bericht dat verspreid wordt naar alle consumers.
 
-3. _Welk retry mechanisme?_
+3. _Hoe gaan we om met faalgevallen en duplicaten?_
    a. **Dead Letter Exchange (DLX)**: NACK-berichten worden na X pogingen doorgestuurd naar een aparte dead letter queue voor handmatige inspectie.
+   b. **Requeue + idempotency-log**: transient errors gaan via `BasicNack(requeue: true)` terug de queue in; permanent errors worden bewust gedropt; duplicate-bezorging wordt afgevangen door een `dispatch_logs` tabel die de laatste verwerkingsstatus per `scheduled_notification_id` bewaart.
 
 ## Resultaten
 
@@ -52,15 +53,23 @@ We hebben gekozen voor **RabbitMQ direct** (optie 1a).
 _Gekozen queue topologie_
 We hebben gekozen voor **Competing Consumers**. Meerdere Worker-instanties kunnen berichten van dezelfde queue consumeren, wat horizontaal schalen mogelijk maakt. Publish/Subscribe is afgewezen omdat het duplicate notificaties zou introduceren.
 
-_Gekozen retry mechanisme_
-We gebruiken **DLX** met een `x-death` header om NACK-berichten te retryen en poison-messages uiteindelijk te isoleren in een dead letter queue.
+_Gekozen faal- en duplicaat-afhandeling_
+We hebben gekozen voor **optie 3b: requeue + idempotency-log**. DLX (optie 3a) is afgewezen omdat onze betrouwbaarheidsbehoefte al wordt afgedekt door een combinatie van requeue voor transient fouten en de bestaande `dispatch_logs` tabel voor idempotentie en audit:
+
+- Transient errors (provider tijdelijk down, netwerkglitch) → `BasicNack(requeue: true)` — bericht gaat terug de queue in en wordt later opnieuw geprobeerd.
+- Permanent errors (geen contactgegevens, ongeldige payload) → `BasicNack(requeue: false)` — bericht wordt bewust gedropt; de bijbehorende `DispatchLog` met `Outcome = ERROR_PERMANENT` blijft in de database als audit-spoor.
+- Duplicate-bezorging → de worker bekijkt vóór elke dispatch de nieuwste `dispatch_logs` rij voor dezelfde `scheduled_notification_id`. Bij `SUCCESS` wordt het bericht stil ge-ACK'd zonder opnieuw te verzenden.
+- Stale messages (>10 minuten in queue) → worker logt `Outcome = EXPIRED` en ACK't, voorkomt dat oude data alsnog wordt verzonden.
+
+DLX blijft een **toekomstige overweging** wanneer we handmatige inspectie van poison-messages willen of metrics op de DLQ-grootte willen tonen op het Grafana-dashboard.
 
 ### Gevolgen
 
 - Goed, omdat RabbitMQ tijdelijk kan bufferen bij downtime van messaging providers, waardoor notificaties niet verloren gaan.
 - Goed, omdat competing consumers horizontaal kan schalen door meerdere Worker-instanties te draaien.
-- Goed, omdat directe RabbitMQ-configuratie volledige controle geeft over exchanges, bindings en DLX-setup.
-- Slecht, omdat DLX/retry-configuratie extra complexiteit en beheer introduceert (TTL's, bindings en DLQ monitoring).
+- Goed, omdat directe RabbitMQ-configuratie volledige controle geeft over exchanges, bindings en consumer-acknowledgement-gedrag.
+- Goed, omdat idempotentie via `dispatch_logs` ervoor zorgt dat dubbele bezorging (bv. na een worker-crash vóór ACK) geen dubbele notificaties oplevert.
+- Slecht, omdat permanent gefaalde berichten zonder DLX verloren gaan voor handmatige inspectie — alleen de `DispatchLog` rij blijft over als audit-spoor.
 - Toekomstige overweging: MassTransit als de hoeveelheid boilerplate rondom consumers en retry-policies te groot wordt.
 
 ## Meer Informatie
