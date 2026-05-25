@@ -277,9 +277,9 @@ public class SimpleAppointmentListener {
 				if (code >= 200 && code < 300) {
 					log.error("PP_WEBHOOK: Success! Status code: " + code);
 					return true;
-				} else if (code >= 400 && code < 500) {
+				} else if (code == 400 || code == 404 || code == 422) {
 					log.error("PP_WEBHOOK: Client error " + code + " for uuid=" + uuid + ", not retrying.");
-					return true; // treated as "done" so DB row gets cleaned up
+					return true;
 				} else {
 					throw new Exception("HTTP error code: " + code);
 				}
