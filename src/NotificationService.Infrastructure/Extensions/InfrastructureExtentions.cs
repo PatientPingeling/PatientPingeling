@@ -14,6 +14,7 @@ using NotificationService.Infrastructure.Providers.SecurePost;
 using NotificationService.Infrastructure.Providers.SwiftSend;
 using NotificationService.Infrastructure.Security;
 using System.Net;
+using NotificationService.Application.Telemetry;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
@@ -257,7 +258,13 @@ namespace NotificationService.Infrastructure.Extensions
                         .AddRuntimeInstrumentation()
                         .AddProcessInstrumentation();
 
-                    if (enableAspNetCore) metrics.AddAspNetCoreInstrumentation();
+                    metrics.AddMeter(NotificationMetrics.MeterName);
+
+                    if (enableAspNetCore)
+                    {
+                        metrics.AddAspNetCoreInstrumentation();
+                        metrics.AddMeter("Microsoft.AspNetCore.Server.Kestrel");
+                    }
                     if (enableHttpClient) metrics.AddHttpClientInstrumentation();
 
                     metrics.AddOtlpExporter(ConfigureExporter(options));

@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using NotificationService.Application.Abstractions;
 using NotificationService.Application.Commands;
+using NotificationService.Application.Telemetry;
 using NotificationService.Domain;
 using NotificationService.Domain.Enums;
 
@@ -23,6 +24,9 @@ namespace NotificationService.Application.Services
             var resolved = ResolveFormatAndRecipient(provider, notificationMessage);
             if (resolved is null)
             {
+                NotificationMetrics.NotificationsDispatched.Add(1,
+                    new KeyValuePair<string, object?>("provider", notificationMessage.Provider),
+                    new KeyValuePair<string, object?>("outcome", "no_contact"));
                 return Result<string>.Failure(new Error("notification.no_contact", "No supported contact method available for this patient.", ErrorType.Validation));
             }
             var (format, recipient) = resolved.Value;
@@ -46,11 +50,17 @@ namespace NotificationService.Application.Services
             try
             {
                 var externalMessageId = await provider.SendAsync(format, message, recipient, decryptedCreds, ct);
+                NotificationMetrics.NotificationsDispatched.Add(1,
+                    new KeyValuePair<string, object?>("provider", notificationMessage.Provider),
+                    new KeyValuePair<string, object?>("outcome", "success"));
                 return Result<string>.Success(externalMessageId);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Provider {Provider} failed to send notification {Id}.", notificationMessage.Provider, notificationMessage.ScheduledNotificationId);
+                NotificationMetrics.NotificationsDispatched.Add(1,
+                    new KeyValuePair<string, object?>("provider", notificationMessage.Provider),
+                    new KeyValuePair<string, object?>("outcome", "failure"));
                 return Result<string>.Failure(new Error("provider.send_error", "The message provider failed to deliver the notification.", ErrorType.Failure));
             }
         }
@@ -91,9 +101,8 @@ namespace NotificationService.Application.Services
             U heeft op {localAppointmentTime:dddd d MMMM yyyy} om {localAppointmentTime:HH:mm} een afspraak bij {msg.AppointmentLocation}. {msg.AppointmentInstructions}
 
             Met vriendelijke groet,
-            {msg.Provider}
+            {msg.TenantName}
             """;
-            // TODO: replace {msg.Provider} with tenant display name — add TenantName field to RabbitMQNotificationMessage (#56)
         }
 
         private static string BuildSmsMessage(RabbitMQNotificationMessage msg)

@@ -1,7 +1,8 @@
 # ---- Port Overview ----
 # | Service        | Host Port |
 # |----------------|-----------|
-# | .NET API       | 8000      |
+# | .NET API       | 8000      |  <- via Traefik (load-balanced)
+# | Traefik UI     | 8080      |
 # | FakeComWorld   | 1337      |
 # | OpenMRS        | 80        |
 # | RabbitMQ       | 5672      |
@@ -13,6 +14,20 @@ services:
 # ==========================================
 # .NET NOTIFICATION SERVICE STACK
 # ==========================================
+  traefik:
+    image: traefik:v3.3
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:8000"
+    ports:
+      - "8000:8000"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    restart: unless-stopped
+
   api:
     build:
       context: ./src
@@ -32,10 +47,15 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      traefik:
+        condition: service_started
       # otel-lgtm:
       #   condition: service_started
-    ports:
-      - "8000:8000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.api.entrypoints=web"
+      - "traefik.http.services.api.loadbalancer.server.port=8000"
     restart: unless-stopped
 
   scheduler:

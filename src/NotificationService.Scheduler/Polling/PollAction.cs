@@ -1,6 +1,7 @@
 using NotificationService.Application.Abstractions;
 using NotificationService.Application.Factories;
 using NotificationService.Application.Commands;
+using NotificationService.Application.Telemetry;
 using NotificationService.Scheduler.RabbitMQ;
 using NotificationService.Domain.Entities;
 using RabbitMQ.Client.Exceptions;
@@ -69,6 +70,7 @@ namespace NotificationService.Scheduler.Polling
                 try
                 {
                     await _queueEstablisher.PublishAsync(notification, cancellationToken);
+                    NotificationMetrics.NotificationsEnqueued.Add(1);
                     _logger.LogInformation("Notification {Id} published to RabbitMQ.", notification.ScheduledNotificationId);
 
                     await _unitOfWork.BeginTransactionAsync(cancellationToken);

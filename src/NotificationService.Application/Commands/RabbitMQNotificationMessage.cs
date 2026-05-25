@@ -18,6 +18,7 @@ namespace NotificationService.Application.Commands
         public required DateTimeOffset AppointmentScheduledAt { get; set; }
 
         public required Guid TenantId { get; set; }
+        public required string TenantName { get; set; }
         public required string TenantTimeZone { get; set; }
         public required string Provider { get; set; }
         // TODO: replace ProviderCredential entity with a dedicated DTO (Key + EncryptedValue only) to avoid leaking EF navigation properties onto the queue (#56)
@@ -40,6 +41,7 @@ namespace NotificationService.Application.Commands
             AppointmentScheduledAt = message.Appointment.ScheduledAt,
 
             TenantId = message.Tenant.Id,
+            TenantName = message.Tenant.Name,
             TenantTimeZone = message.Tenant.TimeZone,
             Provider = message.Tenant.Provider,
             ProviderCredentials = message.ProviderCredentials,

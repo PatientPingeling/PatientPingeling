@@ -9,7 +9,9 @@ import http from 'k6/http';
 import { check } from 'k6';
 
 const BASE_URL  = __ENV.BASE_URL  || 'http://host.docker.internal:8000';
-const TENANT_ID = __ENV.TENANT_ID || '3fa85f64-5717-4562-b3fc-2c963f66afa6';
+// LegacyLink tenant: no rate limit, safe for full-flow demos.
+// SwiftSend/SecurePost/AsyncFlow tenants are capped at 10 req/min — avoid for dispatch testing.
+const TENANT_ID = __ENV.TENANT_ID || '5fa85f64-5717-4562-b3fc-2c963f66afa8';
 const API_KEY   = __ENV.API_KEY   || 'test-secret';
 
 export const options = {
@@ -32,8 +34,8 @@ export default function () {
     const patientId  = `PP-PERF-${runId}`;
     const apptId     = `APT-PERF-${runId}`;
 
-    // Appointment 60 days in the future — well past the "already started" rejection rule.
-    const scheduledAt = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString();
+    // Appointment 1 hour in the future — triggers real scheduler+worker dispatch during a demo.
+    const scheduledAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
 
     const payload = JSON.stringify({
         action: 'CREATED',

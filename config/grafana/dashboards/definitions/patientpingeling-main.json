@@ -39,12 +39,32 @@
       ]
     },
     {
+      "type": "row", "title": "Business Metrics", "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 8 }, "id": 20
+    },
+    {
+      "id": 21, "type": "timeseries", "title": "Notifications Dispatched / min by Outcome",
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 9 },
+      "datasource": { "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "palette-classic" } } },
+      "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [{ "expr": "sum(increase(patientpingeling_notifications_dispatched_total[2m])) by (provider, outcome)", "legendFormat": "{{provider}} — {{outcome}}", "refId": "A" }]
+    },
+    {
+      "id": 22, "type": "timeseries", "title": "Notifications Enqueued by Scheduler / min",
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 9 },
+      "datasource": { "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "palette-classic" } } },
+      "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [{ "expr": "sum(increase(patientpingeling_notifications_enqueued_total[2m]))", "legendFormat": "enqueued", "refId": "A" }]
+    },
+    {
       "type": "row", "title": "Worker — Provider Calls", "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 8 }, "id": 5
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 16 }, "id": 5
     },
     {
       "id": 6, "type": "timeseries", "title": "Provider — Calls / min",
-      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 9 },
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 17 },
       "datasource": { "uid": "prometheus" },
       "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "palette-classic" } } },
       "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
@@ -52,7 +72,7 @@
     },
     {
       "id": 7, "type": "timeseries", "title": "Provider — Response Status Codes / min",
-      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 9 },
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 17 },
       "datasource": { "uid": "prometheus" },
       "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "palette-classic" } } },
       "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
@@ -60,11 +80,11 @@
     },
     {
       "type": "row", "title": "Runtime & Resources", "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 16 }, "id": 8
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 24 }, "id": 8
     },
     {
       "id": 9, "type": "timeseries", "title": "Memory — Working Set",
-      "gridPos": { "h": 7, "w": 8, "x": 0, "y": 17 },
+      "gridPos": { "h": 7, "w": 8, "x": 0, "y": 25 },
       "datasource": { "uid": "prometheus" },
       "fieldConfig": { "defaults": { "unit": "bytes", "color": { "mode": "palette-classic" } } },
       "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
@@ -72,7 +92,7 @@
     },
     {
       "id": 10, "type": "timeseries", "title": "CPU Time Rate",
-      "gridPos": { "h": 7, "w": 8, "x": 8, "y": 17 },
+      "gridPos": { "h": 7, "w": 8, "x": 8, "y": 25 },
       "datasource": { "uid": "prometheus" },
       "fieldConfig": { "defaults": { "unit": "s", "color": { "mode": "palette-classic" } } },
       "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
@@ -80,7 +100,7 @@
     },
     {
       "id": 11, "type": "timeseries", "title": "GC Collections / sec",
-      "gridPos": { "h": 7, "w": 8, "x": 16, "y": 17 },
+      "gridPos": { "h": 7, "w": 8, "x": 16, "y": 25 },
       "datasource": { "uid": "prometheus" },
       "fieldConfig": { "defaults": { "unit": "ops", "color": { "mode": "palette-classic" } } },
       "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
@@ -88,7 +108,7 @@
     },
     {
       "id": 12, "type": "timeseries", "title": "Thread Pool — Queue Length",
-      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 24 },
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 32 },
       "datasource": { "uid": "prometheus" },
       "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "palette-classic" } } },
       "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
@@ -96,7 +116,7 @@
     },
     {
       "id": 13, "type": "timeseries", "title": "Exceptions / sec",
-      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 24 },
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 32 },
       "datasource": { "uid": "prometheus" },
       "fieldConfig": { "defaults": { "unit": "ops", "color": { "mode": "palette-classic" } } },
       "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
@@ -104,18 +124,18 @@
     },
     {
       "type": "row", "title": "Logs", "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 31 }, "id": 14
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 39 }, "id": 14
     },
     {
       "id": 16, "type": "logs", "title": "Errors & Warnings",
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 32 },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 40 },
       "datasource": { "uid": "loki" },
       "options": { "dedupStrategy": "none", "showLabels": true, "wrapLogMessage": true, "enableLogDetails": true, "sortOrder": "Descending" },
       "targets": [{ "expr": "{service_name=~\"NotificationService.*\"} | severity_number >= `13`", "refId": "A", "legendFormat": "" }]
     },
     {
       "id": 15, "type": "logs", "title": "All Service Logs",
-      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 40 },
+      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 48 },
       "datasource": { "uid": "loki" },
       "options": { "dedupStrategy": "none", "showLabels": true, "wrapLogMessage": true, "enableLogDetails": true, "sortOrder": "Descending" },
       "targets": [{ "expr": "{service_name=~\"NotificationService.*\"}", "refId": "A" }]
