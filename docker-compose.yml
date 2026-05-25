@@ -145,6 +145,8 @@ services:
       - ./config/grafana/dashboards/definitions:/etc/grafana/provisioning/dashboards/definitions:ro
       - ./config/grafana/datasources/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
       - grafana_data:/var/lib/grafana
+      - prometheus_data:/data/prometheus
+      - loki_data:/loki
     restart: unless-stopped
 
   postgres:
@@ -276,3 +278,5 @@ volumes:
   openmrs-data:
   db-data:
   grafana_data:
+  prometheus_data:
+  loki_data:
