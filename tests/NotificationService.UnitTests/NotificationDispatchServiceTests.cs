@@ -139,6 +139,7 @@ public sealed class NotificationDispatchServiceTests
             AppointmentLocation = "Polikliniek",
             AppointmentScheduledAt = DateTimeOffset.UtcNow.AddDays(1),
             TenantId = Guid.NewGuid(),
+            TenantName = "Test Tenant",
             TenantTimeZone = "Europe/Amsterdam",
             Provider = "SwiftSend",
             ProviderCredentials = [new ProviderCredential { Key = "api_key", EncryptedValue = "enc-val" }]
