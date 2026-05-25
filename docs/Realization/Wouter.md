@@ -56,4 +56,5 @@ Na het reflecteren op de gebruikte tools, zijn een aantal verbeterpunten naar vo
 | [Docker Compose File](https://github.com/PatientPingeling/PatientPingeling/commit/42f9b67c5e9c88c6af9ede1fb031bd38d6a9062f#diff-e45e45baeda1c1e73482975a664062aa56f20c03dd9d64a827aba57775bed0d3)|Toevoegingen aan de docker compose file voor het openMRS systeem (global properties en een .omod installer)|14/05/26|
 | [Docs ERD](https://github.com/PatientPingeling/PatientPingeling/commit/ec4281bc8dec232f49230630e0aae4a271bd91bc)|Update van ons ERD model nadat we een dispatchlog tabel hebben toegevoegd.|23/05/26|
 | [Docs Chaos Testing](https://github.com/PatientPingeling/PatientPingeling/commit/189e4acde8cc9e5ca055ffbba813472f8906080f)|Handmatige chaos tests uitgevoerd door verschillende components offline te halen terwijl er data binnenkomt.|25/05/26|
+
 *Sommige functionaliteiten konden niet allemaal gelinkt worden aan dezeflde merge/commit message. Ook is er natuurlijk werk van mij dat onder andere namen op github staat, bijvoorbeeld na het overleggen van de structuur met het team wordt het C4 model gecreëerd/aangepast*
