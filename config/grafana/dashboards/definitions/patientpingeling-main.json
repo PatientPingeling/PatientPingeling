@@ -15,27 +15,27 @@
       "id": 2, "type": "timeseries", "title": "API — Requests / min",
       "gridPos": { "h": 7, "w": 8, "x": 0, "y": 1 },
       "datasource": { "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "palette-classic" } } },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "palette-classic" }, "custom": { "lineWidth": 2, "fillOpacity": 8, "spanNulls": true } } },
       "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
-      "targets": [{ "expr": "sum(increase(http_server_request_duration_seconds_count{service_name=\"NotificationService.Api\"}[2m])) by (http_route, http_request_method)", "legendFormat": "{{http_request_method}} {{http_route}}", "refId": "A" }]
+      "targets": [{ "expr": "sum(rate(http_server_request_duration_seconds_count{service_name=\"NotificationService.Api\"}[1m])) by (http_route, http_request_method) * 60", "legendFormat": "{{http_request_method}} {{http_route}}", "refId": "A" }]
     },
     {
       "id": 3, "type": "timeseries", "title": "API — P99 Latency",
       "gridPos": { "h": 7, "w": 8, "x": 8, "y": 1 },
       "datasource": { "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "s", "color": { "mode": "palette-classic" } } },
+      "fieldConfig": { "defaults": { "unit": "s", "color": { "mode": "palette-classic" }, "custom": { "lineWidth": 2, "fillOpacity": 8, "spanNulls": true } } },
       "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
-      "targets": [{ "expr": "histogram_quantile(0.99, sum(rate(http_server_request_duration_seconds_bucket{service_name=\"NotificationService.Api\"}[2m])) by (le, http_route))", "legendFormat": "p99 {{http_route}}", "refId": "A" }]
+      "targets": [{ "expr": "histogram_quantile(0.99, sum(rate(http_server_request_duration_seconds_bucket{service_name=\"NotificationService.Api\"}[1m])) by (le, http_route))", "legendFormat": "p99 {{http_route}}", "refId": "A" }]
     },
     {
       "id": 4, "type": "timeseries", "title": "API — Error Rate (4xx / 5xx)",
       "gridPos": { "h": 7, "w": 8, "x": 16, "y": 1 },
       "datasource": { "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "reqps", "color": { "mode": "palette-classic" } } },
+      "fieldConfig": { "defaults": { "unit": "reqps", "color": { "mode": "palette-classic" }, "custom": { "lineWidth": 2, "fillOpacity": 8, "spanNulls": true } } },
       "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
       "targets": [
-        { "expr": "sum(rate(http_server_request_duration_seconds_count{service_name=\"NotificationService.Api\", http_response_status_code=~\"4..\"}[2m]))", "legendFormat": "4xx", "refId": "A" },
-        { "expr": "sum(rate(http_server_request_duration_seconds_count{service_name=\"NotificationService.Api\", http_response_status_code=~\"5..\"}[2m]))", "legendFormat": "5xx", "refId": "B" }
+        { "expr": "sum(rate(http_server_request_duration_seconds_count{service_name=\"NotificationService.Api\", http_response_status_code=~\"4..\"}[1m]))", "legendFormat": "4xx", "refId": "A" },
+        { "expr": "sum(rate(http_server_request_duration_seconds_count{service_name=\"NotificationService.Api\", http_response_status_code=~\"5..\"}[1m]))", "legendFormat": "5xx", "refId": "B" }
       ]
     },
     {
@@ -46,17 +46,17 @@
       "id": 21, "type": "timeseries", "title": "Notifications Dispatched / min by Outcome",
       "gridPos": { "h": 7, "w": 12, "x": 0, "y": 9 },
       "datasource": { "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "palette-classic" } } },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "palette-classic" }, "custom": { "lineWidth": 2, "fillOpacity": 8, "spanNulls": true } } },
       "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
-      "targets": [{ "expr": "sum(increase(patientpingeling_notifications_dispatched_total[2m])) by (provider, outcome)", "legendFormat": "{{provider}} — {{outcome}}", "refId": "A" }]
+      "targets": [{ "expr": "sum(rate(patientpingeling_notifications_dispatched_total[1m])) by (provider, outcome) * 60", "legendFormat": "{{provider}} — {{outcome}}", "refId": "A" }]
     },
     {
       "id": 22, "type": "timeseries", "title": "Notifications Enqueued by Scheduler / min",
       "gridPos": { "h": 7, "w": 12, "x": 12, "y": 9 },
       "datasource": { "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "palette-classic" } } },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "palette-classic" }, "custom": { "lineWidth": 2, "fillOpacity": 8, "spanNulls": true } } },
       "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
-      "targets": [{ "expr": "sum(increase(patientpingeling_notifications_enqueued_total[2m]))", "legendFormat": "enqueued", "refId": "A" }]
+      "targets": [{ "expr": "sum(rate(patientpingeling_notifications_enqueued_total[1m])) * 60", "legendFormat": "enqueued", "refId": "A" }]
     },
     {
       "type": "row", "title": "Worker — Provider Calls", "collapsed": false,
@@ -66,17 +66,17 @@
       "id": 6, "type": "timeseries", "title": "Provider — Calls / min",
       "gridPos": { "h": 7, "w": 12, "x": 0, "y": 17 },
       "datasource": { "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "palette-classic" } } },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "palette-classic" }, "custom": { "lineWidth": 2, "fillOpacity": 8, "spanNulls": true } } },
       "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
-      "targets": [{ "expr": "sum(increase(http_client_request_duration_seconds_count{service_name=~\"NotificationService.(Worker|Scheduler)\", server_address=\"messageproviders\"}[2m])) by (service_name, http_request_method)", "legendFormat": "{{service_name}} {{http_request_method}}", "refId": "A" }]
+      "targets": [{ "expr": "sum(rate(http_client_request_duration_seconds_count{service_name=~\"NotificationService.(Worker|Scheduler)\", server_address=\"messageproviders\"}[1m])) by (service_name, http_request_method) * 60", "legendFormat": "{{service_name}} {{http_request_method}}", "refId": "A" }]
     },
     {
       "id": 7, "type": "timeseries", "title": "Provider — Response Status Codes / min",
       "gridPos": { "h": 7, "w": 12, "x": 12, "y": 17 },
       "datasource": { "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "palette-classic" } } },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "palette-classic" }, "custom": { "lineWidth": 2, "fillOpacity": 8, "spanNulls": true } } },
       "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
-      "targets": [{ "expr": "sum(increase(http_client_request_duration_seconds_count{service_name=~\"NotificationService.(Worker|Scheduler)\", server_address=\"messageproviders\"}[2m])) by (service_name, http_response_status_code)", "legendFormat": "{{service_name}} — {{http_response_status_code}}", "refId": "A" }]
+      "targets": [{ "expr": "sum(rate(http_client_request_duration_seconds_count{service_name=~\"NotificationService.(Worker|Scheduler)\", server_address=\"messageproviders\", http_response_status_code!=\"\"}[1m])) by (service_name, http_response_status_code) * 60", "legendFormat": "{{service_name}} — {{http_response_status_code}}", "refId": "A" }]
     },
     {
       "type": "row", "title": "Runtime & Resources", "collapsed": false,
@@ -86,7 +86,7 @@
       "id": 9, "type": "timeseries", "title": "Memory — Working Set",
       "gridPos": { "h": 7, "w": 8, "x": 0, "y": 25 },
       "datasource": { "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "bytes", "color": { "mode": "palette-classic" } } },
+      "fieldConfig": { "defaults": { "unit": "bytes", "color": { "mode": "palette-classic" }, "custom": { "lineWidth": 2, "fillOpacity": 8, "spanNulls": true } } },
       "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
       "targets": [{ "expr": "max by (service_name) (dotnet_process_memory_working_set_bytes)", "legendFormat": "{{service_name}}", "refId": "A" }]
     },
@@ -94,23 +94,23 @@
       "id": 10, "type": "timeseries", "title": "CPU Time Rate",
       "gridPos": { "h": 7, "w": 8, "x": 8, "y": 25 },
       "datasource": { "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "s", "color": { "mode": "palette-classic" } } },
+      "fieldConfig": { "defaults": { "unit": "s", "color": { "mode": "palette-classic" }, "custom": { "lineWidth": 2, "fillOpacity": 8, "spanNulls": true } } },
       "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
-      "targets": [{ "expr": "sum(rate(dotnet_process_cpu_time_seconds_total[2m])) by (service_name)", "legendFormat": "{{service_name}}", "refId": "A" }]
+      "targets": [{ "expr": "sum(rate(dotnet_process_cpu_time_seconds_total[1m])) by (service_name)", "legendFormat": "{{service_name}}", "refId": "A" }]
     },
     {
       "id": 11, "type": "timeseries", "title": "GC Collections / sec",
       "gridPos": { "h": 7, "w": 8, "x": 16, "y": 25 },
       "datasource": { "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "ops", "color": { "mode": "palette-classic" } } },
+      "fieldConfig": { "defaults": { "unit": "ops", "color": { "mode": "palette-classic" }, "custom": { "lineWidth": 2, "fillOpacity": 8, "spanNulls": true } } },
       "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
-      "targets": [{ "expr": "sum(rate(dotnet_gc_collections_total[2m])) by (service_name, generation)", "legendFormat": "{{service_name}} gen{{generation}}", "refId": "A" }]
+      "targets": [{ "expr": "sum(rate(dotnet_gc_collections_total[1m])) by (service_name, generation)", "legendFormat": "{{service_name}} gen{{generation}}", "refId": "A" }]
     },
     {
       "id": 12, "type": "timeseries", "title": "Thread Pool — Queue Length",
       "gridPos": { "h": 7, "w": 12, "x": 0, "y": 32 },
       "datasource": { "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "palette-classic" } } },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "palette-classic" }, "custom": { "lineWidth": 2, "fillOpacity": 8, "spanNulls": true } } },
       "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
       "targets": [{ "expr": "max by (service_name) (dotnet_thread_pool_queue_length_total)", "legendFormat": "{{service_name}}", "refId": "A" }]
     },
@@ -118,9 +118,9 @@
       "id": 13, "type": "timeseries", "title": "Exceptions / sec",
       "gridPos": { "h": 7, "w": 12, "x": 12, "y": 32 },
       "datasource": { "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "ops", "color": { "mode": "palette-classic" } } },
+      "fieldConfig": { "defaults": { "unit": "ops", "color": { "mode": "palette-classic" }, "custom": { "lineWidth": 2, "fillOpacity": 8, "spanNulls": true } } },
       "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
-      "targets": [{ "expr": "sum(rate(dotnet_exceptions_total[2m])) by (service_name)", "legendFormat": "{{service_name}}", "refId": "A" }]
+      "targets": [{ "expr": "sum(rate(dotnet_exceptions_total[1m])) by (service_name)", "legendFormat": "{{service_name}}", "refId": "A" }]
     },
     {
       "type": "row", "title": "Logs", "collapsed": false,

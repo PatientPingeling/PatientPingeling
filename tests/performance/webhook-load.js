@@ -17,13 +17,12 @@ const API_KEY = __ENV.API_KEY || "test-secret";
 export const options = {
   // Staircase ramp: each step holds long enough to show up clearly in Grafana.
   stages: [
-    { duration: "2m", target: 20 },  // ramp 0 → 20 VUs  (warm up)
-    { duration: "5m", target: 20 },  // hold  20 VUs
-    { duration: "2m", target: 50 },  // ramp 20 → 50 VUs
-    { duration: "5m", target: 50 },  // hold  50 VUs
-    { duration: "2m", target: 100 }, // ramp 50 → 100 VUs
-    { duration: "11m", target: 100 }, // hold 100 VUs (peak)
-    { duration: "2m", target: 50 },  // step down 100 → 50
+    { duration: "1m", target: 20 },  // ramp 0 → 20 VUs  (warm up)
+    { duration: "2m", target: 20 },  // hold  20 VUs
+    { duration: "1m", target: 50 },  // ramp 20 → 50 VUs
+    { duration: "2m", target: 50 },  // hold  50 VUs
+    { duration: "1m", target: 100 }, // ramp 50 → 100 VUs
+    { duration: "2m", target: 100 }, // hold 100 VUs (peak)
     { duration: "1m", target: 0 },   // cool down
   ],
   // Thresholds — fail the run if these are breached.
@@ -39,8 +38,9 @@ export default function () {
   const patientId = `PP-PERF-${runId}`;
   const apptId = `APT-PERF-${runId}`;
 
-  // Appointment 1 hour in the future — triggers real scheduler+worker dispatch during a demo.
-  const scheduledAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+  // Appointment 3 minutes in the future — short enough that the scheduler picks it up
+  // and dispatches it during the test run, making business metrics visible in Grafana.
+  const scheduledAt = new Date(Date.now() + 3 * 60 * 1000).toISOString();
 
   const payload = JSON.stringify({
     action: "CREATED",
@@ -48,7 +48,7 @@ export default function () {
       externalId: patientId,
       givenName: "PerfTest",
       email: `${patientId}@example.com`,
-      phoneNumber: null,
+      phoneNumber: "+31612345678",
     },
     appointment: {
       externalId: apptId,

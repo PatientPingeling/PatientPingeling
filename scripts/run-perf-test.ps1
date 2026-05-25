@@ -31,7 +31,7 @@ Write-Host "-> Running k6 load test against $env:BASE_URL (override with `$env:B
 # so no --add-host flag is needed here.
 $PerfDir = Join-Path $RepoRoot "tests\performance"
 
-docker run --rm -i `
+docker run --rm `
     -v "${PerfDir}:/scripts" `
     -e "BASE_URL=$env:BASE_URL" `
     -e "TENANT_ID=$env:TENANT_ID" `

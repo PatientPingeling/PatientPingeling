@@ -267,7 +267,13 @@ namespace NotificationService.Infrastructure.Extensions
                     }
                     if (enableHttpClient) metrics.AddHttpClientInstrumentation();
 
-                    metrics.AddOtlpExporter(ConfigureExporter(options));
+                    metrics.AddOtlpExporter((exporterOptions, readerOptions) =>
+                    {
+                        ConfigureExporter(options)(exporterOptions);
+                        // Export every 15 s so each 1-minute Prometheus window contains 4 data
+                        // points — the minimum needed for rate() to produce a result.
+                        readerOptions.PeriodicExportingMetricReaderOptions.ExportIntervalMilliseconds = 15_000;
+                    });
                 });
             }
 
