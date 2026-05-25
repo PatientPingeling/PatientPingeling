@@ -2,7 +2,7 @@
 # | Service        | Host Port |
 # |----------------|-----------|
 # | .NET API       | 8000      |  <- via Traefik (load-balanced)
-# | Traefik UI     | 8080      |
+# | Traefik UI     | 9090      |
 # | FakeComWorld   | 1337      |
 # | OpenMRS        | 80        |
 # | RabbitMQ       | 5672      |
@@ -23,7 +23,7 @@ services:
       - "--entrypoints.web.address=:8000"
     ports:
       - "8000:8000"
-      - "8080:8080"
+      - "9090:8080"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     restart: unless-stopped
