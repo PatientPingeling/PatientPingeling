@@ -22,7 +22,7 @@ if (-not (Test-Path $TestFile)) {
 }
 
 if (-not $env:BASE_URL)  { $env:BASE_URL  = "http://host.docker.internal:8000" }
-if (-not $env:TENANT_ID) { $env:TENANT_ID = "3fa85f64-5717-4562-b3fc-2c963f66afa6" }
+if (-not $env:TENANT_ID) { $env:TENANT_ID = "5fa85f64-5717-4562-b3fc-2c963f66afa8" }
 if (-not $env:API_KEY)   { $env:API_KEY   = "test-secret" }
 
 Write-Host "-> Running k6 load test against $env:BASE_URL (override with `$env:BASE_URL)"

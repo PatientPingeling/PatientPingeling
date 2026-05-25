@@ -22,6 +22,6 @@ docker run --rm -i \
     --add-host=host.docker.internal:host-gateway \
     -v "$REPO_ROOT/tests/performance:/scripts" \
     -e "BASE_URL=$BASE_URL" \
-    -e "TENANT_ID=${TENANT_ID:-3fa85f64-5717-4562-b3fc-2c963f66afa6}" \
+    -e "TENANT_ID=${TENANT_ID:-5fa85f64-5717-4562-b3fc-2c963f66afa8}" \
     -e "API_KEY=${API_KEY:-test-secret}" \
     grafana/k6:latest run /scripts/webhook-load.js
