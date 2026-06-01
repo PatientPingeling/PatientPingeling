@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using System.Text;
 using System.Text.Json;
 using NotificationService.Application.Abstractions;
@@ -59,7 +60,10 @@ namespace NotificationService.Worker.HostedServices
                     var latestLog = await dispatchLogRepository.GetLatestStatusByScheduledApointmentIdASync(command.ScheduledNotificationId, ct);
                     if (latestLog?.Outcome == Outcome.SUCCESS)
                     {
-                        _logger.LogWarning("Notification {Id} already dispatched successfully, skipping duplicate.", command.ScheduledNotificationId);
+                        if (_logger.IsEnabled(LogLevel.Warning))
+                        {
+                            _logger.LogWarning("Notification {Id} already dispatched successfully, skipping duplicate.", command.ScheduledNotificationId);
+                        }
                         await channel.BasicAckAsync(ea.DeliveryTag, multiple: false, cancellationToken: ct);
                         return;
                     }
@@ -67,7 +71,10 @@ namespace NotificationService.Worker.HostedServices
                     // Appointment already started — don't notify a patient about an appointment in the past.
                     if (command.AppointmentScheduledAt <= DateTimeOffset.UtcNow)
                     {
-                        _logger.LogWarning("Notification {Id} skipped: appointment already started at {AppointmentScheduledAt}.", command.ScheduledNotificationId, command.AppointmentScheduledAt);
+                        if (_logger.IsEnabled(LogLevel.Warning))
+                        {
+                            _logger.LogWarning("Notification {Id} skipped: appointment already started at {AppointmentScheduledAt}.", command.ScheduledNotificationId, command.AppointmentScheduledAt);
+                        }
 
                         await dispatchLogRepository.AddAsync(new DispatchLog
                         {
@@ -77,7 +84,7 @@ namespace NotificationService.Worker.HostedServices
                             ScheduledNotificationId = command.ScheduledNotificationId
                         }, ct);
 
-                        await unitOfWork.CommitAsync();
+                        await unitOfWork.CommitAsync(ct);
 
                         await channel.BasicAckAsync(ea.DeliveryTag, multiple: false, cancellationToken: ct);
                         return;
@@ -86,7 +93,10 @@ namespace NotificationService.Worker.HostedServices
                     // Staleness check — if message has been in-flight longer than the SLA, discard it
                     if (DateTimeOffset.UtcNow - command.EnqueuedAt > MessageSla)
                     {
-                        _logger.LogWarning("Notification {Id} expired (enqueued at {EnqueuedAt}), discarding.", command.ScheduledNotificationId, command.EnqueuedAt);
+                        if (_logger.IsEnabled(LogLevel.Warning))
+                        {
+                            _logger.LogWarning("Notification {Id} expired (enqueued at {EnqueuedAt}), discarding.", command.ScheduledNotificationId, command.EnqueuedAt);
+                        }
 
                         await dispatchLogRepository.AddAsync(new DispatchLog
                         {
@@ -96,7 +106,7 @@ namespace NotificationService.Worker.HostedServices
                             ScheduledNotificationId = command.ScheduledNotificationId
                         }, ct);
 
-                        await unitOfWork.CommitAsync();
+                        await unitOfWork.CommitAsync(ct);
 
                         await channel.BasicAckAsync(ea.DeliveryTag, multiple: false, cancellationToken: ct);
                         return;
@@ -109,7 +119,10 @@ namespace NotificationService.Worker.HostedServices
                         var transient = result.Error.Type == Domain.ErrorType.Failure;
                         var outcome = transient ? Outcome.ERROR_TRANSIENT : Outcome.ERROR_PERMANENT;
 
-                        _logger.LogWarning("Dispatch failed for {Id}: {Error} (outcome: {Outcome})", command.ScheduledNotificationId, result.Error.Code, outcome);
+                        if (_logger.IsEnabled(LogLevel.Warning))
+                        {
+                            _logger.LogWarning("Dispatch failed for {Id}: {Error} (outcome: {Outcome})", command.ScheduledNotificationId, result.Error.Code, outcome);
+                        }
 
                         await dispatchLogRepository.AddAsync(new DispatchLog
                         {
@@ -119,7 +132,7 @@ namespace NotificationService.Worker.HostedServices
                             ScheduledNotificationId = command.ScheduledNotificationId
                         }, ct);
 
-                        await unitOfWork.CommitAsync();
+                        await unitOfWork.CommitAsync(ct);
 
                         // ERROR_PERMANENT → reject without requeue (bad payload, no contact info)
                         // ERROR_TRANSIENT → requeue for retry (provider down, transient HTTP failure)
@@ -131,7 +144,10 @@ namespace NotificationService.Worker.HostedServices
                     // The scheduler polls for final status and writes the NotificationLog on confirmation.
                     if (command.Provider == "AsyncFlow")
                     {
-                        _logger.LogInformation("AsyncFlow notification {Id} queued with tracking ID {TrackingId}.", command.ScheduledNotificationId, result.Value);
+                        if (_logger.IsEnabled(LogLevel.Information))
+                        {
+                            _logger.LogInformation("AsyncFlow notification {Id} queued with tracking ID {TrackingId}.", command.ScheduledNotificationId, result.Value);
+                        }
 
                         await dispatchLogRepository.AddAsync(new DispatchLog
                         {
@@ -142,12 +158,15 @@ namespace NotificationService.Worker.HostedServices
                             ScheduledNotificationId = command.ScheduledNotificationId
                         }, ct);
 
-                        await unitOfWork.CommitAsync();
+                        await unitOfWork.CommitAsync(ct);
                         await channel.BasicAckAsync(ea.DeliveryTag, multiple: false, cancellationToken: ct);
                         return;
                     }
 
-                    _logger.LogInformation("Dispatched notification {Id}, external message {ExternalId}.", command.ScheduledNotificationId, result.Value);
+                    if (_logger.IsEnabled(LogLevel.Information))
+                    {
+                        _logger.LogInformation("Dispatched notification {Id}, external message {ExternalId}.", command.ScheduledNotificationId, result.Value);
+                    }
 
                     await dispatchLogRepository.AddAsync(new DispatchLog
                     {
@@ -168,17 +187,23 @@ namespace NotificationService.Worker.HostedServices
                     }, ct);
 
                     await patientRepository.UpdateLastCommunicationAsync(command.ScheduledNotificationId, ct);
-                    await unitOfWork.CommitAsync();
+                    await unitOfWork.CommitAsync(ct);
 
                     await channel.BasicAckAsync(ea.DeliveryTag, multiple: false, cancellationToken: ct);
                 }
                 catch (OperationCanceledException) when (ct.IsCancellationRequested)
                 {
-                    _logger.LogInformation("RabbitMQ consumer stopping while processing {DeliveryTag}.", ea.DeliveryTag);
+                    if (_logger.IsEnabled(LogLevel.Information))
+                    {
+                        _logger.LogInformation("RabbitMQ consumer stopping while processing {DeliveryTag}.", ea.DeliveryTag);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Unhandled exception processing delivery {DeliveryTag}. Requeueing.", ea.DeliveryTag);
+                    if (_logger.IsEnabled(LogLevel.Error))
+                    {
+                        _logger.LogError(ex, "Unhandled exception processing delivery {DeliveryTag}. Requeueing.", ea.DeliveryTag);
+                    }
 
                     await channel.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: true, cancellationToken: ct);
                 }

@@ -68,7 +68,10 @@ namespace NotificationService.Application.Services
 
             if (existing is not null)
             {
-                _logger.LogInformation("Skipping duplicate CREATED webhook for appointment {ExternalId}", command.Appointment.ExternalId);
+                if (_logger.IsEnabled(LogLevel.Information))
+                {
+                    _logger.LogInformation("Skipping duplicate CREATED webhook for appointment {ExternalId}", command.Appointment.ExternalId);
+                }
                 return Result.Failure(new Error("appointment.duplicate", "Appointment already exists.", ErrorType.Duplicate));
             }
 
@@ -117,7 +120,10 @@ namespace NotificationService.Application.Services
 
             if (result.IsSuccess)
             {
-                _logger.LogInformation("Appointment {ExternalId} created for tenant {TenantId}", command.Appointment.ExternalId, command.TenantId);
+                if (_logger.IsEnabled(LogLevel.Information))
+                {
+                    _logger.LogInformation("Appointment {ExternalId} created for tenant {TenantId}", command.Appointment.ExternalId, command.TenantId);
+                }
             }
 
             return result;
@@ -220,7 +226,10 @@ namespace NotificationService.Application.Services
 
             if (result.IsSuccess)
             {
-                _logger.LogInformation("Appointment {ExternalId} updated for tenant {TenantId}", command.Appointment.ExternalId, command.TenantId);
+                if (_logger.IsEnabled(LogLevel.Information))
+                {
+                    _logger.LogInformation("Appointment {ExternalId} updated for tenant {TenantId}", command.Appointment.ExternalId, command.TenantId);
+                }
             }
 
             return result;
@@ -269,7 +278,10 @@ namespace NotificationService.Application.Services
 
             if (result.IsSuccess)
             {
-                _logger.LogInformation("Appointment {ExternalId} cancelled for tenant {TenantId}", command.Appointment.ExternalId, command.TenantId);
+                if (_logger.IsEnabled(LogLevel.Information))
+                {
+                    _logger.LogInformation("Appointment {ExternalId} cancelled for tenant {TenantId}", command.Appointment.ExternalId, command.TenantId);
+                }
             }
 
             return result;

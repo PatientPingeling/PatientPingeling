@@ -26,6 +26,8 @@ namespace NotificationService.IntegrationTests;
 [TestClass]
 public sealed class WebhookEndpointTests
 {
+    public TestContext TestContext { get; set; } = null!;
+
     private static PostgreSqlContainer _postgres = null!;
     private static RabbitMqContainer _rabbitmq = null!;
     private static WebApplicationFactory<Program> _factory = null!;
@@ -102,18 +104,35 @@ public sealed class WebhookEndpointTests
             TimeZone = "Europe/Amsterdam",
             Provider = "SwiftSend",
             ApiKeyHash = hashing.Hash(TestApiKey),
-        });
-        await db.SaveChangesAsync();
+        }, _.CancellationToken);
+        await db.SaveChangesAsync(_.CancellationToken);
     }
 
     [ClassCleanup]
     public static async Task ClassCleanup()
     {
-        _client.Dispose();
-        await _factory.DisposeAsync();
-        await Task.WhenAll(
-            _postgres.DisposeAsync().AsTask(),
-            _rabbitmq.DisposeAsync().AsTask());
+        _client?.Dispose();
+
+        if (_factory is not null)
+        {
+            await _factory.DisposeAsync();
+        }
+
+        var cleanupTasks = new List<Task>(2);
+        if (_postgres is not null)
+        {
+            cleanupTasks.Add(_postgres.DisposeAsync().AsTask());
+        }
+
+        if (_rabbitmq is not null)
+        {
+            cleanupTasks.Add(_rabbitmq.DisposeAsync().AsTask());
+        }
+
+        if (cleanupTasks.Count > 0)
+        {
+            await Task.WhenAll(cleanupTasks);
+        }
     }
 
     // ── Header validation ──────────────────────────────────────────────────────
@@ -128,7 +147,7 @@ public sealed class WebhookEndpointTests
         };
         message.Headers.Add("X-Api-Key", TestApiKey);
 
-        var response = await _client.SendAsync(message);
+        var response = await _client.SendAsync(message, TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -143,7 +162,7 @@ public sealed class WebhookEndpointTests
         };
         message.Headers.Add("X-Tenant-Id", TestTenantId.ToString());
 
-        var response = await _client.SendAsync(message);
+        var response = await _client.SendAsync(message, TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -159,7 +178,7 @@ public sealed class WebhookEndpointTests
         message.Headers.Add("X-Tenant-Id", TestTenantId.ToString());
         message.Headers.Add("X-Api-Key", "definitely-wrong-key");
 
-        var response = await _client.SendAsync(message);
+        var response = await _client.SendAsync(message, TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.Unauthorized, response.StatusCode);
     }
@@ -170,7 +189,7 @@ public sealed class WebhookEndpointTests
     [TestCategory("Integration")]
     public async Task PostWebhook_ValidCreatedRequest_Returns201()
     {
-        var response = await _client.SendAsync(BuildRequest(ValidBody("apm-created-001")));
+        var response = await _client.SendAsync(BuildRequest(ValidBody("apm-created-001")), TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
     }
@@ -180,7 +199,7 @@ public sealed class WebhookEndpointTests
     public async Task PostWebhook_ValidCreatedRequest_PersistsAppointmentToDatabase()
     {
         const string externalId = "apm-db-check-001";
-        await _client.SendAsync(BuildRequest(ValidBody(externalId)));
+        await _client.SendAsync(BuildRequest(ValidBody(externalId)), TestContext.CancellationToken);
 
         using var scope = _factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<NotificationDbContext>();
@@ -196,8 +215,8 @@ public sealed class WebhookEndpointTests
     {
         var body = ValidBody("apm-duplicate-001");
 
-        await _client.SendAsync(BuildRequest(body));            // creates
-        var response = await _client.SendAsync(BuildRequest(body)); // duplicate
+        await _client.SendAsync(BuildRequest(body), TestContext.CancellationToken);            // creates
+        var response = await _client.SendAsync(BuildRequest(body), TestContext.CancellationToken); // duplicate
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
     }
@@ -210,7 +229,7 @@ public sealed class WebhookEndpointTests
     {
         // First create the appointment, then update it with a new time
         const string externalId = "apm-updated-001";
-        await _client.SendAsync(BuildRequest(ValidBody(externalId)));
+        await _client.SendAsync(BuildRequest(ValidBody(externalId)), TestContext.CancellationToken);
 
         var updateBody = new
         {
@@ -219,7 +238,7 @@ public sealed class WebhookEndpointTests
             Appointment = new { ExternalId = externalId, ScheduledAt = DateTimeOffset.UtcNow.AddDays(5), Location = "Kamer 2", Service = "Controle", Instructions = (string?)null }
         };
 
-        var response = await _client.SendAsync(BuildRequest(updateBody));
+        var response = await _client.SendAsync(BuildRequest(updateBody), TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
     }
@@ -237,7 +256,7 @@ public sealed class WebhookEndpointTests
             Appointment = new { ExternalId = "apm-upsert-nonexistent", ScheduledAt = DateTimeOffset.UtcNow.AddDays(3), Location = "Polikliniek", Service = (string?)null, Instructions = (string?)null }
         };
 
-        var response = await _client.SendAsync(BuildRequest(body));
+        var response = await _client.SendAsync(BuildRequest(body), TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
     }
@@ -250,7 +269,7 @@ public sealed class WebhookEndpointTests
     {
         // Create an appointment first, then cancel it
         const string externalId = "apm-cancel-existing-001";
-        await _client.SendAsync(BuildRequest(ValidBody(externalId)));
+        await _client.SendAsync(BuildRequest(ValidBody(externalId)), TestContext.CancellationToken);
 
         var cancelBody = new
         {
@@ -259,7 +278,7 @@ public sealed class WebhookEndpointTests
             Appointment = new { ExternalId = externalId, ScheduledAt = DateTimeOffset.UtcNow.AddDays(3), Location = "Polikliniek", Service = (string?)null, Instructions = (string?)null }
         };
 
-        var response = await _client.SendAsync(BuildRequest(cancelBody));
+        var response = await _client.SendAsync(BuildRequest(cancelBody), TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
     }
@@ -275,7 +294,7 @@ public sealed class WebhookEndpointTests
             Appointment = new { ExternalId = "apm-never-created", ScheduledAt = DateTimeOffset.UtcNow.AddDays(1), Location = "Polikliniek", Service = (string?)null, Instructions = (string?)null }
         };
 
-        var response = await _client.SendAsync(BuildRequest(body));
+        var response = await _client.SendAsync(BuildRequest(body), TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -295,7 +314,7 @@ public sealed class WebhookEndpointTests
             Appointment = new { ExternalId = "", ScheduledAt = DateTimeOffset.UtcNow.AddDays(-1), Location = "", Service = (string?)null, Instructions = (string?)null }
         };
 
-        var response = await _client.SendAsync(BuildRequest(invalidBody));
+        var response = await _client.SendAsync(BuildRequest(invalidBody), TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -316,7 +335,7 @@ public sealed class WebhookEndpointTests
         message.Headers.Add("X-Tenant-Id", unknownTenantId.ToString());
         message.Headers.Add("X-Api-Key", TestApiKey);
 
-        var response = await _client.SendAsync(message);
+        var response = await _client.SendAsync(message, TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.Unauthorized, response.StatusCode);
     }

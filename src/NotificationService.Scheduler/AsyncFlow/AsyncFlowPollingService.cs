@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using NotificationService.Application.Abstractions;
 using NotificationService.Domain.Entities;
 
@@ -45,7 +46,10 @@ namespace NotificationService.Scheduler.AsyncFlow
             if (pending.Count == 0)
                 return;
 
-            logger.LogInformation("AsyncFlow poll: checking {Count} pending notification(s).", pending.Count);
+            if (logger.IsEnabled(LogLevel.Information))
+            {
+                logger.LogInformation("AsyncFlow poll: checking {Count} pending notification(s).", pending.Count);
+            }
 
             foreach (var item in pending.Take(MaxPerCycle))
             {
@@ -78,8 +82,11 @@ namespace NotificationService.Scheduler.AsyncFlow
                     }, ct);
 
                     await patientRepo.UpdateLastCommunicationAsync(item.ScheduledNotificationId, ct);
-                    await unitOfWork.CommitAsync();
-                    logger.LogInformation("AsyncFlow notification {Id} confirmed delivered ({TrackingId}).", item.ScheduledNotificationId, item.ExternalTrackingId);
+                    await unitOfWork.CommitAsync(ct);
+                    if (logger.IsEnabled(LogLevel.Information))
+                    {
+                        logger.LogInformation("AsyncFlow notification {Id} confirmed delivered ({TrackingId}).", item.ScheduledNotificationId, item.ExternalTrackingId);
+                    }
                 }
                 else if (status?.Status == "Failed" || (timedOut && status?.Status is "Queued" or "Processing" or null))
                 {
@@ -95,12 +102,18 @@ namespace NotificationService.Scheduler.AsyncFlow
                         ScheduledNotificationId = item.ScheduledNotificationId
                     }, ct);
 
-                    await unitOfWork.CommitAsync();
-                    logger.LogWarning("AsyncFlow notification {Id} failed ({Reason}), marked for retry.", item.ScheduledNotificationId, reason);
+                    await unitOfWork.CommitAsync(ct);
+                    if (logger.IsEnabled(LogLevel.Warning))
+                    {
+                        logger.LogWarning("AsyncFlow notification {Id} failed ({Reason}), marked for retry.", item.ScheduledNotificationId, reason);
+                    }
                 }
                 else
                 {
-                    logger.LogDebug("AsyncFlow notification {Id} still {Status}.", item.ScheduledNotificationId, status?.Status ?? "unknown");
+                    if (logger.IsEnabled(LogLevel.Debug))
+                    {
+                        logger.LogDebug("AsyncFlow notification {Id} still {Status}.", item.ScheduledNotificationId, status?.Status ?? "unknown");
+                    }
                 }
             }
         }

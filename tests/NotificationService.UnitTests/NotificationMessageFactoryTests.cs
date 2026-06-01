@@ -10,6 +10,8 @@ namespace NotificationService.Tests;
 [TestClass]
 public sealed class NotificationMessageFactoryTests
 {
+    public TestContext TestContext { get; set; } = null!;
+
     private Mock<IScheduledNotificationRepository> _notificationRepo = null!;
     private Mock<IDispatchLogRepository> _dispatchLogRepo = null!;
     private NotificationMessageFactory _factory = null!;
@@ -25,8 +27,8 @@ public sealed class NotificationMessageFactoryTests
     [TestMethod]
     public async Task CreateAsync_EmptyInput_ReturnsEmptyArray()
     {
-        var result = await _factory.CreateAsync([]);
-        Assert.AreEqual(0, result.Length);
+        var result = await _factory.CreateAsync([], TestContext.CancellationToken);
+        Assert.IsEmpty(result);
     }
 
     [TestMethod]
@@ -38,9 +40,9 @@ public sealed class NotificationMessageFactoryTests
         _dispatchLogRepo.Setup(r => r.GetLatestStatusBatchAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new Dictionary<Guid, DispatchLog?> { [id] = new DispatchLog { Outcome = Outcome.INQUEUE } });
 
-        var result = await _factory.CreateAsync(notifications);
+        var result = await _factory.CreateAsync(notifications, TestContext.CancellationToken);
 
-        Assert.AreEqual(0, result.Length);
+        Assert.IsEmpty(result);
         _notificationRepo.Verify(r => r.GetByIdWithDetailsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
@@ -55,7 +57,7 @@ public sealed class NotificationMessageFactoryTests
         _notificationRepo.Setup(r => r.GetByIdWithDetailsAsync(id, It.IsAny<CancellationToken>()))
             .ReturnsAsync((ScheduledNotification?)null);
 
-        await _factory.CreateAsync(notifications);
+        await _factory.CreateAsync(notifications, TestContext.CancellationToken);
 
         _notificationRepo.Verify(r => r.GetByIdWithDetailsAsync(id, It.IsAny<CancellationToken>()), Times.Once);
     }
@@ -71,7 +73,7 @@ public sealed class NotificationMessageFactoryTests
         _notificationRepo.Setup(r => r.GetByIdWithDetailsAsync(id, It.IsAny<CancellationToken>()))
             .ReturnsAsync((ScheduledNotification?)null);
 
-        await _factory.CreateAsync(notifications);
+        await _factory.CreateAsync(notifications, TestContext.CancellationToken);
 
         _notificationRepo.Verify(r => r.GetByIdWithDetailsAsync(id, It.IsAny<CancellationToken>()), Times.Once);
     }
@@ -82,9 +84,9 @@ public sealed class NotificationMessageFactoryTests
         var id = Guid.NewGuid();
         SetupEligible(id, detailedNotification: null);
 
-        var result = await _factory.CreateAsync([new ScheduledNotification { Id = id }]);
+        var result = await _factory.CreateAsync([new ScheduledNotification { Id = id }], TestContext.CancellationToken);
 
-        Assert.AreEqual(0, result.Length);
+        Assert.IsEmpty(result);
     }
 
     [TestMethod]
@@ -94,9 +96,9 @@ public sealed class NotificationMessageFactoryTests
         var detailed = BuildDetailedNotification(id, credentials: []);
         SetupEligible(id, detailed);
 
-        var result = await _factory.CreateAsync([new ScheduledNotification { Id = id }]);
+        var result = await _factory.CreateAsync([new ScheduledNotification { Id = id }], TestContext.CancellationToken);
 
-        Assert.AreEqual(0, result.Length);
+        Assert.IsEmpty(result);
     }
 
     [TestMethod]
@@ -107,9 +109,9 @@ public sealed class NotificationMessageFactoryTests
             credentials: [new ProviderCredential { Key = "api_key", EncryptedValue = "enc" }]);
         SetupEligible(id, detailed);
 
-        var result = await _factory.CreateAsync([new ScheduledNotification { Id = id }]);
+        var result = await _factory.CreateAsync([new ScheduledNotification { Id = id }], TestContext.CancellationToken);
 
-        Assert.AreEqual(1, result.Length);
+        Assert.HasCount(1, result);
         Assert.AreEqual("Jan Jansen", result[0].Patient.GivenName);
     }
 
@@ -134,9 +136,9 @@ public sealed class NotificationMessageFactoryTests
         var result = await _factory.CreateAsync([
             new ScheduledNotification { Id = eligibleId },
             new ScheduledNotification { Id = ineligibleId }
-        ]);
+        ], TestContext.CancellationToken);
 
-        Assert.AreEqual(1, result.Length);
+        Assert.HasCount(1, result);
         _notificationRepo.Verify(r => r.GetByIdWithDetailsAsync(ineligibleId, It.IsAny<CancellationToken>()), Times.Never);
     }
 

@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using NotificationService.Application.Abstractions;
 using NotificationService.Application.Factories;
 using NotificationService.Application.Commands;
@@ -33,13 +34,19 @@ namespace NotificationService.Scheduler.Polling
                 .Select(RabbitMQNotificationMessage.FromNotificationMessage)
                 .ToArray();
 
-            if (!notifications.Any())
+            if (notifications.Length == 0)
             {
-                _logger.LogDebug("Poll cycle: no pending notifications.");
+                if (_logger.IsEnabled(LogLevel.Debug))
+                {
+                    _logger.LogDebug("Poll cycle: no pending notifications.");
+                }
                 return;
             }
 
-            _logger.LogInformation("Poll cycle: dispatching {Count} notification(s).", notifications.Length);
+            if (_logger.IsEnabled(LogLevel.Information))
+            {
+                _logger.LogInformation("Poll cycle: dispatching {Count} notification(s).", notifications.Length);
+            }
 
             foreach (var notification in notifications)
             {
@@ -56,13 +63,19 @@ namespace NotificationService.Scheduler.Polling
                     };
 
                     await _dispatchLogRepository.AddAsync(inSchedulerLog, cancellationToken);
-                    await _unitOfWork.CommitAsync();
+                    await _unitOfWork.CommitAsync(cancellationToken);
 
-                    _logger.LogInformation("Notification {Id} set to dispatch outcome: INSCHEDULER.", notification.ScheduledNotificationId);
+                    if (_logger.IsEnabled(LogLevel.Information))
+                    {
+                        _logger.LogInformation("Notification {Id} set to dispatch outcome: INSCHEDULER.", notification.ScheduledNotificationId);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Failed to write INSCHEDULER dispatch log for notification {Id}, skipping.", notification.ScheduledNotificationId);
+                    if (_logger.IsEnabled(LogLevel.Error))
+                    {
+                        _logger.LogError(ex, "Failed to write INSCHEDULER dispatch log for notification {Id}, skipping.", notification.ScheduledNotificationId);
+                    }
                     continue;
                 }
 
@@ -71,7 +84,10 @@ namespace NotificationService.Scheduler.Polling
                 {
                     await _queueEstablisher.PublishAsync(notification, cancellationToken);
                     NotificationMetrics.NotificationsEnqueued.Add(1);
-                    _logger.LogInformation("Notification {Id} published to RabbitMQ.", notification.ScheduledNotificationId);
+                    if (_logger.IsEnabled(LogLevel.Information))
+                    {
+                        _logger.LogInformation("Notification {Id} published to RabbitMQ.", notification.ScheduledNotificationId);
+                    }
 
                     await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
@@ -83,13 +99,19 @@ namespace NotificationService.Scheduler.Polling
                     };
 
                     await _dispatchLogRepository.AddAsync(inQueueLog, cancellationToken);
-                    await _unitOfWork.CommitAsync();
+                    await _unitOfWork.CommitAsync(cancellationToken);
 
-                    _logger.LogInformation("Notification {Id} dispatch outcome set to: INQUEUE.", notification.ScheduledNotificationId);
+                    if (_logger.IsEnabled(LogLevel.Information))
+                    {
+                        _logger.LogInformation("Notification {Id} dispatch outcome set to: INQUEUE.", notification.ScheduledNotificationId);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Failed to publish notification {Id} to RabbitMQ, rolling back to NEW.", notification.ScheduledNotificationId);
+                    if (_logger.IsEnabled(LogLevel.Error))
+                    {
+                        _logger.LogError(ex, "Failed to publish notification {Id} to RabbitMQ, rolling back to NEW.", notification.ScheduledNotificationId);
+                    }
 
                     try
                     {
@@ -103,13 +125,19 @@ namespace NotificationService.Scheduler.Polling
                         };
 
                         await _dispatchLogRepository.AddAsync(newLog, cancellationToken);
-                        await _unitOfWork.CommitAsync();
+                        await _unitOfWork.CommitAsync(cancellationToken);
 
-                        _logger.LogInformation("Notification {Id} dispatch outcome set back to: NEW.", notification.ScheduledNotificationId);
+                        if (_logger.IsEnabled(LogLevel.Information))
+                        {
+                            _logger.LogInformation("Notification {Id} dispatch outcome set back to: NEW.", notification.ScheduledNotificationId);
+                        }
                     }
                     catch (Exception innerEx)
                     {
-                        _logger.LogError(innerEx, "Failed to write NEW dispatch log for notification {Id}.", notification.ScheduledNotificationId);
+                        if (_logger.IsEnabled(LogLevel.Error))
+                        {
+                            _logger.LogError(innerEx, "Failed to write NEW dispatch log for notification {Id}.", notification.ScheduledNotificationId);
+                        }
                     }
                 }
             }

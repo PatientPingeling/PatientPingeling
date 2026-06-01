@@ -12,6 +12,8 @@ namespace NotificationService.Tests;
 [TestClass]
 public sealed class AppointmentIngestionServiceTests
 {
+    public TestContext TestContext { get; set; } = null!;
+
     private Mock<IAppointmentRepository> _appointmentRepo = null!;
     private Mock<IPatientRepository> _patientRepo = null!;
     private Mock<IScheduledNotificationRepository> _notificationRepo = null!;
@@ -51,7 +53,7 @@ public sealed class AppointmentIngestionServiceTests
     [TestMethod]
     public async Task IngestAsync_NullCommand_ReturnsValidationFailure()
     {
-        var result = await _service.IngestAsync(null!);
+        var result = await _service.IngestAsync(null!, TestContext.CancellationToken);
         Assert.IsTrue(result.IsFailure);
         Assert.AreEqual(ErrorType.Validation, result.Error.Type);
     }
@@ -61,7 +63,7 @@ public sealed class AppointmentIngestionServiceTests
     {
         var cmd = new IngestAppointmentCommand(AppointmentAction.CREATED, TenantId,
             new PatientInfo("", "Jan", null, null), FarFutureAppointment);
-        var result = await _service.IngestAsync(cmd);
+        var result = await _service.IngestAsync(cmd, TestContext.CancellationToken);
         Assert.IsTrue(result.IsFailure);
         Assert.AreEqual(ErrorType.Validation, result.Error.Type);
     }
@@ -71,7 +73,7 @@ public sealed class AppointmentIngestionServiceTests
     {
         var cmd = new IngestAppointmentCommand(AppointmentAction.CREATED, TenantId,
             ValidPatient, new AppointmentInfo("", DateTimeOffset.UtcNow.AddDays(1), null, "Test", null));
-        var result = await _service.IngestAsync(cmd);
+        var result = await _service.IngestAsync(cmd, TestContext.CancellationToken);
         Assert.IsTrue(result.IsFailure);
         Assert.AreEqual(ErrorType.Validation, result.Error.Type);
     }
@@ -80,7 +82,7 @@ public sealed class AppointmentIngestionServiceTests
     public async Task IngestAsync_UnknownAction_ReturnsValidationFailure()
     {
         var cmd = new IngestAppointmentCommand(AppointmentAction.UNKNOWN, TenantId, ValidPatient, FarFutureAppointment);
-        var result = await _service.IngestAsync(cmd);
+        var result = await _service.IngestAsync(cmd, TestContext.CancellationToken);
         Assert.IsTrue(result.IsFailure);
         Assert.AreEqual(ErrorType.Validation, result.Error.Type);
     }
@@ -95,7 +97,7 @@ public sealed class AppointmentIngestionServiceTests
         _appointmentRepo.Setup(r => r.GetByExternalIdAsync(FarFutureAppointment.ExternalId, TenantId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new Appointment());
 
-        var result = await _service.IngestAsync(Cmd(AppointmentAction.CREATED));
+        var result = await _service.IngestAsync(Cmd(AppointmentAction.CREATED), TestContext.CancellationToken);
 
         Assert.IsTrue(result.IsFailure);
         Assert.AreEqual(ErrorType.Duplicate, result.Error.Type);
@@ -107,7 +109,7 @@ public sealed class AppointmentIngestionServiceTests
         _patientRepo.Setup(r => r.GetByExternalIdAsync(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("DB down"));
 
-        var result = await _service.IngestAsync(Cmd(AppointmentAction.CREATED));
+        var result = await _service.IngestAsync(Cmd(AppointmentAction.CREATED), TestContext.CancellationToken);
 
         Assert.IsTrue(result.IsFailure);
         Assert.AreEqual(ErrorType.Failure, result.Error.Type);
@@ -121,7 +123,7 @@ public sealed class AppointmentIngestionServiceTests
         _appointmentRepo.Setup(r => r.GetByExternalIdAsync(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("DB down"));
 
-        var result = await _service.IngestAsync(Cmd(AppointmentAction.CREATED));
+        var result = await _service.IngestAsync(Cmd(AppointmentAction.CREATED), TestContext.CancellationToken);
 
         Assert.IsTrue(result.IsFailure);
     }
@@ -131,7 +133,7 @@ public sealed class AppointmentIngestionServiceTests
     {
         SetupNewAppointmentFlow();
 
-        var result = await _service.IngestAsync(Cmd(AppointmentAction.CREATED));
+        var result = await _service.IngestAsync(Cmd(AppointmentAction.CREATED), TestContext.CancellationToken);
 
         Assert.IsTrue(result.IsSuccess);
         _patientRepo.Verify(r => r.AddAsync(It.IsAny<Patient>(), It.IsAny<CancellationToken>()), Times.Once);
@@ -147,7 +149,7 @@ public sealed class AppointmentIngestionServiceTests
         _appointmentRepo.Setup(r => r.GetByExternalIdAsync(FarFutureAppointment.ExternalId, TenantId, It.IsAny<CancellationToken>()))
             .ReturnsAsync((Appointment?)null);
 
-        var result = await _service.IngestAsync(Cmd(AppointmentAction.CREATED));
+        var result = await _service.IngestAsync(Cmd(AppointmentAction.CREATED), TestContext.CancellationToken);
 
         Assert.IsTrue(result.IsSuccess);
         _patientRepo.Verify(r => r.AddAsync(It.IsAny<Patient>(), It.IsAny<CancellationToken>()), Times.Never);
@@ -161,7 +163,7 @@ public sealed class AppointmentIngestionServiceTests
         _unitOfWork.Setup(u => u.CommitAsync(It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("Commit failed"));
 
-        var result = await _service.IngestAsync(Cmd(AppointmentAction.CREATED));
+        var result = await _service.IngestAsync(Cmd(AppointmentAction.CREATED), TestContext.CancellationToken);
 
         Assert.IsTrue(result.IsFailure);
         _unitOfWork.Verify(u => u.RollbackAsync(It.IsAny<CancellationToken>()), Times.Once);
@@ -176,9 +178,9 @@ public sealed class AppointmentIngestionServiceTests
         var captured = CaptureNotifications();
 
         var cmd = Cmd(AppointmentAction.CREATED, scheduledAt: DateTimeOffset.UtcNow.AddHours(36));
-        await _service.IngestAsync(cmd);
+        await _service.IngestAsync(cmd, TestContext.CancellationToken);
 
-        Assert.AreEqual(2, captured.Count);
+        Assert.HasCount(2, captured);
     }
 
     [TestMethod]
@@ -188,9 +190,9 @@ public sealed class AppointmentIngestionServiceTests
         var captured = CaptureNotifications();
 
         var cmd = Cmd(AppointmentAction.CREATED, scheduledAt: DateTimeOffset.UtcNow.AddMinutes(30));
-        await _service.IngestAsync(cmd);
+        await _service.IngestAsync(cmd, TestContext.CancellationToken);
 
-        Assert.AreEqual(1, captured.Count);
+        Assert.HasCount(1, captured);
     }
 
     [TestMethod]
@@ -201,9 +203,9 @@ public sealed class AppointmentIngestionServiceTests
 
         // 1h15m ahead: the 1h-reminder is only 15min away, within the 30min merge margin
         var cmd = Cmd(AppointmentAction.CREATED, scheduledAt: DateTimeOffset.UtcNow.AddMinutes(75));
-        await _service.IngestAsync(cmd);
+        await _service.IngestAsync(cmd, TestContext.CancellationToken);
 
-        Assert.AreEqual(1, captured.Count);
+        Assert.HasCount(1, captured);
     }
 
     [TestMethod]
@@ -214,9 +216,9 @@ public sealed class AppointmentIngestionServiceTests
 
         // 3h ahead: now-reminder + 1h-before reminder both fit
         var cmd = Cmd(AppointmentAction.CREATED, scheduledAt: DateTimeOffset.UtcNow.AddHours(3));
-        await _service.IngestAsync(cmd);
+        await _service.IngestAsync(cmd, TestContext.CancellationToken);
 
-        Assert.AreEqual(2, captured.Count);
+        Assert.HasCount(2, captured);
     }
 
     // ── CANCELLED handler ──────────────────────────────────────────────────────
@@ -227,7 +229,7 @@ public sealed class AppointmentIngestionServiceTests
         _appointmentRepo.Setup(r => r.GetByExternalIdAsync(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Appointment?)null);
 
-        var result = await _service.IngestAsync(Cmd(AppointmentAction.CANCELLED));
+        var result = await _service.IngestAsync(Cmd(AppointmentAction.CANCELLED), TestContext.CancellationToken);
 
         Assert.IsTrue(result.IsFailure);
         Assert.AreEqual(ErrorType.NotFound, result.Error.Type);
@@ -239,7 +241,7 @@ public sealed class AppointmentIngestionServiceTests
         _appointmentRepo.Setup(r => r.GetByExternalIdAsync(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("DB down"));
 
-        var result = await _service.IngestAsync(Cmd(AppointmentAction.CANCELLED));
+        var result = await _service.IngestAsync(Cmd(AppointmentAction.CANCELLED), TestContext.CancellationToken);
 
         Assert.IsTrue(result.IsFailure);
         Assert.AreEqual(ErrorType.Failure, result.Error.Type);
@@ -254,7 +256,7 @@ public sealed class AppointmentIngestionServiceTests
         _notificationRepo.Setup(r => r.GetPendingIdsByAppointmentIdAsync(1, It.IsAny<CancellationToken>()))
             .ReturnsAsync([Guid.NewGuid(), Guid.NewGuid()]);
 
-        var result = await _service.IngestAsync(Cmd(AppointmentAction.CANCELLED));
+        var result = await _service.IngestAsync(Cmd(AppointmentAction.CANCELLED), TestContext.CancellationToken);
 
         Assert.IsTrue(result.IsSuccess);
         Assert.IsTrue(appointment.IsCancelled);
@@ -272,7 +274,7 @@ public sealed class AppointmentIngestionServiceTests
         _appointmentRepo.Setup(r => r.GetByExternalIdAsync(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception("DB down"));
 
-        var result = await _service.IngestAsync(Cmd(AppointmentAction.UPDATED));
+        var result = await _service.IngestAsync(Cmd(AppointmentAction.UPDATED), TestContext.CancellationToken);
 
         Assert.IsTrue(result.IsFailure);
     }
@@ -285,7 +287,7 @@ public sealed class AppointmentIngestionServiceTests
         _patientRepo.Setup(r => r.GetByExternalIdAsync(ValidPatient.ExternalId, TenantId, It.IsAny<CancellationToken>()))
             .ReturnsAsync((Patient?)null);
 
-        var result = await _service.IngestAsync(Cmd(AppointmentAction.UPDATED));
+        var result = await _service.IngestAsync(Cmd(AppointmentAction.UPDATED), TestContext.CancellationToken);
 
         Assert.IsTrue(result.IsSuccess);
         _appointmentRepo.Verify(r => r.AddAsync(It.IsAny<Appointment>(), It.IsAny<CancellationToken>()), Times.Once);
@@ -302,7 +304,7 @@ public sealed class AppointmentIngestionServiceTests
         _notificationRepo.Setup(r => r.GetPendingIdsByAppointmentIdAsync(2, It.IsAny<CancellationToken>()))
             .ReturnsAsync([Guid.NewGuid()]);
 
-        var result = await _service.IngestAsync(Cmd(AppointmentAction.UPDATED, scheduledAt: DateTimeOffset.UtcNow.AddDays(5)));
+        var result = await _service.IngestAsync(Cmd(AppointmentAction.UPDATED, scheduledAt: DateTimeOffset.UtcNow.AddDays(5)), TestContext.CancellationToken);
 
         Assert.IsTrue(result.IsSuccess);
         _dispatchLogRepo.Verify(
@@ -320,7 +322,7 @@ public sealed class AppointmentIngestionServiceTests
         _appointmentRepo.Setup(r => r.GetByExternalIdAsync(FarFutureAppointment.ExternalId, TenantId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(appointment);
 
-        var result = await _service.IngestAsync(Cmd(AppointmentAction.UPDATED, scheduledAt: sameTime));
+        var result = await _service.IngestAsync(Cmd(AppointmentAction.UPDATED, scheduledAt: sameTime), TestContext.CancellationToken);
 
         Assert.IsTrue(result.IsSuccess);
         _notificationRepo.Verify(r => r.AddRangeAsync(It.IsAny<IReadOnlyCollection<ScheduledNotification>>(), It.IsAny<CancellationToken>()), Times.Never);
@@ -339,7 +341,7 @@ public sealed class AppointmentIngestionServiceTests
         var updatedPatient = new PatientInfo(ValidPatient.ExternalId, "Nieuwe Naam", "new@test.nl", "+31699999999");
         var cmd = new IngestAppointmentCommand(AppointmentAction.UPDATED, TenantId, updatedPatient,
             new AppointmentInfo(FarFutureAppointment.ExternalId, sameTime, null, "Polikliniek", null));
-        await _service.IngestAsync(cmd);
+        await _service.IngestAsync(cmd, TestContext.CancellationToken);
 
         _patientRepo.Verify(r => r.UpdateAsync(It.IsAny<Patient>(), It.IsAny<CancellationToken>()), Times.Once);
     }

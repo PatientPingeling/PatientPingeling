@@ -181,7 +181,7 @@ public sealed class CleanArchitectureTests
             .That().Inherit(typeof(Microsoft.EntityFrameworkCore.DbContext))
             .GetTypes();
 
-        Assert.AreEqual(0, violators.Count(),
+        Assert.IsEmpty(violators,
             $"DbContext found outside Infrastructure layer:\n{string.Join("\n", violators.Select(t => t.FullName))}");
     }
 }

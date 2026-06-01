@@ -1,6 +1,8 @@
 using NotificationService.Scheduler.Polling;
 using NotificationService.Scheduler.RabbitMQ;
 using RabbitMQ.Client;
+namespace NotificationService.Scheduler.Polling;
+
 public class PollerBackgroundService(
     IServiceScopeFactory scopeFactory,
     RabbitMQEstablisher rabbitMQEstablisher,

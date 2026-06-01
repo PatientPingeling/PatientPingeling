@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using NotificationService.Application.Abstractions;
 
 namespace NotificationService.Scheduler.Cleanup
@@ -40,12 +41,22 @@ namespace NotificationService.Scheduler.Cleanup
             var patientCutoff = DateTimeOffset.UtcNow - PatientRetention;
             var deletedPatients = await patientRepo.DeleteStaleAsync(patientCutoff, ct);
             if (deletedPatients > 0)
-                logger.LogInformation("Retention: deleted {Count} patient(s) and related data inactive since {Cutoff:O}.", deletedPatients, patientCutoff);
+            {
+                if (logger.IsEnabled(LogLevel.Information))
+                {
+                    logger.LogInformation("Retention: deleted {Count} patient(s) and related data inactive since {Cutoff:O}.", deletedPatients, patientCutoff);
+                }
+            }
 
             var logCutoff = DateTimeOffset.UtcNow - NotificationLogRetention;
             var deletedLogs = await notificationLogRepo.DeleteOlderThanAsync(logCutoff, ct);
             if (deletedLogs > 0)
-                logger.LogInformation("Retention: deleted {Count} notification log(s) older than {Cutoff:O}.", deletedLogs, logCutoff);
+            {
+                if (logger.IsEnabled(LogLevel.Information))
+                {
+                    logger.LogInformation("Retention: deleted {Count} notification log(s) older than {Cutoff:O}.", deletedLogs, logCutoff);
+                }
+            }
         }
     }
 }

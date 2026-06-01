@@ -20,6 +20,8 @@ namespace NotificationService.Tests;
 [TestClass]
 public sealed class SecurityTests
 {
+    public TestContext TestContext { get; set; } = null!;
+
     // ── Cross-tenant data isolation ────────────────────────────────────────────
 
     [TestMethod]
@@ -48,7 +50,7 @@ public sealed class SecurityTests
             new PatientInfo("p-1", "Jan", "jan@test.nl", null),
             new AppointmentInfo("a-1", DateTimeOffset.UtcNow.AddDays(2), null, "Kliniek", null));
 
-        await service.IngestAsync(command);
+        await service.IngestAsync(command, TestContext.CancellationToken);
 
         // Patient lookup MUST include tenantId — never a global lookup
         patientRepo.Verify(r => r.GetByExternalIdAsync(
@@ -78,7 +80,7 @@ public sealed class SecurityTests
             new PatientInfo("p-1", "Jan", null, null),
             new AppointmentInfo("a-1", DateTimeOffset.UtcNow.AddDays(1), null, "Kliniek", null));
 
-        var result = await service.IngestAsync(command);
+        var result = await service.IngestAsync(command, TestContext.CancellationToken);
 
         // Must fail with NotFound — not silently cancel another tenant's appointment
         Assert.IsTrue(result.IsFailure);
@@ -104,7 +106,7 @@ public sealed class SecurityTests
         hashingService.Setup(h => h.Validate(It.IsAny<string>(), It.IsAny<string>())).Returns(true);
 
         var service = new TenantService(tenantRepo.Object, hashingService.Object, Mock.Of<ILogger<TenantService>>());
-        await service.ValidateApiKeyAsync(Guid.NewGuid(), "raw-api-key");
+        await service.ValidateApiKeyAsync(Guid.NewGuid(), "raw-api-key", TestContext.CancellationToken);
 
         // Hashing service must be called — direct string comparison would bypass this
         hashingService.Verify(h => h.Validate("pbkdf2$salt$hash", "raw-api-key"), Times.Once);
@@ -122,7 +124,7 @@ public sealed class SecurityTests
         hashingService.Setup(h => h.Validate(It.IsAny<string>(), It.IsAny<string>())).Returns(false);
 
         var service = new TenantService(tenantRepo.Object, hashingService.Object, Mock.Of<ILogger<TenantService>>());
-        var result = await service.ValidateApiKeyAsync(Guid.NewGuid(), "wrong-key");
+        var result = await service.ValidateApiKeyAsync(Guid.NewGuid(), "wrong-key", TestContext.CancellationToken);
 
         // Must be Unauthorized — not NotFound (don't reveal whether tenant exists)
         Assert.AreEqual(ErrorType.Unauthorized, result.Error.Type);
@@ -169,7 +171,7 @@ public sealed class SecurityTests
             ProviderCredentials = [new ProviderCredential { Key = "api_key", EncryptedValue = "encrypted-secret" }]
         };
 
-        await service.DispatchAsync(message, CancellationToken.None);
+        await service.DispatchAsync(message, TestContext.CancellationToken);
 
         // Decrypt must have been called for the encrypted value
         encryptionService.Verify(e => e.Decrypt("encrypted-secret"), Times.Once);
@@ -212,7 +214,7 @@ public sealed class SecurityTests
             ProviderCredentials = [new ProviderCredential { Key = "api_key", EncryptedValue = "corrupt" }]
         };
 
-        var result = await service.DispatchAsync(message, CancellationToken.None);
+        var result = await service.DispatchAsync(message, TestContext.CancellationToken);
 
         Assert.IsTrue(result.IsFailure);
         // Provider.SendAsync must NEVER be called if decryption fails
