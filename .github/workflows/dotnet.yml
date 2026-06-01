@@ -70,7 +70,7 @@ jobs:
 
       - name: Begin SonarQube analysis
         if: ${{ env.SONAR_TOKEN != '' }}
-        run: ${{ runner.temp }}/scanner/dotnet-sonarscanner begin /k:"$SONAR_PROJECT_KEY" /o:"patientpingeling" /d:sonar.host.url="$SONAR_HOST_URL" /d:sonar.token="$SONAR_TOKEN" /d:sonar.sources="src" /d:sonar.tests="tests" /d:sonar.exclusions="**/bin/**,**/obj/**"
+        run: ${{ runner.temp }}/scanner/dotnet-sonarscanner begin /k:"$SONAR_PROJECT_KEY" /o:"patientpingeling" /d:sonar.host.url="$SONAR_HOST_URL" /d:sonar.token="$SONAR_TOKEN" /d:sonar.exclusions="**/bin/**,**/obj/**,docs/**,plugins/**,scripts/**,config/**,*.py,*.sql"
 
       - name: Build
         run: dotnet build --no-restore --configuration Release --no-incremental
