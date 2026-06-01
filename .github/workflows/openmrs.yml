@@ -58,7 +58,7 @@ jobs:
 
       - name: Analyze with SonarQube
         if: ${{ env.SONAR_TOKEN != '' }}
-        run: mvn --batch-mode org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=$SONAR_PROJECT_KEY -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.sources=api/src/main/java,omod/src/main/java -Dsonar.tests=api/src/test/java,omod/src/test/java -Dsonar.exclusions=**/target/**
+        run: mvn --batch-mode org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=$SONAR_PROJECT_KEY -Dsonar.host.url=$SONAR_HOST_URL
         working-directory: plugins/OpenMRS.PatientPingeling
 
       - name: Upload .omod artifact
