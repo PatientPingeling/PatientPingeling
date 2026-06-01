@@ -139,8 +139,24 @@ jobs:
           zip -r scheduler.zip scheduler/
           zip -r notification-worker.zip notification-worker/
 
+      - name: Enforce pinned actions
+        run: |
+          # Ensure softprops/action-gh-release is referenced by full commit SHA (40 hex chars)
+          line=$(grep -n "uses: softprops/action-gh-release@" ../.github/workflows/release.yml || true)
+          if [ -z "$line" ]; then
+            echo "No reference to softprops/action-gh-release found in workflow file; skipping pin check.";
+          else
+            ref=$(echo "$line" | sed -E 's/.*uses: softprops\/action-gh-release@(.+)$/\1/')
+            if [[ ! "$ref" =~ ^[0-9a-f]{40}$ ]]; then
+              echo "ERROR: softprops/action-gh-release is not pinned to a full 40-char commit SHA. Found: '$ref'";
+              echo "Please update .github/workflows/release.yml to use the full commit SHA for the action (example: uses: softprops/action-gh-release@0123456789abcdef...)")
+              exit 1;
+            fi
+            echo "softprops/action-gh-release is pinned: $ref";
+          fi
+
       - name: Create release
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda
         with:
           tag_name: ${{ github.event.inputs.version }}
           name: PatientPingeling ${{ github.event.inputs.version }}

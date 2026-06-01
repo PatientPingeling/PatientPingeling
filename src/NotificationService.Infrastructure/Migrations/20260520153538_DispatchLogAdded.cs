@@ -8,6 +8,9 @@ namespace NotificationService.Infrastructure.Migrations
     /// <inheritdoc />
     public partial class DispatchLogAdded : Migration
     {
+        private static readonly string[] s_notificationLogs_TenantId_SentAt = new[] { "TenantId", "SentAt" };
+        private static readonly string[] s_dispatchLogs_ScheduledNotificationId_AttemptedAt = new[] { "ScheduledNotificationId", "AttemptedAt" };
+        private static readonly string[] s_scheduledNotifications_StatusSendAt = new[] { "Status", "SendAt" };
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -52,12 +55,12 @@ namespace NotificationService.Infrastructure.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_NotificationLogs_TenantId_SentAt",
                 table: "NotificationLogs",
-                columns: new[] { "TenantId", "SentAt" });
+                columns: s_notificationLogs_TenantId_SentAt);
 
             migrationBuilder.CreateIndex(
                 name: "IX_DispatchLogs_ScheduledNotificationId_AttemptedAt",
                 table: "DispatchLogs",
-                columns: new[] { "ScheduledNotificationId", "AttemptedAt" });
+                columns: s_dispatchLogs_ScheduledNotificationId_AttemptedAt);
         }
 
         /// <inheritdoc />
@@ -84,7 +87,7 @@ namespace NotificationService.Infrastructure.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_ScheduledNotifications_Status_SendAt",
                 table: "ScheduledNotifications",
-                columns: new[] { "Status", "SendAt" });
+                columns: s_scheduledNotifications_StatusSendAt);
 
             migrationBuilder.CreateIndex(
                 name: "IX_NotificationLogs_TenantId",

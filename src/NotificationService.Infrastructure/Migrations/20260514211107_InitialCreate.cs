@@ -8,6 +8,7 @@ namespace NotificationService.Infrastructure.Migrations
     /// <inheritdoc />
     public partial class InitialCreate : Migration
     {
+        private static readonly string[] s_scheduledNotifications_StatusSendAt = new[] { "Status", "SendAt" };
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -164,7 +165,7 @@ namespace NotificationService.Infrastructure.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_ScheduledNotifications_Status_SendAt",
                 table: "ScheduledNotifications",
-                columns: new[] { "Status", "SendAt" });
+                columns: s_scheduledNotifications_StatusSendAt);
         }
 
         /// <inheritdoc />

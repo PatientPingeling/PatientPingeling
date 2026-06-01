@@ -76,4 +76,5 @@ app.MapWebhookEndpoints();
 app.Run();
 
 // Required so WebApplicationFactory<Program> can reference this assembly in integration tests
-public partial class Program { }
+// The explicit `partial Program` class is unnecessary in modern ASP.NET Core projects
+// (see https://aka.ms/aspnetcore-warnings/ASP0027). Removed to satisfy Sonar recommendations.

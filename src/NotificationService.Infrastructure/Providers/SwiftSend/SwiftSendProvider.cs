@@ -11,6 +11,11 @@ namespace NotificationService.Infrastructure.Providers.SwiftSend
         private readonly HttpClient _client =
             httpClientFactory.CreateClient("SwiftSend");
 
+        private static readonly JsonSerializerOptions s_jsonOptions = new()
+        {
+            PropertyNameCaseInsensitive = true
+        };
+
         public IReadOnlySet<MessageFormat> SupportedFormats { get; } =
             new HashSet<MessageFormat>
             {
@@ -62,12 +67,7 @@ namespace NotificationService.Infrastructure.Providers.SwiftSend
                 );
             }
 
-            var result = JsonSerializer.Deserialize<SwiftSendResponse>(
-                body,
-                new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+            var result = JsonSerializer.Deserialize<SwiftSendResponse>(body, s_jsonOptions);
 
             if (result is null)
             {
