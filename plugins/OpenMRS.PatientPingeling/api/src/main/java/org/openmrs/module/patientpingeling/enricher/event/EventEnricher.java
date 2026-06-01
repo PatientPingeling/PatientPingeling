@@ -46,8 +46,7 @@ public class EventEnricher {
 	}
 	
 	private Object loadAppointment(String appointmentUuid) throws Exception {
-		Class<?> appointmentServiceClass = Context
-		        .loadClass("org.openmrs.module.appointments.service.AppointmentsService");
+		Class<?> appointmentServiceClass = Context.loadClass("org.openmrs.module.appointments.service.AppointmentsService");
 		Object appointmentService = Context.getService((Class) appointmentServiceClass);
 		Method getAppointmentByUuid = appointmentServiceClass.getMethod("getAppointmentByUuid", String.class);
 		return getAppointmentByUuid.invoke(appointmentService, appointmentUuid);
@@ -74,12 +73,12 @@ public class EventEnricher {
 			return patientDto;
 		}
 		
-		patientDto.setExternalId(patient.getPatientIdentifier() != null ? patient.getPatientIdentifier()
-		        .getIdentifier() : appointmentUuid);
+		patientDto.setExternalId(patient.getPatientIdentifier() != null ? patient.getPatientIdentifier().getIdentifier()
+		        : appointmentUuid);
 		patientDto.setGivenName(patient.getPersonName() != null ? patient.getPersonName().getGivenName() : null);
 		patientDto.setEmail(patient.getAttribute("email") != null ? patient.getAttribute("email").getValue() : null);
-		patientDto.setPhoneNumber(patient.getAttribute("Telephone Number") != null ? patient.getAttribute(
-		    "Telephone Number").getValue() : null);
+		patientDto.setPhoneNumber(patient.getAttribute("Telephone Number") != null ? patient
+		        .getAttribute("Telephone Number").getValue() : null);
 		return patientDto;
 	}
 	

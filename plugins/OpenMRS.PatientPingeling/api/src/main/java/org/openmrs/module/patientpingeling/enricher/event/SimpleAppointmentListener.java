@@ -99,8 +99,7 @@ public class SimpleAppointmentListener {
 		Secrets secretsFromDefaultLocation = tryLoadSecretsFromFile(defaultSecretsPath);
 		if (secretsFromDefaultLocation != null && secretsFromDefaultLocation.isValid()) {
 			secretsFromDefaultLocation.source = "openmrs_appdata_file";
-			log.error(SECRETS_SOURCE_LOG_PREFIX + secretsFromDefaultLocation.source + " path="
-			        + defaultSecretsPath);
+			log.error(SECRETS_SOURCE_LOG_PREFIX + secretsFromDefaultLocation.source + " path=" + defaultSecretsPath);
 			return secretsFromDefaultLocation;
 		}
 		
