@@ -70,19 +70,19 @@ jobs:
 
       - name: Begin SonarQube analysis
         if: ${{ env.SONAR_TOKEN != '' }}
-        run: ${{ runner.temp }}/scanner/dotnet-sonarscanner begin /k:"$SONAR_PROJECT_KEY" /o:"patientpingeling" /d:sonar.host.url="$SONAR_HOST_URL" /d:sonar.token="$SONAR_TOKEN" /d:sonar.exclusions="**/bin/**,**/obj/**,docs/**,plugins/**,scripts/**,config/**,*.py,*.sql"
+        run: ${{ runner.temp }}/scanner/dotnet-sonarscanner begin /k:"$SONAR_PROJECT_KEY" /o:"patientpingeling" /d:sonar.host.url="$SONAR_HOST_URL" /d:sonar.token="$SONAR_TOKEN" /d:sonar.exclusions="**/bin/**,**/obj/**,docs/**,plugins/**,scripts/**,config/**,*.py,*.sql" /d:sonar.cs.cobertura.reportsPaths="coverage/unit-tests/coverage.cobertura.xml,coverage/arch-tests/coverage.cobertura.xml,coverage/integration-tests/coverage.cobertura.xml"
 
       - name: Build
         run: dotnet build --no-restore --configuration Release --no-incremental
 
       - name: Unit Tests
-        run: dotnet test tests/NotificationService.UnitTests --no-build --configuration Release --verbosity normal
+        run: dotnet test tests/NotificationService.UnitTests --no-build --configuration Release --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=./coverage/unit-tests/
 
       - name: Architecture Tests
-        run: dotnet test tests/NotificationService.ArchTests --no-build --configuration Release --verbosity normal
+        run: dotnet test tests/NotificationService.ArchTests --no-build --configuration Release --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=./coverage/arch-tests/
 
       - name: Integration Tests
-        run: dotnet test tests/NotificationService.IntegrationTests --no-build --configuration Release --verbosity normal
+        run: dotnet test tests/NotificationService.IntegrationTests --no-build --configuration Release --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=./coverage/integration-tests/
 
       - name: End SonarQube analysis
         if: ${{ always() && env.SONAR_TOKEN != '' }}

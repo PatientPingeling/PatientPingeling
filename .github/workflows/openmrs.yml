@@ -58,7 +58,7 @@ jobs:
 
       - name: Analyze with SonarQube
         if: ${{ env.SONAR_TOKEN != '' }}
-        run: mvn --batch-mode org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=$SONAR_PROJECT_KEY -Dsonar.host.url=$SONAR_HOST_URL
+        run: mvn --batch-mode org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=$SONAR_PROJECT_KEY -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.junit.reportPaths=api/target/surefire-reports,omod/target/surefire-reports -Dsonar.java.coveragePlugin=jacoco -Dsonar.coverage.jacoco.xmlReportPaths=api/target/site/jacoco/jacoco.xml,omod/target/site/jacoco/jacoco.xml
         working-directory: plugins/OpenMRS.PatientPingeling
 
       - name: Upload .omod artifact
