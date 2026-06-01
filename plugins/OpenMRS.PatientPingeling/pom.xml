@@ -12,7 +12,7 @@
 	<artifactId>patientpingeling.enricher</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
-	<name>Patientpingeling enricher</name>
+	<name>PatientPingeling.OpenMRS</name>
 	<description>Enrich OpenMRS event module event so enriched events can be used to send user notifications.</description>
 
 	<url>https://wiki.openmrs.org/x/FQ4z</url>

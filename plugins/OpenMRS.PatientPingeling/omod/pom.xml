@@ -9,8 +9,8 @@
 
 	<artifactId>patientpingeling.enricher-omod</artifactId>
 	<packaging>jar</packaging>
-	<name>Patientpingeling enricher OMOD</name>
-	<description>Omod submodule for Patientpingeling enricher</description>
+	<name>PatientPingeling.OpenMRS OMOD</name>
+	<description>OMOD submodule for PatientPingeling.OpenMRS</description>
 
 	<dependencies>
         <dependency>

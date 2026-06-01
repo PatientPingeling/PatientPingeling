@@ -3,7 +3,7 @@
 
 <module configVersion="1.2">
     <id>patientpingeling.enricher</id>
-    <name>Patientpingeling Enricher</name>
+    <name>PatientPingeling.OpenMRS</name>
     <version>1.0.0-SNAPSHOT</version>
     <package>org.openmrs.module.patientpingeling.enricher</package>
     <author>PatiengPingelingsker</author>

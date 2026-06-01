@@ -9,8 +9,8 @@
 
     <artifactId>patientpingeling.enricher-api</artifactId>
     <packaging>jar</packaging>
-    <name>Patientpingeling enricher API</name>
-    <description>API project for Patientpingeling enricher</description>
+    <name>PatientPingeling.OpenMRS API</name>
+    <description>API project for PatientPingeling.OpenMRS</description>
 
     <dependencies>
         <dependency>
