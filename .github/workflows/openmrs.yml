@@ -12,12 +12,18 @@ on:
       - "plugins/OpenMRS.PatientPingeling/**"
       - ".github/workflows/openmrs.yml"
 
+concurrency:
+  group: openmrs-ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-and-test:
     name: Build, Test & Analyze
     runs-on: ubuntu-latest
     env:
-      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_OPENMRS }}
+      SONAR_HOST_URL: https://sonarcloud.io
+      SONAR_PROJECT_KEY: PatientPingeling_openmrs
 
     steps:
       - uses: actions/checkout@v6
@@ -52,7 +58,7 @@ jobs:
 
       - name: Analyze with SonarQube
         if: ${{ env.SONAR_TOKEN != '' }}
-        run: mvn --batch-mode org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=PatientPingeling_PatientPingeling
+        run: mvn --batch-mode org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=$SONAR_PROJECT_KEY -Dsonar.host.url=$SONAR_HOST_URL
         working-directory: plugins/OpenMRS.PatientPingeling
 
       - name: Upload .omod artifact

@@ -14,12 +14,18 @@ on:
       - "tests/**"
       - ".github/workflows/dotnet.yml"
 
+concurrency:
+  group: dotnet-ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-and-test:
     name: Build, Test & Analyze
     runs-on: ubuntu-latest
     env:
-      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_DOTNET }}
+      SONAR_HOST_URL: https://sonarcloud.io
+      SONAR_PROJECT_KEY: PatientPingeling_dotnet
 
     steps:
       - uses: actions/checkout@v6
@@ -64,7 +70,7 @@ jobs:
 
       - name: Begin SonarQube analysis
         if: ${{ env.SONAR_TOKEN != '' }}
-        run: ${{ runner.temp }}/scanner/dotnet-sonarscanner begin /k:"PatientPingeling_PatientPingeling" /o:"patientpingeling" /d:sonar.token="$SONAR_TOKEN"
+        run: ${{ runner.temp }}/scanner/dotnet-sonarscanner begin /k:"$SONAR_PROJECT_KEY" /o:"patientpingeling" /d:sonar.host.url="$SONAR_HOST_URL" /d:sonar.token="$SONAR_TOKEN"
 
       - name: Build
         run: dotnet build --no-restore --configuration Release --no-incremental
@@ -79,5 +85,5 @@ jobs:
         run: dotnet test tests/NotificationService.IntegrationTests --no-build --configuration Release --verbosity normal
 
       - name: End SonarQube analysis
-        if: ${{ env.SONAR_TOKEN != '' }}
+        if: ${{ always() && env.SONAR_TOKEN != '' }}
         run: ${{ runner.temp }}/scanner/dotnet-sonarscanner end /d:sonar.token="$SONAR_TOKEN"
