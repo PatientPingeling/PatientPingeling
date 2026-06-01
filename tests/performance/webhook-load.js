@@ -32,7 +32,7 @@ export const options = {
   },
 };
 
-export default function () {
+export default function webhookLoadTest() {
   // Unique IDs per iteration so we don't trigger the duplicate-shortcut.
   const runId = `${__VU}-${__ITER}-${Date.now()}`;
   const patientId = `PP-PERF-${runId}`;

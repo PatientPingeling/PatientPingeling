@@ -1,4 +1,4 @@
-package org.openmrs.module.patientpingeling.enricher.Model;
+package org.openmrs.module.patientpingeling.enricher.model;
 
 public class EnrichedEvent {
 	

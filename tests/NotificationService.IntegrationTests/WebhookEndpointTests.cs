@@ -342,7 +342,7 @@ public sealed class WebhookEndpointTests
 
     // ── Helpers ────────────────────────────────────────────────────────────────
 
-    private HttpRequestMessage BuildRequest(object body) =>
+    private static HttpRequestMessage BuildRequest(object body) =>
         new(HttpMethod.Post, "/webhooks/appointments")
         {
             Content = JsonContent.Create(body),

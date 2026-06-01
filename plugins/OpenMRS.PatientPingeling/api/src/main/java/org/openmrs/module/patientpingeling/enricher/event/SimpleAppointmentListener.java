@@ -1,6 +1,6 @@
 package org.openmrs.module.patientpingeling.enricher.event;
 
-import org.openmrs.module.patientpingeling.enricher.Model.EnrichedEvent;
+import org.openmrs.module.patientpingeling.enricher.model.EnrichedEvent;
 import org.openmrs.module.patientpingeling.enricher.RetryQueueService;
 import org.openmrs.module.patientpingeling.enricher.RetryWorker;
 import org.apache.commons.logging.Log;
@@ -38,31 +38,50 @@ public class SimpleAppointmentListener {
 	
 	private static final String ENV_SERVICE_PASSWORD = "PP_SERVICE_PASSWORD";
 	
+	private static final String SECRETS_SOURCE_LOG_PREFIX = "PP_SECRETS: Using secrets source=";
+	
+	private static final int MAX_RETRIES = 4;
+	
+	private static final int[] WAIT_TIMES = { 2000, 4000, 16000, 16000 };
+	
+	private SimpleAppointmentListener() {
+	}
+	
 	private static final class Secrets {
 		
-		public String apiKey;
+		private String apiKey;
 		
-		public String tenantId;
+		private String tenantId;
 		
-		public String source;
+		private String source;
+		
+		public String getApiKey() {
+			return apiKey;
+		}
+		
+		public void setApiKey(String apiKey) {
+			this.apiKey = apiKey;
+		}
+		
+		public String getTenantId() {
+			return tenantId;
+		}
+		
+		public void setTenantId(String tenantId) {
+			this.tenantId = tenantId;
+		}
+		
+		public String getSource() {
+			return source;
+		}
+		
+		public void setSource(String source) {
+			this.source = source;
+		}
 		
 		public boolean isValid() {
 			return apiKey != null && !apiKey.trim().isEmpty() && tenantId != null && !tenantId.trim().isEmpty();
 		}
-	}
-	
-	private static String maskSecret(String value) {
-		if (value == null) {
-			return "<null>";
-		}
-		String trimmed = value.trim();
-		if (trimmed.isEmpty()) {
-			return "<empty>";
-		}
-		if (trimmed.length() <= 4) {
-			return "<len=" + trimmed.length() + ">";
-		}
-		return trimmed.substring(0, 4) + "...<len=" + trimmed.length() + ">";
 	}
 	
 	private static Secrets getSecrets() {
@@ -71,7 +90,7 @@ public class SimpleAppointmentListener {
 		Secrets secretsFromFile = tryLoadSecretsFromFile(SECRETS_FILE);
 		if (secretsFromFile != null && secretsFromFile.isValid()) {
 			secretsFromFile.source = "pp_secrets_file";
-			log.error("PP_SECRETS: Using secrets source=" + secretsFromFile.source);
+			log.error(SECRETS_SOURCE_LOG_PREFIX + secretsFromFile.source);
 			return secretsFromFile;
 		}
 		
@@ -80,7 +99,7 @@ public class SimpleAppointmentListener {
 		Secrets secretsFromDefaultLocation = tryLoadSecretsFromFile(defaultSecretsPath);
 		if (secretsFromDefaultLocation != null && secretsFromDefaultLocation.isValid()) {
 			secretsFromDefaultLocation.source = "openmrs_appdata_file";
-			log.error("PP_SECRETS: Using secrets source=" + secretsFromDefaultLocation.source + " path="
+			log.error(SECRETS_SOURCE_LOG_PREFIX + secretsFromDefaultLocation.source + " path="
 			        + defaultSecretsPath);
 			return secretsFromDefaultLocation;
 		}
@@ -89,7 +108,7 @@ public class SimpleAppointmentListener {
 		Secrets secretsFromGlobalProperties = tryLoadSecretsFromGlobalProperties();
 		if (secretsFromGlobalProperties != null && secretsFromGlobalProperties.isValid()) {
 			secretsFromGlobalProperties.source = "openmrs_global_properties";
-			log.error("PP_SECRETS: Using secrets source=" + secretsFromGlobalProperties.source + " keys=" + GP_API_KEY + ","
+			log.error(SECRETS_SOURCE_LOG_PREFIX + secretsFromGlobalProperties.source + " keys=" + GP_API_KEY + ","
 			        + GP_TENANT_ID);
 			return secretsFromGlobalProperties;
 		}
@@ -99,7 +118,7 @@ public class SimpleAppointmentListener {
 		envSecrets.apiKey = System.getenv("PP_API_KEY");
 		envSecrets.tenantId = System.getenv("PP_TENANT_KEY");
 		envSecrets.source = "env_vars";
-		log.error("PP_SECRETS: Using secrets source=" + envSecrets.source + " (fallback). PP_SECRETS_FILE configured="
+		log.error(SECRETS_SOURCE_LOG_PREFIX + envSecrets.source + " (fallback). PP_SECRETS_FILE configured="
 		        + (SECRETS_FILE != null));
 		return envSecrets;
 	}
@@ -152,11 +171,11 @@ public class SimpleAppointmentListener {
 	
 	private static final class ServiceCredentials {
 		
-		public String username;
+		private String username;
 		
-		public String password;
+		private String password;
 		
-		public String source;
+		private String source;
 		
 		public boolean isValid() {
 			return username != null && !username.trim().isEmpty() && password != null && !password.trim().isEmpty();
@@ -177,68 +196,81 @@ public class SimpleAppointmentListener {
 		final Class<?> mapMessageClass = eventListenerClass.getClassLoader().loadClass("javax.jms.MapMessage");
 		
 		return Proxy.newProxyInstance(eventListenerClass.getClassLoader(), new Class<?>[] { eventListenerClass },
-		    new InvocationHandler() {
-			    
-			    @Override
-			    public Object invoke(Object proxy, final Method method, final Object[] args) {
-				    if ("onMessage".equals(method.getName()) && args != null && args.length == 1) {
-					    try {
-						    final Object message = args[0];
-						    if (mapMessageClass.isInstance(message)) {
-							    final Method getString = mapMessageClass.getMethod("getString", String.class);
-							    final String action = (String) getString.invoke(message, "action");
-							    final String uuid = (String) getString.invoke(message, "uuid");
-							    
-							    log.error("PP_EVENT_LOG: Received " + action + " for UUID: " + uuid);
-							    
-							    Thread t = new Thread(new Runnable() {
-								    
-								    @Override
-								    public void run() {
-									    try {
-										    Context.openSession();
-										    ServiceCredentials creds = getServiceCredentials();
-										    if (!creds.isValid()) {
-											    log.error("PP_AUTH: Missing service credentials. Configure env vars "
-											            + ENV_SERVICE_USER + "/" + ENV_SERVICE_PASSWORD
-											            + " for the OpenMRS container.");
-											    return;
-										    }
-										    log.error("PP_AUTH: Authenticating with service user='" + creds.username
-										            + "' source=" + creds.source);
-										    Context.authenticate(creds.username, creds.password);
-										    
-										    EventEnricher enricher = new EventEnricher();
-										    EnrichedEvent enriched = enricher.enrichAppointment(uuid, action);
-										    
-										    if (enriched != null) {
-											    ObjectMapper mapper = new ObjectMapper();
-											    String json = mapper.writeValueAsString(enriched);
-											    Secrets secrets = getSecrets();
-											    log.error("PP_WEBHOOK: URL=" + WEBHOOK_URL + " TENANT_NULL="
-											            + (secrets.tenantId == null) + " API_KEY_NULL="
-											            + (secrets.apiKey == null));
-											    webHookCaller(json, uuid, action);
-										    }
-									    }
-									    catch (Exception e) {
-										    log.error("PP_FATAL: Thread crashed", e);
-									    }
-									    finally {
-										    Context.closeSession();
-									    }
-								    }
-							    });
-							    t.start();
-						    }
-					    }
-					    catch (Exception e) {
-						    log.error("PP_ENRICHER: Proxy error", e);
-					    }
-				    }
-				    return null;
+		    (InvocationHandler) (proxy, method, args) -> {
+			    if (isOnMessage(method, args)) {
+				    handleMessage(args[0], mapMessageClass);
 			    }
+			    return null;
 		    });
+	}
+	
+	private static boolean isOnMessage(Method method, Object[] args) {
+		return "onMessage".equals(method.getName()) && args != null && args.length == 1;
+	}
+	
+	private static void handleMessage(Object message, Class<?> mapMessageClass) {
+		try {
+			if (!mapMessageClass.isInstance(message)) {
+				return;
+			}
+			
+			Method getString = mapMessageClass.getMethod("getString", String.class);
+			String action = (String) getString.invoke(message, "action");
+			String uuid = (String) getString.invoke(message, "uuid");
+			log.error("PP_EVENT_LOG: Received " + action + " for UUID: " + uuid);
+			startEventProcessingThread(uuid, action);
+		}
+		catch (Exception e) {
+			log.error("PP_ENRICHER: Proxy error", e);
+		}
+	}
+	
+	private static void startEventProcessingThread(final String uuid, final String action) {
+		Thread t = new Thread(() -> processEvent(uuid, action));
+		t.start();
+	}
+	
+	private static void processEvent(String uuid, String action) {
+		try {
+			Context.openSession();
+			if (!authenticateServiceUser()) {
+				return;
+			}
+			
+			EventEnricher enricher = new EventEnricher();
+			EnrichedEvent enriched = enricher.enrichAppointment(uuid, action);
+			if (enriched != null) {
+				sendEnrichedEvent(enriched, uuid, action);
+			}
+		}
+		catch (Exception e) {
+			log.error("PP_FATAL: Thread crashed", e);
+		}
+		finally {
+			Context.closeSession();
+		}
+	}
+	
+	private static boolean authenticateServiceUser() {
+		ServiceCredentials creds = getServiceCredentials();
+		if (!creds.isValid()) {
+			log.error("PP_AUTH: Missing service credentials. Configure env vars " + ENV_SERVICE_USER + "/"
+			        + ENV_SERVICE_PASSWORD + " for the OpenMRS container.");
+			return false;
+		}
+		
+		log.error("PP_AUTH: Authenticating with service user='" + creds.username + "' source=" + creds.source);
+		Context.authenticate(creds.username, creds.password);
+		return true;
+	}
+	
+	private static void sendEnrichedEvent(EnrichedEvent enriched, String uuid, String action) throws IOException {
+		ObjectMapper mapper = new ObjectMapper();
+		String json = mapper.writeValueAsString(enriched);
+		Secrets secrets = getSecrets();
+		log.error("PP_WEBHOOK: URL=" + WEBHOOK_URL + " TENANT_NULL=" + (secrets.tenantId == null) + " API_KEY_NULL="
+		        + (secrets.apiKey == null));
+		webHookCaller(json, uuid, action);
 	}
 	
 	public static boolean webHookCaller(String jsonPayload, String uuid, String action) {
@@ -247,80 +279,109 @@ public class SimpleAppointmentListener {
 	
 	public static boolean webHookCaller(String jsonPayload, String uuid, String action, boolean persistOnFailure) {
 		log.error("PP_WEBHOOK: Starting caller. URL is: " + WEBHOOK_URL);
-		int maxRetries = 4;
-		int[] waitTimes = { 2000, 4000, 16000, 16000 };
 		Secrets secrets = getSecrets();
 		
-		for (int i = 1; i <= maxRetries; i++) {
-			HttpURLConnection conn = null;
-			OutputStream os = null;
+		for (int i = 1; i <= MAX_RETRIES; i++) {
 			try {
 				log.error("PP_WEBHOOK: Attempt " + i + " to send data...");
-				
-				URL url = new URL(WEBHOOK_URL);
-				conn = (HttpURLConnection) url.openConnection();
-				conn.setRequestMethod("POST");
-				conn.setRequestProperty("Content-Type", "application/json; utf-8");
-				conn.setRequestProperty("X-Api-Key", secrets.apiKey);
-				conn.setRequestProperty("X-Tenant-Id", secrets.tenantId);
-				conn.setDoOutput(true);
-				conn.setConnectTimeout(5000);
-				
-				os = conn.getOutputStream();
-				byte[] input = jsonPayload.getBytes(StandardCharsets.UTF_8);
-				os.write(input, 0, input.length);
-				os.flush();
-				os.close();
-				os = null;
-				
-				int code = conn.getResponseCode();
-				if (code >= 200 && code < 300) {
-					log.error("PP_WEBHOOK: Success! Status code: " + code);
+				WebhookResult result = sendWebhookAttempt(jsonPayload, uuid, secrets);
+				if (result.isHandled()) {
 					return true;
-				} else if (code == 400 || code == 404 || code == 422) {
-					log.error("PP_WEBHOOK: Client error " + code + " for uuid=" + uuid + ", not retrying.");
-					return true;
-				} else {
-					throw new Exception("HTTP error code: " + code);
 				}
 			}
-			catch (Exception e) {
+			catch (IOException e) {
 				log.error("PP_WEBHOOK: Attempt " + i + " failed: " + e.getMessage());
-				
-				if (i < maxRetries) {
-					try {
-						int wait = waitTimes[i - 1];
-						log.error("PP_WEBHOOK: Waiting " + (wait / 1000) + " seconds before retry...");
-						Thread.sleep(wait);
-					}
-					catch (InterruptedException ie) {
-						Thread.currentThread().interrupt();
-						return false;
-					}
-				} else {
-					log.error("PP_WEBHOOK: Max retries reached for uuid=" + uuid + " action=" + action
-					        + " persistOnFailure=" + persistOnFailure);
-					if (persistOnFailure) {
-						Long id = RetryQueueService.insert(uuid, action, jsonPayload);
-						if (id != null) {
-							RetryWorker.enqueue(id);
-						}
-					}
+				if (!prepareNextRetry(i, uuid, action, jsonPayload, persistOnFailure)) {
 					return false;
-				}
-			}
-			finally {
-				if (os != null) {
-					try {
-						os.close();
-					}
-					catch (IOException e) { /* Ignore */}
-				}
-				if (conn != null) {
-					conn.disconnect();
 				}
 			}
 		}
 		return false;
+	}
+	
+	private static WebhookResult sendWebhookAttempt(String jsonPayload, String uuid, Secrets secrets) throws IOException {
+		HttpURLConnection conn = null;
+		try {
+			URL url = new URL(WEBHOOK_URL);
+			conn = (HttpURLConnection) url.openConnection();
+			conn.setRequestMethod("POST");
+			conn.setRequestProperty("Content-Type", "application/json; utf-8");
+			conn.setRequestProperty("X-Api-Key", secrets.apiKey);
+			conn.setRequestProperty("X-Tenant-Id", secrets.tenantId);
+			conn.setDoOutput(true);
+			conn.setConnectTimeout(5000);
+			
+			writePayload(conn, jsonPayload);
+			return interpretResponse(conn.getResponseCode(), uuid);
+		}
+		finally {
+			if (conn != null) {
+				conn.disconnect();
+			}
+		}
+	}
+	
+	private static void writePayload(HttpURLConnection conn, String jsonPayload) throws IOException {
+		try (OutputStream os = conn.getOutputStream()) {
+			byte[] input = jsonPayload.getBytes(StandardCharsets.UTF_8);
+			os.write(input, 0, input.length);
+			os.flush();
+		}
+	}
+	
+	private static WebhookResult interpretResponse(int code, String uuid) throws IOException {
+		if (code >= 200 && code < 300) {
+			log.error("PP_WEBHOOK: Success! Status code: " + code);
+			return WebhookResult.HANDLED;
+		}
+		if (code == 400 || code == 404 || code == 422) {
+			log.error("PP_WEBHOOK: Client error " + code + " for uuid=" + uuid + ", not retrying.");
+			return WebhookResult.HANDLED;
+		}
+		throw new IOException("HTTP error code: " + code);
+	}
+	
+	private static boolean prepareNextRetry(int attempt, String uuid, String action, String jsonPayload,
+	        boolean persistOnFailure) {
+		if (attempt < MAX_RETRIES) {
+			return waitBeforeRetry(attempt);
+		}
+		
+		log.error("PP_WEBHOOK: Max retries reached for uuid=" + uuid + " action=" + action + " persistOnFailure="
+		        + persistOnFailure);
+		persistRetryIfNeeded(uuid, action, jsonPayload, persistOnFailure);
+		return false;
+	}
+	
+	private static boolean waitBeforeRetry(int attempt) {
+		try {
+			int wait = WAIT_TIMES[attempt - 1];
+			log.error("PP_WEBHOOK: Waiting " + (wait / 1000) + " seconds before retry...");
+			Thread.sleep(wait);
+			return true;
+		}
+		catch (InterruptedException ie) {
+			Thread.currentThread().interrupt();
+			return false;
+		}
+	}
+	
+	private static void persistRetryIfNeeded(String uuid, String action, String jsonPayload, boolean persistOnFailure) {
+		if (!persistOnFailure) {
+			return;
+		}
+		
+		Long id = RetryQueueService.insert(uuid, action, jsonPayload);
+		if (id != null) {
+			RetryWorker.enqueue(id);
+		}
+	}
+	
+	private enum WebhookResult {
+		HANDLED;
+		
+		boolean isHandled() {
+			return this == HANDLED;
+		}
 	}
 }

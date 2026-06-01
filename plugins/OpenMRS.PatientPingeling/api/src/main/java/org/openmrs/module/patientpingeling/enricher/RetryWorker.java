@@ -15,11 +15,11 @@ public class RetryWorker {
 	
 	private static Thread workerThread;
 	
+	private RetryWorker() {
+	}
+	
 	public static void start() {
-		workerThread = new Thread(new Runnable() {
-			
-			@Override
-			public void run() {
+		workerThread = new Thread(() -> {
 				log.error("PP_WORKER: Retry worker started.");
 				while (!Thread.currentThread().isInterrupted()) {
 					try {
@@ -33,7 +33,7 @@ public class RetryWorker {
 								Context.authenticate(creds.username, creds.password);
 							}
 							String[] row = RetryQueueService.loadRow(id);
-							if (row == null) {
+							if (row.length == 0) {
 								log.error("PP_WORKER: Row id=" + id + " no longer exists, skipping.");
 								continue;
 							}
@@ -48,7 +48,7 @@ public class RetryWorker {
 							} else {
 								log.error("PP_WORKER: Still failing, waiting 30 seconds before re-queuing row id=" + id);
 								Thread.sleep(30000);
-								queue.offer(id);
+								offerRetry(id);
 							}
 						}
 						finally {
@@ -63,7 +63,6 @@ public class RetryWorker {
 					}
 				}
 				log.error("PP_WORKER: Retry worker stopped.");
-			}
 		});
 		workerThread.setDaemon(true);
 		workerThread.start();
@@ -77,15 +76,24 @@ public class RetryWorker {
 	
 	public static void enqueue(Long id) {
 		log.error("PP_WORKER: Enqueuing retry for DB row id=" + id);
-		queue.offer(id);
+		offerRetry(id);
 	}
 	
 	public static void loadFromDatabase() {
 		log.error("PP_WORKER: Loading unprocessed rows from DB...");
 		for (long[] row : RetryQueueService.loadAll()) {
-			queue.offer(row[0]);
-			log.error("PP_WORKER: Re-enqueued surviving row id=" + row[0]);
+			if (offerRetry(row[0])) {
+				log.error("PP_WORKER: Re-enqueued surviving row id=" + row[0]);
+			}
 		}
+	}
+	
+	private static boolean offerRetry(Long id) {
+		boolean queued = queue.offer(id);
+		if (!queued) {
+			log.error("PP_WORKER: Failed to enqueue retry row id=" + id);
+		}
+		return queued;
 	}
 	
 	private static ServiceCredentials getServiceCredentials() {

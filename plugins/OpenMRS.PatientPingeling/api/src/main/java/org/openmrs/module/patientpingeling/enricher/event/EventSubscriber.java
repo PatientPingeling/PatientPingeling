@@ -10,6 +10,9 @@ public class EventSubscriber {
 	
 	private static Object listenerInstance = null;
 	
+	private EventSubscriber() {
+	}
+	
 	public static void subscribe() {
 		log.error("PP_ENRICHER: EventSubscriber.subscribe() called");
 		try {

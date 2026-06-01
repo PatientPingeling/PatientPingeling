@@ -15,6 +15,9 @@ public class RetryQueueService {
 	
 	private static final Log log = LogFactory.getLog(RetryQueueService.class);
 	
+	private RetryQueueService() {
+	}
+	
 	private static Connection getConnection() throws Exception {
 		return DatabaseUpdater.getConnection();
 	}
@@ -109,6 +112,6 @@ public class RetryQueueService {
 		catch (Exception e) {
 			log.error("PP_QUEUE: Failed to load row id=" + id, e);
 		}
-		return null;
+		return new String[0];
 	}
 }

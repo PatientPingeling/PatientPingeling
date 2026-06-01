@@ -7,8 +7,6 @@ import org.openmrs.api.AdministrationService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.BaseModuleActivator;
 import org.openmrs.module.patientpingeling.enricher.event.EventSubscriber;
-import org.openmrs.module.patientpingeling.enricher.RetryQueueService;
-import org.openmrs.module.patientpingeling.enricher.RetryWorker;
 
 public class PatientpingelingenricherActivator extends BaseModuleActivator {
 	
